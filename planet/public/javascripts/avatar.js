@@ -41,7 +41,7 @@ Avatar.prototype.addTo = function(scene, renderer) {
     scene.add(self.skinnedMesh);
     scene.add(self.faceMesh);
   });
-}
+};
 
 Avatar.prototype.move = function(x, y, z) {
   if (!this.skinnedMesh) return;
@@ -53,7 +53,7 @@ Avatar.prototype.move = function(x, y, z) {
   this.faceMesh.position.x = this.skinnedMesh.position.x;
   this.faceMesh.position.z = this.skinnedMesh.position.z;
   this.faceMesh.position.y = this.skinnedMesh.position.y + 2.5 * this.scale;
-}
+};
 
 Avatar.prototype.rotate = function(rx, ry, rz) {
   if (!this.skinnedMesh) return;
@@ -63,7 +63,7 @@ Avatar.prototype.rotate = function(rx, ry, rz) {
   this.skinnedMesh.rotation.z += rz;
 
   this.faceMesh.rotation = this.skinnedMesh.rotation;
-}
+};
 
 Avatar.prototype.moveTo = function(x, y, z) {
   if (!this.skinnedMesh) return;
@@ -73,12 +73,12 @@ Avatar.prototype.moveTo = function(x, y, z) {
   this.skinnedMesh.position.z = z;
 
   this.move(0, 0, 0);
-}
+};
 
 Avatar.prototype.setScale = function(s) {
   this.skinnedMesh.scale.set(s, s, s);
   this.faceMesh.scale.set(s / 2, s / 2, s / 2);
-}
+};
 
 Avatar.prototype.render = function() {
   if (this.twitching) {
@@ -92,4 +92,4 @@ Avatar.prototype.render = function() {
     var rz = (Math.random() - 0.5) * 0.0001;
     this.rotate(rx, ry, rz);
   }
-}
+};
