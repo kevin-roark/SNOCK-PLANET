@@ -5,13 +5,13 @@ module.exports = function loadModel(name, callback) {
   if (typeof callback !== 'function') return;
 
   if (cache[name]) {
-    callback(fetch(name, true));
+    fetch(name, true, callback);
   }
 
   var loader = new THREE.JSONLoader;
   loader.load(name, function(geometry, materials) {
     add(geometry, materials);
-    callback(fetch(name));
+    fetch(name, false, callback);
   });
 };
 
@@ -22,13 +22,11 @@ function add(name, geometry, materials) {
   }
 }
 
-function fetch(name, clone) {
+function fetch(name, clone, callback) {
   if (!clone) {
-    return cache[name];
+    callback(cache[name].geometry, cache[name].materials);
+    return;
   }
 
-  return {
-    geometry: cache[name].geometry.clone(),
-    materials: cache[name].geometry.clone()
-  }
+  callback(cache[name].geometry.clone(), cache[name].materials.clone());
 }
