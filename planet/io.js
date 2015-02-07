@@ -15,6 +15,6 @@ module.exports.init = function(app) {
 
   });
 
-  server.listen(IO_PORT);
+  app.server_ = server;
 };
 
