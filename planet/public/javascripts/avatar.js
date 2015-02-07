@@ -6,6 +6,8 @@ var loader = require('./model_loader');
 module.exports = Avatar;
 
 function Avatar(options) {
+  this.name = options.name || 'default';
+
   if (!options.position) options.position = {};
   this.initX = options.position.x || 0;
   this.initY = options.position.y || 0;
