@@ -4,11 +4,13 @@ var kt = require('./lib/kutility');
 var io = require('socket.io-client');
 
 var Camera = require('./camera');
+var Avatar = require('./avatar');
+var Door = require('./door');
 var config = require('./config');
 
 $(function() {
 
-  var state = {};
+  var state = {frameCount: 0};
   var socket = io(config.io_url);
 
   // create renderer
@@ -34,34 +36,63 @@ $(function() {
 
   // TODO: fog
 
-  // TODO: lights
+  // soft white light
+  var ambientLight = new THREE.AmbientLight( 0x404040 );
+  scene.add(ambientLight);
 
   // create camera
-  var cam = new Camera();
+  var cam = new Camera(scene, renderer, {});
   var camera = cam.cam;
 
-  // start doing things
-  (function start() {
-    render();
-
-    $('body').keypress(function(ev) {
-      console.log('key press eh? ' + ev.which);
-      ev.preventDefault();
-
-      keypress(ev.which);
+  if (config.testing) {
+    var doorInFrontOfYou = new Door({
+      position: {x: 0, y: 0, z: -50}
     });
-  })();
+    doorInFrontOfYou.addTo(scene);
+  }
+
+  // start rendering
+  cam.requestPointerLock();
+  render();
 
   // render every frame
   function render() {
     requestAnimationFrame(render);
+
+    state.frameCount += 1;
+
+    // every 4 frames lets update our state to the server
+    if (state.frameCount % 4 == 0) {
+      socket.emit('avatar-update', {position: cam.controlPosition()});
+    }
 
     cam.render();
 
     renderer.render(scene, camera);
   }
 
+  // io events
+
+  socket.on('avatar-entry', function(avatarData) {
+
+  });
+
+  socket.on('avatar-move', function(avatarData) {
+
+  });
+
+  socket.on('door-creation', function(doorData) {
+
+  });
+
   // interaction
+
+  $('body').keypress(function(ev) {
+    console.log('key press eh? ' + ev.which);
+    ev.preventDefault();
+
+    keypress(ev.which);
+  });
 
   function keypress(keycode) {
     switch (keycode) {

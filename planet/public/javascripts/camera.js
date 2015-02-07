@@ -7,6 +7,8 @@
 
 // http://www.html5rocks.com/en/tutorials/pointerlock/intro/
 
+var $ = require('jquery');
+
 var havePointerLock = 'pointerLockElement' in document || 'mozPointerLockElement' in document || 'webkitPointerLockElement' in document;
 
 var element = document.body;
@@ -93,6 +95,10 @@ Camera.prototype.render = function() {
 
 Camera.prototype.isIdle = function() {
   return this.controls.isIdle();
+}
+
+Camera.prototype.controlPosition = function() {
+  return this.controls.getObject().position;
 }
 
 Camera.prototype.pointerlockchange = function (event) {

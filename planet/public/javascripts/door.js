@@ -18,7 +18,7 @@ function Door(options) {
       reflectivity: 0.15
   });
   this.geometry = new THREE.BoxGeometry(2, 10, 0.5);
-  this.mesh = new THREE.BasicMesh(this.geometry, this.material);
+  this.mesh = new THREE.Mesh(this.geometry, this.material);
 };
 
 Door.prototype.addTo = function(scene, renderer) {
