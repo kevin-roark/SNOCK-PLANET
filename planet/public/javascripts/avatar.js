@@ -8,6 +8,7 @@ module.exports = Avatar;
 function Avatar(options) {
   if (!options.position) options.position = {};
   this.initX = options.position.x || 0;
+  this.initY = options.position.y || 0;
   this.initZ = options.position.z || 0;
 
   this.scale = options.scale || 2;
