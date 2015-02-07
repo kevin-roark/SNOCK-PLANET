@@ -3,9 +3,9 @@
 var kt = require('./lib/kutility');
 var loader = require('./model_loader');
 
-module.exports = Character;
+module.exports = Avatar;
 
-function Character(options) {
+function Avatar(options) {
   if (!options.position) options.position = {};
   this.initX = options.position.x || 0;
   this.initZ = options.position.z || 0;
@@ -23,7 +23,7 @@ function Character(options) {
   this.faceMesh = new THREE.Mesh(this.faceGeometry, this.faceMaterial);
 }
 
-Character.prototype.addTo = function(scene, renderer) {
+Avatar.prototype.addTo = function(scene, renderer) {
   var self = this;
 
   loader.load('/javascripts/3d_models/body.js', function (geometry, materials) {
@@ -42,7 +42,7 @@ Character.prototype.addTo = function(scene, renderer) {
   });
 }
 
-Character.prototype.move = function(x, y, z) {
+Avatar.prototype.move = function(x, y, z) {
   if (!this.skinnedMesh) return;
 
   this.skinnedMesh.position.x += x;
@@ -54,7 +54,7 @@ Character.prototype.move = function(x, y, z) {
   this.faceMesh.position.y = this.skinnedMesh.position.y + 2.5 * this.scale;
 }
 
-Character.prototype.rotate = function(rx, ry, rz) {
+Avatar.prototype.rotate = function(rx, ry, rz) {
   if (!this.skinnedMesh) return;
 
   this.skinnedMesh.rotation.x += rx;
@@ -64,7 +64,7 @@ Character.prototype.rotate = function(rx, ry, rz) {
   this.faceMesh.rotation = this.skinnedMesh.rotation;
 }
 
-Character.prototype.moveTo = function(x, y, z) {
+Avatar.prototype.moveTo = function(x, y, z) {
   if (!this.skinnedMesh) return;
 
   this.skinnedMesh.position.x = x;
@@ -74,12 +74,12 @@ Character.prototype.moveTo = function(x, y, z) {
   this.move(0, 0, 0);
 }
 
-Character.prototype.setScale = function(s) {
+Avatar.prototype.setScale = function(s) {
   this.skinnedMesh.scale.set(s, s, s);
   this.faceMesh.scale.set(s / 2, s / 2, s / 2);
 }
 
-Character.prototype.render = function() {
+Avatar.prototype.render = function() {
   if (this.twitching) {
     var x = (Math.random() - 0.5) * 2;
     var y = 0;
