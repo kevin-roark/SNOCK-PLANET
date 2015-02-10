@@ -16319,8 +16319,8 @@ var element = document.body;
 
 var _camera, _renderer;
 $(window).resize(function() {
-  if (renderer) {
-    renderer.setSize(window.innerWidth, window.innerHeight);
+  if (_renderer) {
+    _renderer.setSize(window.innerWidth, window.innerHeight);
   }
 
   if (!_camera) {
@@ -16515,6 +16515,8 @@ function Door(options) {
   });
   this.geometry = new THREE.BoxGeometry(2, 10, 0.5);
   this.mesh = new THREE.Mesh(this.geometry, this.material);
+
+  this.moveTo(this.initX, this.initY, this.initZ);
 };
 
 Door.prototype.addTo = function(scene, renderer) {
@@ -17165,12 +17167,13 @@ $(function() {
 
   if (config.testing) {
     var doorInFrontOfYou = new Door({
-      position: {x: 0, y: 0, z: -50}
+      position: {x: 0, y: 5, z: -15}
     });
     doorInFrontOfYou.addTo(scene);
   }
 
   // start rendering
+  cam.active = true;
   cam.requestPointerLock();
   render();
 

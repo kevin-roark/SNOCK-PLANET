@@ -62,7 +62,8 @@ THREE.PointerLockControls = function ( camera ) {
 
 			case 37: // left
 			case 65: // a
-				moveLeft = true; break;
+				moveLeft = true;
+				break;
 
 			case 40: // down
 			case 83: // s
@@ -165,11 +166,11 @@ THREE.PointerLockControls = function ( camera ) {
 
 		velocity.y -= 9.8 * 100.0 * delta; // 100.0 = mass
 
-		if (moveForward) velocity.z += this.velocityStep * delta;
-		if (moveBackward) velocity.z -= this.velocityStep * delta;
+		if (moveForward) velocity.z -= this.velocityStep * delta;
+		if (moveBackward) velocity.z += this.velocityStep * delta;
 
-		if (moveLeft) velocity.x += this.velocityStep * delta;
-		if (moveRight) velocity.x -= this.velocityStep * delta;
+		if (moveLeft) velocity.x -= this.velocityStep * delta;
+		if (moveRight) velocity.x += this.velocityStep * delta;
 
 		if ( isOnObject === true ) {
 

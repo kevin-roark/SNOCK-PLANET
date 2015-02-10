@@ -15,8 +15,8 @@ var element = document.body;
 
 var _camera, _renderer;
 $(window).resize(function() {
-  if (renderer) {
-    renderer.setSize(window.innerWidth, window.innerHeight);
+  if (_renderer) {
+    _renderer.setSize(window.innerWidth, window.innerHeight);
   }
 
   if (!_camera) {

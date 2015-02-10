@@ -19,6 +19,8 @@ function Door(options) {
   });
   this.geometry = new THREE.BoxGeometry(2, 10, 0.5);
   this.mesh = new THREE.Mesh(this.geometry, this.material);
+
+  this.moveTo(this.initX, this.initY, this.initZ);
 };
 
 Door.prototype.addTo = function(scene, renderer) {

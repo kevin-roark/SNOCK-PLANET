@@ -46,12 +46,13 @@ $(function() {
 
   if (config.testing) {
     var doorInFrontOfYou = new Door({
-      position: {x: 0, y: 0, z: -50}
+      position: {x: 0, y: 5, z: -15}
     });
     doorInFrontOfYou.addTo(scene);
   }
 
   // start rendering
+  cam.active = true;
   cam.requestPointerLock();
   render();
 
