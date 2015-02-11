@@ -95,3 +95,11 @@ Avatar.prototype.render = function() {
     this.rotate(rx, ry, rz);
   }
 };
+
+Avatar.prototype.wakeUp = function() {
+
+};
+
+Avatar.prototype.goSleep = function() {
+
+};

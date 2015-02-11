@@ -7,10 +7,16 @@ var Camera = require('./camera');
 var Avatar = require('./avatar');
 var Door = require('./door');
 var config = require('./config');
+var doorTools = require('./door-tools');
+var avatarTools = require('./avatar-tools');
 
 $(function() {
 
-  var state = {frameCount: 0};
+  var state = {
+    frameCount: 0,
+    doors: [],
+    avatars: {}
+  };
   var socket = io(config.io_url);
 
   // create renderer
@@ -69,21 +75,44 @@ $(function() {
 
     cam.render();
 
+    for (var i = 0; i < state.doors.length; i++) {
+      state.doors[i].render();
+    }
+
     renderer.render(scene, camera);
   }
 
   // io events
 
   socket.on('avatar-entry', function(avatarData) {
+    var avatar = avatarWithName(avatarData.name);
+    if (!avatar) {
+      avatar = avatarTools.makeAvatarFromServer(avatarData);
+      avatar.addTo(scene);
+      state.avatars[avatar.name] = avatar;
+    }
 
+    avatar.wakeUp();
   });
 
   socket.on('avatar-move', function(avatarData) {
+    var avatar = avatarWithName(avatarData.name);
+    if (avatar) {
+      avatar.moveTo(avatarData.position.x, avatarData.position.y, avatarData.position.z);
+    }
+  });
 
+  socket.on('avatar-sleep', function(avatarData) {
+    var avatar = avatarWithName(avatarData);
+    if (avatar) {
+      avatar.goSleep();
+    }
   });
 
   socket.on('door-creation', function(doorData) {
-
+    var door = doorTools.makeDoorFromServer(doorData);
+    door.addTo(scene);
+    state.doors.push(door);
   });
 
   // interaction
@@ -117,5 +146,12 @@ $(function() {
     }
   }
 
+  function avatarWithName(name) {
+    if (state.avatars[name]) {
+      return state.avatars[name];
+    }
+
+    return null;
+  }
 
 });
