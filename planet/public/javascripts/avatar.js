@@ -103,3 +103,9 @@ Avatar.prototype.wakeUp = function() {
 Avatar.prototype.goSleep = function() {
 
 };
+
+Avatar.prototype.updateSkinColor = function(hex) {
+  if (!this.skinnedMesh) return;
+
+  this.skinnedMesh.material.color = new THREE.Color(hex);
+};

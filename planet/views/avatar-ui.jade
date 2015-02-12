@@ -1,0 +1,13 @@
+
+.avatar-ui-wrapper
+  
+  .avatar-name-form-wrapper
+    form(name="avatar-name-form", id="avatar-name-form")
+      input(type="text", id="avatar-name-input", name="avatar-name")
+  
+  .avatar-color-picker
+    #avatar-color-picker-picker(style="width: 200px; height: 200px;")
+    #avatar-color-picker-slider(style="width: 30px; height: 200px;")
+      
+  .avatar-face-image-picker
+    form(action="/avatar-face-upload", class="dropzone", id="avatar-face-image-picker-dropzone")

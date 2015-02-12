@@ -7,13 +7,21 @@ var Camera = require('./camera');
 var Avatar = require('./avatar');
 var Door = require('./door');
 var config = require('./config');
+var globals = require('./global-state');
 var doorTools = require('./door-tools');
 var avatarTools = require('./avatar-tools');
+var BecomeAvatarComponent = require('./become-avatar-component');
+
+// states
+var BECOME_AVATAR_STATE = 0;
+var GENERAL_PLANET_STATE = 1;
+var INSIDE_DOOR_STATE = 2;
 
 $(function() {
 
   var state = {
     frameCount: 0,
+    state: BECOME_AVATAR_STATE,
     doors: [],
     avatars: {}
   };
@@ -50,6 +58,11 @@ $(function() {
   var cam = new Camera(scene, renderer, {});
   var camera = cam.cam;
 
+  // set up globals
+  globals.io = socket;
+  globals.scene = scene;
+  globals.camera = cam;
+
   if (config.testing) {
     var doorInFrontOfYou = new Door({
       position: {x: 0, y: 5, z: -15}
@@ -60,6 +73,7 @@ $(function() {
   // start rendering
   cam.active = true;
   cam.requestPointerLock();
+  startBecomeAvatarState();
   render();
 
   // render every frame
@@ -74,6 +88,10 @@ $(function() {
     }
 
     cam.render();
+
+    if (state.state == BECOME_AVATAR_STATE) {
+      state.becomeAvatarState.render();
+    }
 
     for (var i = 0; i < state.doors.length; i++) {
       state.doors[i].render();
@@ -131,6 +149,23 @@ $(function() {
       case 113: // q
         break;
     }
+  }
+
+  // state transitions
+
+  function startBecomeAvatarState() {
+    state.becomeAvatarState = new BecomeAvatarState();
+    state.becomeAvatarState.init();
+  }
+
+  function startGeneralPlanetState() {
+    state.becomeAvatarState.clean();
+
+
+  }
+
+  function startInsideDoorState() {
+
   }
 
   // utility
