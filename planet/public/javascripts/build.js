@@ -16204,9 +16204,53 @@ function toArray(list, index) {
 
 },{}],52:[function(require,module,exports){
 
+var globals = require('./global-state');
+
+var socket;
+
+module.exports.makeAvatarFromServer = function(avatarData) {
+
+};
+
+module.exports.fetchAvatar = function(name, callback) {
+  if (!fetchSocket() || !name) {
+    callback(null);
+    return;
+  }
+
+  socket.emit('get-avatar', name, function(avatar) {
+    callback(avatar);
+  });
+};
+
+module.exports.createAvatar = function(avatarData, callback) {
+  if (!fetchSocket() || !avatarData.name) {
+    callback(null);
+    return;
+  }
+
+  if (!avatarData.color) avatarData.color = '#ffffff';
+
+  socket.emit('create-avatar', avatarData, function(avatar) {
+    callback(avatar);
+  });
+};
+
+// Utility
+
+function fetchSocket() {
+  if (!socket) {
+    socket = globals.io;
+  }
+
+  return socket;
+}
+
+},{"./global-state":59}],53:[function(require,module,exports){
+
 // requirements
 var kt = require('./lib/kutility');
-var loader = require('./model_loader');
+var loader = require('./model-loader');
 
 module.exports = Avatar;
 
@@ -16231,10 +16275,10 @@ function Avatar(options) {
   this.faceMesh = new THREE.Mesh(this.faceGeometry, this.faceMaterial);
 }
 
-Avatar.prototype.addTo = function(scene, renderer) {
+Avatar.prototype.addTo = function(scene) {
   var self = this;
 
-  loader.load('/javascripts/3d_models/body.js', function (geometry, materials) {
+  loader('/javascripts/3d_models/body.js', function (geometry, materials) {
     self.geometry = geometry;
     self.materials = materials;
 
@@ -16243,7 +16287,7 @@ Avatar.prototype.addTo = function(scene, renderer) {
     self.skinnedMesh.scale.set(self.scale, self.scale, self.scale);
     self.faceMesh.scale.set(self.scale / 2, self.scale / 2, self.scale / 2);
 
-    self.move(self.startX, 8 + 3 * (self.scale - 2), self.startZ);
+    self.move(self.initX, self.initY, self.initZ);
 
     scene.add(self.skinnedMesh);
     scene.add(self.faceMesh);
@@ -16301,7 +16345,77 @@ Avatar.prototype.render = function() {
   }
 };
 
-},{"./lib/kutility":56,"./model_loader":58}],53:[function(require,module,exports){
+Avatar.prototype.wakeUp = function() {
+
+};
+
+Avatar.prototype.goSleep = function() {
+
+};
+
+Avatar.prototype.updateSkinColor = function(hex) {
+  if (!this.skinnedMesh) return;
+
+  var materials = this.skinnedMesh.material.materials;
+  for (var i = 0; i < materials.length; i++) {
+    var material = materials[i];
+    material.color = new THREE.Color(hex);
+    material.ambient = new THREE.Color(hex);
+    material.emissive = new THREE.Color(hex);
+    material.needsUpdate = true;
+  }
+};
+
+},{"./lib/kutility":60,"./model-loader":62}],54:[function(require,module,exports){
+
+var $ = require('jquery');
+var SceneComponent = require('./scene-component');
+var Avatar = require('./avatar');
+var globals = require('./global-state');
+
+module.exports = BecomeAvatarComponent;
+
+function BecomeAvatarComponent() {};
+
+BecomeAvatarComponent.prototype.__proto__ = SceneComponent.prototype;
+
+BecomeAvatarComponent.prototype.postInit = function() {
+  this.avatar = new Avatar({
+    position: {x: 0, y: 5, z: -20}
+  });
+  this.avatar.addTo(this.scene);
+
+  globals.playerAvatar = this.avatar;
+
+  this.renderObjects.push(this.avatar);
+
+  this.activateColorPicker();
+
+  $('#avatar-name-form').submit(function(ev) {
+    ev.preventDefault();
+
+    this.avatar.name = $('#avatar-name-input').val();
+  });
+};
+
+BecomeAvatarComponent.prototype.preRender = function() {
+  this.avatar.rotate(0, 0.01, 0);
+};
+
+BecomeAvatarComponent.prototype.updateAvatarColor = function(hex) {
+  this.avatar.updateSkinColor(hex);
+};
+
+BecomeAvatarComponent.prototype.activateColorPicker = function() {
+  var self = this;
+  var slider = document.getElementById('avatar-color-picker-slider');
+  var picker = document.getElementById('avatar-color-picker-picker');
+  ColorPicker(slider, picker, function(hex, hsv, rgb) {
+    self.updateAvatarColor(hex);
+  });
+};
+
+},{"./avatar":53,"./global-state":59,"./scene-component":63,"jquery":1}],55:[function(require,module,exports){
 /**
  * BELOW CODE INSPIRED FROM
  * http://threejs.org/examples/misc_controls_pointerlock.html
@@ -16471,7 +16585,7 @@ Camera.prototype.requestPointerLock = function() {
   }
 }
 
-},{"jquery":1}],54:[function(require,module,exports){
+},{"jquery":1}],56:[function(require,module,exports){
 
 var debug = true;
 
@@ -16493,7 +16607,15 @@ module.exports.io_url = io_url;
 
 module.exports.testing = true;
 
-},{}],55:[function(require,module,exports){
+module.exports.addTestDoor = false;
+
+},{}],57:[function(require,module,exports){
+
+module.exports.makeDoorFromServer = function(doorData) {
+
+};
+
+},{}],58:[function(require,module,exports){
 
 // requirements
 var kt = require('./lib/kutility');
@@ -16553,7 +16675,13 @@ Door.prototype.render = function() {
 
 };
 
-},{"./config":54,"./lib/kutility":56}],56:[function(require,module,exports){
+},{"./config":56,"./lib/kutility":60}],59:[function(require,module,exports){
+
+// Store anything you think should be accessible everywhere here
+
+module.exports = {};
+
+},{}],60:[function(require,module,exports){
 /* export something */
 module.exports = new Kutility;
 
@@ -17118,7 +17246,7 @@ Kutility.prototype.blur = function(el, x) {
   this.setFilter(el, cf + f);
 }
 
-},{}],57:[function(require,module,exports){
+},{}],61:[function(require,module,exports){
 
 var $ = require('jquery');
 var kt = require('./lib/kutility');
@@ -17128,10 +17256,24 @@ var Camera = require('./camera');
 var Avatar = require('./avatar');
 var Door = require('./door');
 var config = require('./config');
+var globals = require('./global-state');
+var doorTools = require('./door-tools');
+var avatarTools = require('./avatar-tools');
+var BecomeAvatarComponent = require('./become-avatar-component');
+
+// states
+var BECOME_AVATAR_STATE = 0;
+var GENERAL_PLANET_STATE = 1;
+var INSIDE_DOOR_STATE = 2;
 
 $(function() {
 
-  var state = {frameCount: 0};
+  var state = {
+    frameCount: 0,
+    state: BECOME_AVATAR_STATE,
+    doors: [],
+    avatars: {}
+  };
   var socket = io(config.io_url);
 
   // create renderer
@@ -17165,16 +17307,23 @@ $(function() {
   var cam = new Camera(scene, renderer, {});
   var camera = cam.cam;
 
+  // set up globals
+  globals.io = socket;
+  globals.scene = scene;
+  globals.camera = cam;
+
   if (config.testing) {
-    var doorInFrontOfYou = new Door({
-      position: {x: 0, y: 5, z: -15}
-    });
-    doorInFrontOfYou.addTo(scene);
+    if (config.addTestDoor) {
+      var doorInFrontOfYou = new Door({
+        position: {x: 0, y: 5, z: -15}
+      });
+      doorInFrontOfYou.addTo(scene);
+    }
   }
 
   // start rendering
   cam.active = true;
-  cam.requestPointerLock();
+  startBecomeAvatarState();
   render();
 
   // render every frame
@@ -17190,31 +17339,60 @@ $(function() {
 
     cam.render();
 
+    if (state.state == BECOME_AVATAR_STATE) {
+      state.becomeAvatarComponent.render();
+    }
+
+    for (var i = 0; i < state.doors.length; i++) {
+      state.doors[i].render();
+    }
+
     renderer.render(scene, camera);
   }
 
   // io events
 
   socket.on('avatar-entry', function(avatarData) {
+    var avatar = avatarWithName(avatarData.name);
+    if (!avatar) {
+      avatar = avatarTools.makeAvatarFromServer(avatarData);
+      avatar.addTo(scene);
+      state.avatars[avatar.name] = avatar;
+    }
 
+    avatar.wakeUp();
   });
 
   socket.on('avatar-move', function(avatarData) {
+    var avatar = avatarWithName(avatarData.name);
+    if (avatar) {
+      avatar.moveTo(avatarData.position.x, avatarData.position.y, avatarData.position.z);
+    }
+  });
 
+  socket.on('avatar-sleep', function(avatarData) {
+    var avatar = avatarWithName(avatarData);
+    if (avatar) {
+      avatar.goSleep();
+    }
   });
 
   socket.on('door-creation', function(doorData) {
-
+    var door = doorTools.makeDoorFromServer(doorData);
+    door.addTo(scene);
+    state.doors.push(door);
   });
 
   // interaction
 
-  $('body').keypress(function(ev) {
-    console.log('key press eh? ' + ev.which);
-    ev.preventDefault();
+  function addGeneralInteractionListeners() {
+    $('body').keypress(function(ev) {
+      console.log('key press eh? ' + ev.which);
+      ev.preventDefault();
 
-    keypress(ev.which);
-  });
+      keypress(ev.which);
+    });
+  }
 
   function keypress(keycode) {
     switch (keycode) {
@@ -17223,6 +17401,24 @@ $(function() {
       case 113: // q
         break;
     }
+  }
+
+  // state transitions
+
+  function startBecomeAvatarState() {
+    state.becomeAvatarComponent = new BecomeAvatarComponent();
+    state.becomeAvatarComponent.init(scene);
+  }
+
+  function startGeneralPlanetState() {
+    state.becomeAvatarComponent.clean();
+
+    cam.requestPointerLock();
+    addGeneralInteractionListeners();
+  }
+
+  function startInsideDoorState() {
+
   }
 
   // utility
@@ -17238,10 +17434,17 @@ $(function() {
     }
   }
 
+  function avatarWithName(name) {
+    if (state.avatars[name]) {
+      return state.avatars[name];
+    }
+
+    return null;
+  }
 
 });
 
-},{"./avatar":52,"./camera":53,"./config":54,"./door":55,"./lib/kutility":56,"jquery":1,"socket.io-client":2}],58:[function(require,module,exports){
+},{"./avatar":53,"./avatar-tools":52,"./become-avatar-component":54,"./camera":55,"./config":56,"./door":58,"./door-tools":57,"./global-state":59,"./lib/kutility":60,"jquery":1,"socket.io-client":2}],62:[function(require,module,exports){
 
 var cache = {};
 
@@ -17254,7 +17457,7 @@ module.exports = function loadModel(name, callback) {
 
   var loader = new THREE.JSONLoader;
   loader.load(name, function(geometry, materials) {
-    add(geometry, materials);
+    add(name, geometry, materials);
     fetch(name, false, callback);
   });
 };
@@ -17267,6 +17470,8 @@ function add(name, geometry, materials) {
 }
 
 function fetch(name, clone, callback) {
+  console.log(cache[name]);
+
   if (!clone) {
     callback(cache[name].geometry, cache[name].materials);
     return;
@@ -17275,4 +17480,35 @@ function fetch(name, clone, callback) {
   callback(cache[name].geometry.clone(), cache[name].materials.clone());
 }
 
-},{}]},{},[57])
+},{}],63:[function(require,module,exports){
+
+module.exports = SceneComponent;
+
+function SceneComponent() {};
+
+SceneComponent.prototype.init = function(scene) {
+  this.scene = scene;
+
+  this.renderObjects = [];
+
+  this.postInit();
+};
+
+SceneComponent.prototype.postInit = function() {};
+
+SceneComponent.prototype.render = function() {
+  this.preRender();
+
+  for (var i = 0; i < this.renderObjects.length; i++) {
+    this.renderObjects[i].render();
+  }
+
+  this.postRender();
+};
+
+SceneComponent.prototype.preRender = function() {};
+SceneComponent.prototype.postRender = function() {};
+
+SceneComponent.prototype.clean = function() {};
+
+},{}]},{},[61])

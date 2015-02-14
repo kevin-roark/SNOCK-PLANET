@@ -1,7 +1,7 @@
 
 // requirements
 var kt = require('./lib/kutility');
-var loader = require('./model_loader');
+var loader = require('./model-loader');
 
 module.exports = Avatar;
 
@@ -26,10 +26,10 @@ function Avatar(options) {
   this.faceMesh = new THREE.Mesh(this.faceGeometry, this.faceMaterial);
 }
 
-Avatar.prototype.addTo = function(scene, renderer) {
+Avatar.prototype.addTo = function(scene) {
   var self = this;
 
-  loader.load('/javascripts/3d_models/body.js', function (geometry, materials) {
+  loader('/javascripts/3d_models/body.js', function (geometry, materials) {
     self.geometry = geometry;
     self.materials = materials;
 
@@ -38,7 +38,7 @@ Avatar.prototype.addTo = function(scene, renderer) {
     self.skinnedMesh.scale.set(self.scale, self.scale, self.scale);
     self.faceMesh.scale.set(self.scale / 2, self.scale / 2, self.scale / 2);
 
-    self.move(self.startX, 8 + 3 * (self.scale - 2), self.startZ);
+    self.move(self.initX, self.initY, self.initZ);
 
     scene.add(self.skinnedMesh);
     scene.add(self.faceMesh);
@@ -107,5 +107,12 @@ Avatar.prototype.goSleep = function() {
 Avatar.prototype.updateSkinColor = function(hex) {
   if (!this.skinnedMesh) return;
 
-  this.skinnedMesh.material.color = new THREE.Color(hex);
+  var materials = this.skinnedMesh.material.materials;
+  for (var i = 0; i < materials.length; i++) {
+    var material = materials[i];
+    material.color = new THREE.Color(hex);
+    material.ambient = new THREE.Color(hex);
+    material.emissive = new THREE.Color(hex);
+    material.needsUpdate = true;
+  }
 };

@@ -18,3 +18,5 @@ module.exports.door_texture = door_texture;
 module.exports.io_url = io_url;
 
 module.exports.testing = true;
+
+module.exports.addTestDoor = false;

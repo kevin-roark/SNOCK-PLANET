@@ -64,15 +64,16 @@ $(function() {
   globals.camera = cam;
 
   if (config.testing) {
-    var doorInFrontOfYou = new Door({
-      position: {x: 0, y: 5, z: -15}
-    });
-    doorInFrontOfYou.addTo(scene);
+    if (config.addTestDoor) {
+      var doorInFrontOfYou = new Door({
+        position: {x: 0, y: 5, z: -15}
+      });
+      doorInFrontOfYou.addTo(scene);
+    }
   }
 
   // start rendering
   cam.active = true;
-  cam.requestPointerLock();
   startBecomeAvatarState();
   render();
 
@@ -90,7 +91,7 @@ $(function() {
     cam.render();
 
     if (state.state == BECOME_AVATAR_STATE) {
-      state.becomeAvatarState.render();
+      state.becomeAvatarComponent.render();
     }
 
     for (var i = 0; i < state.doors.length; i++) {
@@ -135,12 +136,14 @@ $(function() {
 
   // interaction
 
-  $('body').keypress(function(ev) {
-    console.log('key press eh? ' + ev.which);
-    ev.preventDefault();
+  function addGeneralInteractionListeners() {
+    $('body').keypress(function(ev) {
+      console.log('key press eh? ' + ev.which);
+      ev.preventDefault();
 
-    keypress(ev.which);
-  });
+      keypress(ev.which);
+    });
+  }
 
   function keypress(keycode) {
     switch (keycode) {
@@ -154,14 +157,15 @@ $(function() {
   // state transitions
 
   function startBecomeAvatarState() {
-    state.becomeAvatarState = new BecomeAvatarState();
-    state.becomeAvatarState.init();
+    state.becomeAvatarComponent = new BecomeAvatarComponent();
+    state.becomeAvatarComponent.init(scene);
   }
 
   function startGeneralPlanetState() {
-    state.becomeAvatarState.clean();
+    state.becomeAvatarComponent.clean();
 
-
+    cam.requestPointerLock();
+    addGeneralInteractionListeners();
   }
 
   function startInsideDoorState() {

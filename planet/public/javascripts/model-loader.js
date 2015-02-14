@@ -10,7 +10,7 @@ module.exports = function loadModel(name, callback) {
 
   var loader = new THREE.JSONLoader;
   loader.load(name, function(geometry, materials) {
-    add(geometry, materials);
+    add(name, geometry, materials);
     fetch(name, false, callback);
   });
 };
@@ -23,6 +23,8 @@ function add(name, geometry, materials) {
 }
 
 function fetch(name, clone, callback) {
+  console.log(cache[name]);
+
   if (!clone) {
     callback(cache[name].geometry, cache[name].materials);
     return;
