@@ -13,8 +13,8 @@ module.exports.fetchAvatar = function(name, callback) {
     return;
   }
 
-  socket.emit('get-avatar', name, function(avatar) {
-    callback(avatar);
+  socket.emit('get-avatar', name, function(avatarData) {
+    callback(avatarData);
   });
 };
 

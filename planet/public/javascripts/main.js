@@ -158,7 +158,7 @@ $(function() {
 
   function startBecomeAvatarState() {
     state.becomeAvatarComponent = new BecomeAvatarComponent();
-    state.becomeAvatarComponent.init(scene);
+    state.becomeAvatarComponent.init(scene, socket);
   }
 
   function startGeneralPlanetState() {

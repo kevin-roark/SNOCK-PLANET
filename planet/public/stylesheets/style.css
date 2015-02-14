@@ -37,21 +37,24 @@ canvas {
 }
 
 .avatar-form-wrapper {
-  width: 100%;
   position: absolute;
-  top: 60px;
-  left: 0px;
-  text-align: center;
 }
 
 #avatar-name-input {
+  position: absolute;
+  top: 200px;
+  left: 30%;
   margin: 15px;
   height: 60px;
-  width: 777px;
+  width: 40%;
   border-radius: 10px;
+  border: none;
+  text-align: center;
 
   background-color: rgb(245, 245, 245);
   font-size: 32px;
+  font-family: monospace;
+  letter-spacing: 2px;
 }
 
 .avatar-color-picker {
@@ -72,4 +75,20 @@ canvas {
   height: 200px;
   position: absolute;
   right: 15px;
+}
+
+.avatar-creation-submit-button {
+  display: none;
+
+  position: absolute;
+  top: 300px;
+  left: 40%;
+  width: 20%;
+  padding: 10px 0px;
+
+  background-color: blue;
+  color: white;
+  text-align: center;
+
+  cursor: pointer;
 }

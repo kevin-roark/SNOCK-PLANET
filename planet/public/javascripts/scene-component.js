@@ -3,8 +3,9 @@ module.exports = SceneComponent;
 
 function SceneComponent() {};
 
-SceneComponent.prototype.init = function(scene) {
+SceneComponent.prototype.init = function(scene, socket) {
   this.scene = scene;
+  this.socket = socket;
 
   this.renderObjects = [];
 
@@ -21,6 +22,13 @@ SceneComponent.prototype.render = function() {
   }
 
   this.postRender();
+};
+
+SceneComponent.prototype.markFinished = function() {
+  this.finished = true;
+  if (this.finishedCallback) {
+    this.finishedCallback();
+  }
 };
 
 SceneComponent.prototype.preRender = function() {};
