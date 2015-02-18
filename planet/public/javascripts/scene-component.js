@@ -31,6 +31,7 @@ SceneComponent.prototype.render = function() {
 
 SceneComponent.prototype.markFinished = function() {
   this.finished = true;
+  this.clean();
   if (this.finishedCallback) {
     this.finishedCallback();
   }

@@ -63,11 +63,11 @@ BecomeAvatarComponent.prototype.layout = function() {
   layoutSubmitButton();
 };
 
-/** "custom" methods */
-
-BecomeAvatarComponent.prototype.updateAvatarColor = function(hex) {
-  this.avatar.updateSkinColor(hex);
+BecomeAvatarComponent.prototype.clean = function() {
+  $('.avatar-ui-wrapper').fadeOut();
 };
+
+/** "custom" methods */
 
 BecomeAvatarComponent.prototype.updateAvatarFaceImage = function(imageUrl) {
   this.avatar.updateFaceImage(imageUrl);
@@ -78,7 +78,7 @@ BecomeAvatarComponent.prototype.activateColorPicker = function() {
   var slider = document.getElementById('avatar-color-picker-slider');
   var picker = document.getElementById('avatar-color-picker-picker');
   ColorPicker(slider, picker, function(hex, hsv, rgb) {
-    self.updateAvatarColor(hex);
+    self.avatar.updateSkinColor(hex);
   });
 };
 
@@ -113,16 +113,13 @@ BecomeAvatarComponent.prototype.enterAvatarCreationState = function() {
 
 BecomeAvatarComponent.prototype.finishAfterFetchingAvatar = function(avatarData) {
   this.avatar.addTo(this.scene);
-
-  this.avatar.name = avatarData.name;
-  this.updateAvatarColor(avatarData.color);
-  this.updateAvatarFaceImage(avatarData.faceImageUrl);
-
+  this.avatar.updateFromModel(avatarData);
   this.markFinished();
 };
 
-BecomeAvatarComponent.prototype.finishAfterCreatingAvatar = function() {
-
+BecomeAvatarComponent.prototype.finishAfterCreatingAvatar = function(avatarData) {
+  this.avatar.updateFromModel(avatarData);
+  this.markFinished();
 };
 
 /** layout functions */

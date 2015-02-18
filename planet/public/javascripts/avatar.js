@@ -134,4 +134,10 @@ Avatar.prototype.serialize = function() {
     color: this.color,
     faceImageUrl: this.faceImageUrl
   }
-}
+};
+
+Avatar.prototype.updateFromModel = function(avatarData) {
+  this.name = avatarData.name;
+  this.updateSkinColor(avatarData.color);
+  this.updateFaceImage(avatarData.faceImageUrl);
+};
