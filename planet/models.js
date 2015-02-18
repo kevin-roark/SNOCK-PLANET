@@ -2,7 +2,7 @@
 // requirements
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
-var config = require('./config');
+var config = require('./public/javascripts/config');
 
 mongoose.connect(config.mongo_url);
 
@@ -30,7 +30,8 @@ var letterSchema = Schema({
 
 var avatarSchema = Schema({
   name: String,
-  color: String
+  color: String,
+  faceImageUrl: String
 });
 
 // models

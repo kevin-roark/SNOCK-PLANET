@@ -45,6 +45,8 @@ BecomeAvatarComponent.prototype.postInit = function() {
   });
 
   $('.avatar-creation-submit-button').click(function() {
+    self.avatar.name = $('#avatar-name-input').val();
+
     avatarTools.createAvatar(self.avatar.serialize(), function(avatarData) {
       self.finishAfterCreatingAvatar(avatarData);
     });
