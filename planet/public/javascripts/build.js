@@ -16403,7 +16403,6 @@ BecomeAvatarComponent.prototype.postInit = function() {
   this.avatar = new Avatar({
     position: {x: 0, y: 5, z: -20}
   });
-  this.avatar.addTo(this.scene);
 
   globals.playerAvatar = this.avatar;
 
@@ -16470,20 +16469,26 @@ BecomeAvatarComponent.prototype.activateDropzone = function() {
 BecomeAvatarComponent.prototype.enterAvatarCreationState = function() {
   var name = $('#avatar-name-input').val();
   $('#avatar-name-input').val('');
-  $('.avatar-avatar-creation-submit-button').focus();
+  $('#avatar-name-input').blur();
+
+  $('.avatar-creation-submit-button').fadeIn();
+  $('.avatar-color-picker').fadeIn();
+  $('.avatar-face-image-picker').fadeIn();
+  this.activateColorPicker();
+  this.activateDropzone();
 
   var self = this;
-  $('.avatar-creation-submit-button').fadeIn();
   $('#avatar-name-input').animate({
     top: 60
   }, function() {
+    self.avatar.addTo(self.scene);
     $('#avatar-name-input').val(name);
-    self.activateDropzone();
-    self.activateColorPicker();
   });
 };
 
 BecomeAvatarComponent.prototype.finishAfterFetchingAvatar = function(avatarData) {
+  this.avatar.addTo(this.scene);
+
   this.avatar.name = avatarData.name;
   this.updateAvatarColor(avatarData.color);
   this.updateAvatarFaceImage(avatarData.faceImageUrl);
