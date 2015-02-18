@@ -61,30 +61,30 @@ canvas {
 .avatar-color-picker {
   position: absolute;
   right: 0px;
-  top: 50px;
+  top: 5%;
+  height: 100%;
   display: none;
 }
 
-#avatar-color-picker-picker {
-  width: 200px;
-  height: 200px;
+.avatar-color-picker-component {
+  height: 35%;
   position: absolute;
-  right: 45px;
 }
 
 #avatar-color-picker-slider {
   width: 30px;
-  height: 200px;
-  position: absolute;
   right: 15px;
 }
 
+#avatar-color-picker-picker {
+  right: 45px;
+}
+
 .avatar-face-image-picker {
-  width: 300px;
-  height: 300px;
   position: absolute;
-  bottom: 15px;
-  left: 15px;
+  top: 60%;
+  right: 30px;
+  height: 35%;
 
   background-color: black;
   color: white;
@@ -95,14 +95,17 @@ canvas {
   display: none;
 
   position: absolute;
-  top: 300px;
-  left: 40%;
-  width: 20%;
-  padding: 10px 0px;
+  height: 30%;
+  min-height: 150px;
 
   background-color: blue;
   color: white;
   text-align: center;
+  font-size: 18px;
+  font-weight: 100;
 
   cursor: pointer;
 }
+  .avatar-creation-submit-button:hover {
+    background-color: red;
+  }

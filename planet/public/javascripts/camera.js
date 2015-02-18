@@ -19,7 +19,7 @@ $(window).resize(function() {
     _renderer.setSize(window.innerWidth, window.innerHeight);
   }
 
-  if (!_camera) {
+  if (_camera) {
     _camera.aspect = window.innerWidth / window.innerHeight;
     _camera.updateProjectionMatrix();
   }

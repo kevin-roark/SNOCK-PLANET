@@ -1,4 +1,6 @@
 
+var $ = require('jquery');
+
 module.exports = SceneComponent;
 
 function SceneComponent() {};
@@ -8,6 +10,9 @@ SceneComponent.prototype.init = function(scene, socket) {
   this.socket = socket;
 
   this.renderObjects = [];
+
+  this.layout();
+  $(window).resize(this.layout);
 
   this.postInit();
 };
@@ -35,3 +40,5 @@ SceneComponent.prototype.preRender = function() {};
 SceneComponent.prototype.postRender = function() {};
 
 SceneComponent.prototype.clean = function() {};
+
+SceneComponent.prototype.layout = function() {};

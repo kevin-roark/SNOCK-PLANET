@@ -7,13 +7,15 @@ var avatarTools = require('./avatar-tools');
 
 module.exports = BecomeAvatarComponent;
 
+/** Inherited methods */
+
 function BecomeAvatarComponent() {};
 
 BecomeAvatarComponent.prototype.__proto__ = SceneComponent.prototype;
 
 BecomeAvatarComponent.prototype.postInit = function() {
   this.avatar = new Avatar({
-    position: {x: 0, y: 5, z: -20}
+    position: {x: -15, y: 10, z: -20}
   });
 
   globals.playerAvatar = this.avatar;
@@ -53,6 +55,14 @@ BecomeAvatarComponent.prototype.preRender = function() {
   this.avatar.rotate(0, 0.01, 0);
 };
 
+BecomeAvatarComponent.prototype.layout = function() {
+  layoutColorPicker();
+  layoutFacePicker();
+  layoutSubmitButton();
+};
+
+/** "custom" methods */
+
 BecomeAvatarComponent.prototype.updateAvatarColor = function(hex) {
   this.avatar.updateSkinColor(hex);
 };
@@ -88,6 +98,7 @@ BecomeAvatarComponent.prototype.enterAvatarCreationState = function() {
   $('.avatar-face-image-picker').fadeIn();
   this.activateColorPicker();
   this.activateDropzone();
+  this.layout();
 
   var self = this;
   $('#avatar-name-input').animate({
@@ -111,3 +122,29 @@ BecomeAvatarComponent.prototype.finishAfterFetchingAvatar = function(avatarData)
 BecomeAvatarComponent.prototype.finishAfterCreatingAvatar = function() {
 
 };
+
+/** layout functions */
+
+function layoutColorPicker() {
+  setWidthEqualToHeight($('#avatar-color-picker-picker'));
+}
+
+function layoutFacePicker() {
+  setWidthEqualToHeight($('.avatar-face-image-picker'));
+}
+
+function layoutSubmitButton() {
+  var button = $('.avatar-creation-submit-button');
+  setWidthEqualToHeight(button);
+
+  var height = button.height();
+  button.css('border-radius', (height / 2) + 'px');
+  button.css('line-height', height + 'px');
+  button.css('top', (window.innerHeight / 2 - height / 2) + 'px');
+  button.css('left', (window.innerWidth / 2 - button.width() / 2) + 'px');
+}
+
+function setWidthEqualToHeight($el) {
+  var height = $el.height();
+  $el.css('width', height + 'px');
+}
