@@ -14,19 +14,19 @@ function BecomeAvatarComponent() {};
 BecomeAvatarComponent.prototype.__proto__ = SceneComponent.prototype;
 
 BecomeAvatarComponent.prototype.postInit = function() {
+  var self = this;
+
   this.avatar = new Avatar({
     position: {x: -15, y: 10, z: -20}
   });
 
   globals.playerAvatar = this.avatar;
-
   this.renderObjects.push(this.avatar);
 
+  this.setupFiledropper();
+
   this.hasEnteredName = false;
-
   $('#avatar-name-input').focus();
-
-  var self = this;
   $('#avatar-name-form').submit(function(ev) {
     ev.preventDefault();
     var name = $('#avatar-name-input').val();
@@ -82,12 +82,87 @@ BecomeAvatarComponent.prototype.activateColorPicker = function() {
   });
 };
 
-BecomeAvatarComponent.prototype.activateDropzone = function() {
-  this.dropzone = new Dropzone('div.avatar-face-image-picker', {
-    url: '/avatar-face-upload',
-    thumbnailWidth: 100,
-    dictDefaultMessage: 'drag and drop a facial image here'
-  });
+BecomeAvatarComponent.prototype.setupFiledropper = function() {
+  var tests = {
+    filereader: typeof FileReader != 'undefined',
+    dnd: 'draggable' in document.createElement('span'),
+    formdata: !!window.FormData,
+    progress: "upload" in new XMLHttpRequest
+  };
+
+  var acceptedTypes = {
+    'image/png': true,
+    'image/jpeg': true,
+    'image/gif': true
+  };
+
+  var holder = document.getElementById('avatar-image-drop-zone');
+  var progress = document.getElementById('upload-progress');
+
+  function previewfile(file) {
+    if (tests.filereader === true && acceptedTypes[file.type] === true) {
+      var reader = new FileReader();
+      reader.onload = function (event) {
+        var image = new Image();
+        image.src = event.target.result;
+        image.width = 250; // a fake resize
+        holder.appendChild(image);
+      };
+
+      reader.readAsDataURL(file);
+    }
+  }
+
+  function readfiles(files) {
+    var formData = tests.formdata ? new FormData() : null;
+    for (var i = 0; i < files.length; i++) {
+      if (tests.formdata) {
+        formData.append('file', files[i]);
+      }
+      previewfile(files[i]);
+    }
+
+    // now post a new XHR request
+    if (tests.formdata) {
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', '/devnull.php');
+      xhr.onload = function() {
+        progress.value = progress.innerHTML = 100;
+      };
+
+      if (tests.progress) {
+        xhr.upload.onprogress = function (event) {
+          if (event.lengthComputable) {
+            var complete = (event.loaded / event.total * 100 | 0);
+            progress.value = progress.innerHTML = complete;
+          }
+        }
+      }
+
+      xhr.send(formData);
+    }
+  }
+
+  if (tests.dnd) {
+    holder.ondragover = function () {
+      this.className = 'hover';
+      return false;
+    };
+    holder.ondragend = function () {
+      this.className = '';
+      return false;
+    };
+    holder.ondrop = function (e) {
+      this.className = '';
+      e.preventDefault();
+      readfiles(e.dataTransfer.files);
+    }
+  } else {
+    fileupload.className = 'hidden';
+    fileupload.querySelector('input').onchange = function () {
+      readfiles(this.files);
+    };
+  }
 };
 
 BecomeAvatarComponent.prototype.enterAvatarCreationState = function() {
@@ -97,9 +172,8 @@ BecomeAvatarComponent.prototype.enterAvatarCreationState = function() {
 
   $('.avatar-creation-submit-button').fadeIn();
   $('.avatar-color-picker').fadeIn();
-  $('.avatar-face-image-picker').fadeIn();
+  $('#avatar-image-drop-zone').fadeIn();
   this.activateColorPicker();
-  this.activateDropzone();
   this.layout();
 
   var self = this;
@@ -129,7 +203,7 @@ function layoutColorPicker() {
 }
 
 function layoutFacePicker() {
-  setWidthEqualToHeight($('.avatar-face-image-picker'));
+  setWidthEqualToHeight($('#avatar-image-drop-zone'));
 }
 
 function layoutSubmitButton() {

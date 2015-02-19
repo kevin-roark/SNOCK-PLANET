@@ -23,8 +23,6 @@ function add(name, geometry, materials) {
 }
 
 function fetch(name, clone, callback) {
-  console.log(cache[name]);
-
   if (!clone) {
     callback(cache[name].geometry, cache[name].materials);
     return;

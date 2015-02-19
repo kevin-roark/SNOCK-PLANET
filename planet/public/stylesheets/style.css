@@ -40,7 +40,6 @@ canvas {
 .avatar-form-wrapper {
   position: absolute;
 }
-
 #avatar-name-input {
   position: absolute;
   top: 200px;
@@ -65,31 +64,47 @@ canvas {
   height: 100%;
   display: none;
 }
-
 .avatar-color-picker-component {
   height: 35%;
   position: absolute;
 }
-
 #avatar-color-picker-slider {
   width: 30px;
   right: 15px;
 }
-
 #avatar-color-picker-picker {
   right: 45px;
 }
 
-.avatar-face-image-picker {
+#avatar-image-drop-zone {
   position: absolute;
   top: 60%;
   right: 30px;
   height: 35%;
 
+  border: 10px dashed #ccc;
   background-color: black;
   color: white;
   display: none;
 }
+  #avatar-image-drop-zone.hover {
+    border: 10px dashed #0c0;
+  }
+  #avatar-image-drop-zone img {
+    display: block;
+    margin: 10px auto;
+  }
+  #avatar-image-drop-zone p {
+    margin: 10px;
+    font-size: 14px;
+  }
+
+progress {
+  width: 100%;
+}
+  progress:after {
+    content: '%';
+  }
 
 .avatar-creation-submit-button {
   display: none;

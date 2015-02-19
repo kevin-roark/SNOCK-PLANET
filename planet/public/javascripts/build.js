@@ -16383,7 +16383,13 @@ Avatar.prototype.serialize = function() {
     color: this.color,
     faceImageUrl: this.faceImageUrl
   }
-}
+};
+
+Avatar.prototype.updateFromModel = function(avatarData) {
+  this.name = avatarData.name;
+  this.updateSkinColor(avatarData.color);
+  this.updateFaceImage(avatarData.faceImageUrl);
+};
 
 },{"./lib/kutility":60,"./model-loader":62}],54:[function(require,module,exports){
 
@@ -16402,19 +16408,19 @@ function BecomeAvatarComponent() {};
 BecomeAvatarComponent.prototype.__proto__ = SceneComponent.prototype;
 
 BecomeAvatarComponent.prototype.postInit = function() {
+  var self = this;
+
   this.avatar = new Avatar({
     position: {x: -15, y: 10, z: -20}
   });
 
   globals.playerAvatar = this.avatar;
-
   this.renderObjects.push(this.avatar);
 
+  this.setupFiledropper();
+
   this.hasEnteredName = false;
-
   $('#avatar-name-input').focus();
-
-  var self = this;
   $('#avatar-name-form').submit(function(ev) {
     ev.preventDefault();
     var name = $('#avatar-name-input').val();
@@ -16451,11 +16457,11 @@ BecomeAvatarComponent.prototype.layout = function() {
   layoutSubmitButton();
 };
 
-/** "custom" methods */
-
-BecomeAvatarComponent.prototype.updateAvatarColor = function(hex) {
-  this.avatar.updateSkinColor(hex);
+BecomeAvatarComponent.prototype.clean = function() {
+  $('.avatar-ui-wrapper').fadeOut();
 };
+
+/** "custom" methods */
 
 BecomeAvatarComponent.prototype.updateAvatarFaceImage = function(imageUrl) {
   this.avatar.updateFaceImage(imageUrl);
@@ -16466,16 +16472,91 @@ BecomeAvatarComponent.prototype.activateColorPicker = function() {
   var slider = document.getElementById('avatar-color-picker-slider');
   var picker = document.getElementById('avatar-color-picker-picker');
   ColorPicker(slider, picker, function(hex, hsv, rgb) {
-    self.updateAvatarColor(hex);
+    self.avatar.updateSkinColor(hex);
   });
 };
 
-BecomeAvatarComponent.prototype.activateDropzone = function() {
-  this.dropzone = new Dropzone('div.avatar-face-image-picker', {
-    url: '/avatar-face-upload',
-    thumbnailWidth: 100,
-    dictDefaultMessage: 'drag and drop a facial image here'
-  });
+BecomeAvatarComponent.prototype.setupFiledropper = function() {
+  var tests = {
+    filereader: typeof FileReader != 'undefined',
+    dnd: 'draggable' in document.createElement('span'),
+    formdata: !!window.FormData,
+    progress: "upload" in new XMLHttpRequest
+  };
+
+  var acceptedTypes = {
+    'image/png': true,
+    'image/jpeg': true,
+    'image/gif': true
+  };
+
+  var holder = document.getElementById('avatar-image-drop-zone');
+  var progress = document.getElementById('upload-progress');
+
+  function previewfile(file) {
+    if (tests.filereader === true && acceptedTypes[file.type] === true) {
+      var reader = new FileReader();
+      reader.onload = function (event) {
+        var image = new Image();
+        image.src = event.target.result;
+        image.width = 250; // a fake resize
+        holder.appendChild(image);
+      };
+
+      reader.readAsDataURL(file);
+    }
+  }
+
+  function readfiles(files) {
+    var formData = tests.formdata ? new FormData() : null;
+    for (var i = 0; i < files.length; i++) {
+      if (tests.formdata) {
+        formData.append('file', files[i]);
+      }
+      previewfile(files[i]);
+    }
+
+    // now post a new XHR request
+    if (tests.formdata) {
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', '/devnull.php');
+      xhr.onload = function() {
+        progress.value = progress.innerHTML = 100;
+      };
+
+      if (tests.progress) {
+        xhr.upload.onprogress = function (event) {
+          if (event.lengthComputable) {
+            var complete = (event.loaded / event.total * 100 | 0);
+            progress.value = progress.innerHTML = complete;
+          }
+        }
+      }
+
+      xhr.send(formData);
+    }
+  }
+
+  if (tests.dnd) {
+    holder.ondragover = function () {
+      this.className = 'hover';
+      return false;
+    };
+    holder.ondragend = function () {
+      this.className = '';
+      return false;
+    };
+    holder.ondrop = function (e) {
+      this.className = '';
+      e.preventDefault();
+      readfiles(e.dataTransfer.files);
+    }
+  } else {
+    fileupload.className = 'hidden';
+    fileupload.querySelector('input').onchange = function () {
+      readfiles(this.files);
+    };
+  }
 };
 
 BecomeAvatarComponent.prototype.enterAvatarCreationState = function() {
@@ -16485,9 +16566,8 @@ BecomeAvatarComponent.prototype.enterAvatarCreationState = function() {
 
   $('.avatar-creation-submit-button').fadeIn();
   $('.avatar-color-picker').fadeIn();
-  $('.avatar-face-image-picker').fadeIn();
+  $('#avatar-image-drop-zone').fadeIn();
   this.activateColorPicker();
-  this.activateDropzone();
   this.layout();
 
   var self = this;
@@ -16501,16 +16581,13 @@ BecomeAvatarComponent.prototype.enterAvatarCreationState = function() {
 
 BecomeAvatarComponent.prototype.finishAfterFetchingAvatar = function(avatarData) {
   this.avatar.addTo(this.scene);
-
-  this.avatar.name = avatarData.name;
-  this.updateAvatarColor(avatarData.color);
-  this.updateAvatarFaceImage(avatarData.faceImageUrl);
-
+  this.avatar.updateFromModel(avatarData);
   this.markFinished();
 };
 
-BecomeAvatarComponent.prototype.finishAfterCreatingAvatar = function() {
-
+BecomeAvatarComponent.prototype.finishAfterCreatingAvatar = function(avatarData) {
+  this.avatar.updateFromModel(avatarData);
+  this.markFinished();
 };
 
 /** layout functions */
@@ -16520,7 +16597,7 @@ function layoutColorPicker() {
 }
 
 function layoutFacePicker() {
-  setWidthEqualToHeight($('.avatar-face-image-picker'));
+  setWidthEqualToHeight($('#avatar-image-drop-zone'));
 }
 
 function layoutSubmitButton() {
@@ -17594,8 +17671,6 @@ function add(name, geometry, materials) {
 }
 
 function fetch(name, clone, callback) {
-  console.log(cache[name]);
-
   if (!clone) {
     callback(cache[name].geometry, cache[name].materials);
     return;
@@ -17638,6 +17713,7 @@ SceneComponent.prototype.render = function() {
 
 SceneComponent.prototype.markFinished = function() {
   this.finished = true;
+  this.clean();
   if (this.finishedCallback) {
     this.finishedCallback();
   }
