@@ -13,7 +13,7 @@ function BecomeAvatarComponent() {};
 
 BecomeAvatarComponent.prototype.__proto__ = SceneComponent.prototype;
 
-BecomeAvatarComponent.prototype.postInit = function() {
+BecomeAvatarComponent.prototype.postInit = function(options) {
   var self = this;
 
   this.avatar = new Avatar({

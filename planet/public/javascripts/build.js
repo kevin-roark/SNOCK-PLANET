@@ -16246,7 +16246,7 @@ function fetchSocket() {
   return socket;
 }
 
-},{"./global-state":59}],53:[function(require,module,exports){
+},{"./global-state":60}],53:[function(require,module,exports){
 
 // requirements
 var kt = require('./lib/kutility');
@@ -16261,6 +16261,8 @@ function Avatar(options) {
   this.initX = options.position.x || 0;
   this.initY = options.position.y || 0;
   this.initZ = options.position.z || 0;
+
+  this.postLoadBehaviors = [];
 
   this.scale = options.scale || 2;
 
@@ -16295,6 +16297,10 @@ Avatar.prototype.addTo = function(scene) {
 
     scene.add(self.skinnedMesh);
     scene.add(self.faceMesh);
+
+    for (var i = 0; i < self.postLoadBehaviors.length; i++) {
+      self.postLoadBehaviors[i]();
+    }
   });
 };
 
@@ -16317,22 +16323,37 @@ Avatar.prototype.rotate = function(rx, ry, rz) {
   this.skinnedMesh.rotation.y += ry;
   this.skinnedMesh.rotation.z += rz;
 
-  this.faceMesh.rotation = this.skinnedMesh.rotation;
+  this.faceMesh.rotation.copy(this.skinnedMesh.rotation);
+};
+
+Avatar.prototype.rotateTo = function(x, y, z) {
+  if (!this.skinnedMesh) {
+    var self = this;
+    this.postLoadBehaviors.push(function() {
+      self.rotateTo(x, y, z);
+    });
+    return;
+  }
+
+  this.skinnedMesh.rotation.set(x, y, z);
+  this.rotate(0, 0, 0);
 };
 
 Avatar.prototype.moveTo = function(x, y, z) {
   if (!this.skinnedMesh) return;
 
-  this.skinnedMesh.position.x = x;
-  this.skinnedMesh.position.y = y;
-  this.skinnedMesh.position.z = z;
-
+  this.skinnedMesh.position.set(x, y, z);
   this.move(0, 0, 0);
 };
 
 Avatar.prototype.setScale = function(s) {
   this.skinnedMesh.scale.set(s, s, s);
   this.faceMesh.scale.set(s / 2, s / 2, s / 2);
+};
+
+Avatar.prototype.setVisible = function(visible) {
+  this.skinnedMesh.visible = visible;
+  this.faceMesh.visible = visible;
 };
 
 Avatar.prototype.render = function() {
@@ -16391,7 +16412,7 @@ Avatar.prototype.updateFromModel = function(avatarData) {
   this.updateFaceImage(avatarData.faceImageUrl);
 };
 
-},{"./lib/kutility":61,"./model-loader":63}],54:[function(require,module,exports){
+},{"./lib/kutility":62,"./model-loader":64}],54:[function(require,module,exports){
 
 var $ = require('jquery');
 var SceneComponent = require('./scene-component');
@@ -16407,7 +16428,7 @@ function BecomeAvatarComponent() {};
 
 BecomeAvatarComponent.prototype.__proto__ = SceneComponent.prototype;
 
-BecomeAvatarComponent.prototype.postInit = function() {
+BecomeAvatarComponent.prototype.postInit = function(options) {
   var self = this;
 
   this.avatar = new Avatar({
@@ -16616,7 +16637,7 @@ function setWidthEqualToHeight($el) {
   $el.css('width', height + 'px');
 }
 
-},{"./avatar":53,"./avatar-tools":52,"./global-state":59,"./scene-component":64,"jquery":1}],55:[function(require,module,exports){
+},{"./avatar":53,"./avatar-tools":52,"./global-state":60,"./scene-component":65,"jquery":1}],55:[function(require,module,exports){
 /**
  * BELOW CODE INSPIRED FROM
  * http://threejs.org/examples/misc_controls_pointerlock.html
@@ -16715,6 +16736,10 @@ Camera.prototype.render = function() {
 Camera.prototype.isIdle = function() {
   return this.controls.isIdle();
 }
+
+Camera.prototype.controlObject = function() {
+  return this.controls.getObject();
+};
 
 Camera.prototype.controlPosition = function() {
   return this.controls.getObject().position;
@@ -16876,13 +16901,60 @@ Door.prototype.render = function() {
 
 };
 
-},{"./config":56,"./lib/kutility":61}],59:[function(require,module,exports){
+},{"./config":56,"./lib/kutility":62}],59:[function(require,module,exports){
+
+var $ = require('jquery');
+var globals = require('./global-state');
+var SceneComponent = require('./scene-component');
+var keymaster = require('./keymaster');
+
+module.exports = GeneralPlanetComponent;
+
+/** Inherited methods */
+
+function GeneralPlanetComponent() {};
+
+GeneralPlanetComponent.prototype.__proto__ = SceneComponent.prototype;
+
+GeneralPlanetComponent.prototype.postInit = function(options) {
+  var self = this;
+
+  this.avatar = globals.playerAvatar;
+  this.avatar.rotateTo(0, Math.PI, 0);
+  this.renderObjects.push(this.avatar);
+
+  this.firstPerson = false;
+
+  this.cam.requestPointerLock();
+
+  keymaster.setKeypressListener(113, true, function(ev) {
+    self.toggleCameraPerspective();
+  });
+};
+
+GeneralPlanetComponent.prototype.preRender = function() {
+  var camPosition = this.cam.controlPosition();
+  if (this.firstPerson) {
+    this.avatar.moveTo(camPosition.x, camPosition.y, camPosition.z);
+  } else {
+    this.avatar.moveTo(camPosition.x, camPosition.y, camPosition.z - 20);
+  }
+};
+
+/** "Custom" methods */
+
+GeneralPlanetComponent.prototype.toggleCameraPerspective = function() {
+  this.firstPerson = !this.firstPerson;
+  this.avatar.setVisible(!this.firstPerson);
+};
+
+},{"./global-state":60,"./keymaster":61,"./scene-component":65,"jquery":1}],60:[function(require,module,exports){
 
 // Store anything you think should be accessible everywhere here
 
 module.exports = {};
 
-},{}],60:[function(require,module,exports){
+},{}],61:[function(require,module,exports){
 
 var $ = require('jquery');
 
@@ -16963,7 +17035,7 @@ module.exports.clearKeypressListener = function(keycode) {
   clearListener(keypressMap, keycode);
 };
 
-},{"jquery":1}],61:[function(require,module,exports){
+},{"jquery":1}],62:[function(require,module,exports){
 /* export something */
 module.exports = new Kutility;
 
@@ -17528,7 +17600,7 @@ Kutility.prototype.blur = function(el, x) {
   this.setFilter(el, cf + f);
 }
 
-},{}],62:[function(require,module,exports){
+},{}],63:[function(require,module,exports){
 
 var $ = require('jquery');
 var kt = require('./lib/kutility');
@@ -17542,18 +17614,19 @@ var globals = require('./global-state');
 var doorTools = require('./door-tools');
 var avatarTools = require('./avatar-tools');
 var BecomeAvatarComponent = require('./become-avatar-component');
+var GeneralPlanetComponent = require('./general-planet-component');
 var keymaster = require('./keymaster');
 
-// states
-var BECOME_AVATAR_STATE = 0;
-var GENERAL_PLANET_STATE = 1;
-var INSIDE_DOOR_STATE = 2;
+// modes
+var BECOME_AVATAR_MODE = 0;
+var GENERAL_PLANET_MODE = 1;
+var INSIDE_DOOR_MODE = 2;
 
 $(function() {
 
   var state = {
     frameCount: 0,
-    state: BECOME_AVATAR_STATE,
+    mode: BECOME_AVATAR_MODE,
     doors: [],
     avatars: {}
   };
@@ -17606,7 +17679,7 @@ $(function() {
 
   // start rendering
   cam.active = true;
-  startBecomeAvatarState();
+  transitionToMode(BECOME_AVATAR_MODE);
   render();
 
   // render every frame
@@ -17622,8 +17695,13 @@ $(function() {
 
     cam.render();
 
-    if (state.state == BECOME_AVATAR_STATE) {
-      state.becomeAvatarComponent.render();
+    switch (state.mode) {
+      case BECOME_AVATAR_MODE:
+        state.becomeAvatarComponent.render();
+        break;
+      case GENERAL_PLANET_MODE:
+        state.generalPlanetComponent.render();
+        break;
     }
 
     for (var i = 0; i < state.doors.length; i++) {
@@ -17666,27 +17744,38 @@ $(function() {
     state.doors.push(door);
   });
 
-  // interaction
-
-  function addGeneralInteractionListeners() {
-    keymaster.setKeypressListener(113, true, function(ev) {
-      console.log('toggle vantage point');
-    });
-  }
-
   // state transitions
+
+  function transitionToMode(mode) {
+    state.mode = mode;
+
+    switch (mode) {
+      case BECOME_AVATAR_MODE:
+        startBecomeAvatarState();
+        break;
+      case GENERAL_PLANET_MODE:
+        startGeneralPlanetState();
+        break;
+      case INSIDE_DOOR_MODE:
+        startInsideDoorState();
+        break;
+    }
+  }
 
   function startBecomeAvatarState() {
     state.becomeAvatarComponent = new BecomeAvatarComponent();
-    state.becomeAvatarComponent.init(scene, socket);
+    state.becomeAvatarComponent.init(scene, socket, cam);
     state.becomeAvatarComponent.finishedCallback = function() {
-      startGeneralPlanetState();
+      transitionToMode(GENERAL_PLANET_MODE);
     };
   }
 
   function startGeneralPlanetState() {
-    cam.requestPointerLock();
-    addGeneralInteractionListeners();
+    state.generalPlanetComponent = new GeneralPlanetComponent();
+    state.generalPlanetComponent.init(scene, socket, cam);
+    state.generalPlanetComponent.finishedCallback = function() {
+
+    };
   }
 
   function startInsideDoorState() {
@@ -17716,7 +17805,7 @@ $(function() {
 
 });
 
-},{"./avatar":53,"./avatar-tools":52,"./become-avatar-component":54,"./camera":55,"./config":56,"./door":58,"./door-tools":57,"./global-state":59,"./keymaster":60,"./lib/kutility":61,"jquery":1,"socket.io-client":2}],63:[function(require,module,exports){
+},{"./avatar":53,"./avatar-tools":52,"./become-avatar-component":54,"./camera":55,"./config":56,"./door":58,"./door-tools":57,"./general-planet-component":59,"./global-state":60,"./keymaster":61,"./lib/kutility":62,"jquery":1,"socket.io-client":2}],64:[function(require,module,exports){
 
 var cache = {};
 
@@ -17750,7 +17839,7 @@ function fetch(name, clone, callback) {
   callback(cache[name].geometry.clone(), cache[name].materials.clone());
 }
 
-},{}],64:[function(require,module,exports){
+},{}],65:[function(require,module,exports){
 
 var $ = require('jquery');
 
@@ -17758,19 +17847,21 @@ module.exports = SceneComponent;
 
 function SceneComponent() {};
 
-SceneComponent.prototype.init = function(scene, socket) {
+SceneComponent.prototype.init = function(scene, socket, cam, options) {
   this.scene = scene;
   this.socket = socket;
+  this.cam = cam;
+  this.camera = cam.cam;
 
   this.renderObjects = [];
 
   this.layout();
   $(window).resize(this.layout);
 
-  this.postInit();
+  this.postInit(options);
 };
 
-SceneComponent.prototype.postInit = function() {};
+SceneComponent.prototype.postInit = function(options) {};
 
 SceneComponent.prototype.render = function() {
   this.preRender();
@@ -17797,4 +17888,4 @@ SceneComponent.prototype.clean = function() {};
 
 SceneComponent.prototype.layout = function() {};
 
-},{"jquery":1}]},{},[62])
+},{"jquery":1}]},{},[63])

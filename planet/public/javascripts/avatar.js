@@ -13,6 +13,8 @@ function Avatar(options) {
   this.initY = options.position.y || 0;
   this.initZ = options.position.z || 0;
 
+  this.postLoadBehaviors = [];
+
   this.scale = options.scale || 2;
 
   this.color = options.color || '#000000';
@@ -46,6 +48,10 @@ Avatar.prototype.addTo = function(scene) {
 
     scene.add(self.skinnedMesh);
     scene.add(self.faceMesh);
+
+    for (var i = 0; i < self.postLoadBehaviors.length; i++) {
+      self.postLoadBehaviors[i]();
+    }
   });
 };
 
@@ -68,22 +74,37 @@ Avatar.prototype.rotate = function(rx, ry, rz) {
   this.skinnedMesh.rotation.y += ry;
   this.skinnedMesh.rotation.z += rz;
 
-  this.faceMesh.rotation = this.skinnedMesh.rotation;
+  this.faceMesh.rotation.copy(this.skinnedMesh.rotation);
+};
+
+Avatar.prototype.rotateTo = function(x, y, z) {
+  if (!this.skinnedMesh) {
+    var self = this;
+    this.postLoadBehaviors.push(function() {
+      self.rotateTo(x, y, z);
+    });
+    return;
+  }
+
+  this.skinnedMesh.rotation.set(x, y, z);
+  this.rotate(0, 0, 0);
 };
 
 Avatar.prototype.moveTo = function(x, y, z) {
   if (!this.skinnedMesh) return;
 
-  this.skinnedMesh.position.x = x;
-  this.skinnedMesh.position.y = y;
-  this.skinnedMesh.position.z = z;
-
+  this.skinnedMesh.position.set(x, y, z);
   this.move(0, 0, 0);
 };
 
 Avatar.prototype.setScale = function(s) {
   this.skinnedMesh.scale.set(s, s, s);
   this.faceMesh.scale.set(s / 2, s / 2, s / 2);
+};
+
+Avatar.prototype.setVisible = function(visible) {
+  this.skinnedMesh.visible = visible;
+  this.faceMesh.visible = visible;
 };
 
 Avatar.prototype.render = function() {

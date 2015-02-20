@@ -11,18 +11,19 @@ var globals = require('./global-state');
 var doorTools = require('./door-tools');
 var avatarTools = require('./avatar-tools');
 var BecomeAvatarComponent = require('./become-avatar-component');
+var GeneralPlanetComponent = require('./general-planet-component');
 var keymaster = require('./keymaster');
 
-// states
-var BECOME_AVATAR_STATE = 0;
-var GENERAL_PLANET_STATE = 1;
-var INSIDE_DOOR_STATE = 2;
+// modes
+var BECOME_AVATAR_MODE = 0;
+var GENERAL_PLANET_MODE = 1;
+var INSIDE_DOOR_MODE = 2;
 
 $(function() {
 
   var state = {
     frameCount: 0,
-    state: BECOME_AVATAR_STATE,
+    mode: BECOME_AVATAR_MODE,
     doors: [],
     avatars: {}
   };
@@ -75,7 +76,7 @@ $(function() {
 
   // start rendering
   cam.active = true;
-  startBecomeAvatarState();
+  transitionToMode(BECOME_AVATAR_MODE);
   render();
 
   // render every frame
@@ -91,8 +92,13 @@ $(function() {
 
     cam.render();
 
-    if (state.state == BECOME_AVATAR_STATE) {
-      state.becomeAvatarComponent.render();
+    switch (state.mode) {
+      case BECOME_AVATAR_MODE:
+        state.becomeAvatarComponent.render();
+        break;
+      case GENERAL_PLANET_MODE:
+        state.generalPlanetComponent.render();
+        break;
     }
 
     for (var i = 0; i < state.doors.length; i++) {
@@ -135,27 +141,38 @@ $(function() {
     state.doors.push(door);
   });
 
-  // interaction
-
-  function addGeneralInteractionListeners() {
-    keymaster.setKeypressListener(113, true, function(ev) {
-      console.log('toggle vantage point');
-    });
-  }
-
   // state transitions
+
+  function transitionToMode(mode) {
+    state.mode = mode;
+
+    switch (mode) {
+      case BECOME_AVATAR_MODE:
+        startBecomeAvatarState();
+        break;
+      case GENERAL_PLANET_MODE:
+        startGeneralPlanetState();
+        break;
+      case INSIDE_DOOR_MODE:
+        startInsideDoorState();
+        break;
+    }
+  }
 
   function startBecomeAvatarState() {
     state.becomeAvatarComponent = new BecomeAvatarComponent();
-    state.becomeAvatarComponent.init(scene, socket);
+    state.becomeAvatarComponent.init(scene, socket, cam);
     state.becomeAvatarComponent.finishedCallback = function() {
-      startGeneralPlanetState();
+      transitionToMode(GENERAL_PLANET_MODE);
     };
   }
 
   function startGeneralPlanetState() {
-    cam.requestPointerLock();
-    addGeneralInteractionListeners();
+    state.generalPlanetComponent = new GeneralPlanetComponent();
+    state.generalPlanetComponent.init(scene, socket, cam);
+    state.generalPlanetComponent.finishedCallback = function() {
+
+    };
   }
 
   function startInsideDoorState() {

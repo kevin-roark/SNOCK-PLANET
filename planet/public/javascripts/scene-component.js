@@ -5,19 +5,21 @@ module.exports = SceneComponent;
 
 function SceneComponent() {};
 
-SceneComponent.prototype.init = function(scene, socket) {
+SceneComponent.prototype.init = function(scene, socket, cam, options) {
   this.scene = scene;
   this.socket = socket;
+  this.cam = cam;
+  this.camera = cam.cam;
 
   this.renderObjects = [];
 
   this.layout();
   $(window).resize(this.layout);
 
-  this.postInit();
+  this.postInit(options);
 };
 
-SceneComponent.prototype.postInit = function() {};
+SceneComponent.prototype.postInit = function(options) {};
 
 SceneComponent.prototype.render = function() {
   this.preRender();

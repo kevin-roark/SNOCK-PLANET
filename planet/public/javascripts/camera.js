@@ -97,6 +97,10 @@ Camera.prototype.isIdle = function() {
   return this.controls.isIdle();
 }
 
+Camera.prototype.controlObject = function() {
+  return this.controls.getObject();
+};
+
 Camera.prototype.controlPosition = function() {
   return this.controls.getObject().position;
 }
