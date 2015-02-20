@@ -138,7 +138,7 @@ $(function() {
   // interaction
 
   function addGeneralInteractionListeners() {
-    keymaster.addKeypressListener(113, function() {
+    keymaster.setKeypressListener(113, true, function(ev) {
       console.log('toggle vantage point');
     });
   }

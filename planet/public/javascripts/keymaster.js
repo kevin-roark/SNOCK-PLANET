@@ -6,72 +6,74 @@ var keyupMap = {};
 var keypressMap = {};
 
 $('body').keydown(function(ev) {
-  callListeners(keydownMap, ev.which);
+  callListener(keydownMap, ev);
 });
 
 $('body').keyup(function(ev) {
-  callListeners(keyupMap, ev.which);
+  callListener(keyupMap, ev);
 });
 
 $('body').keypress(function(ev) {
   console.log('key press eh? ' + ev.which);
-  callListeners(keypressMap, ev.which);
+  callListener(keypressMap, ev);
 });
 
-function callListeners(listenerMap, ev) {
-  var listeners = getListeners(listenerMap, ev.which);
-  if (listeners) {
-    for (var i = 0; i < listeners.length; i++) {
-      listeners[i](ev);
+function callListener(listenerMap, ev) {
+  var listener = getListener(listenerMap, ev.which);
+  if (listener) {
+    if (listener.preventDefault) {
+      ev.preventDefault();
+    }
+
+    if ('function' === typeof listener.fn) {
+      listener.fn(ev);
     }
   }
 }
 
-function getListeners(listenerMap, keycode) {
-  var key = keycode + '';
-  return listenerMap[key];
+function getListener(listenerMap, keycode) {
+  return listenerMap[keycode + ''];
 }
 
-function addListener(listener, listenerMap, keycode) {
-  var listeners = getListeners(listenerMap, keycode);
-  if (!listeners) {
-    listeners = [];
-  }
-  listeners.push(listener);
+function setListener(listener, listenerMap, keycode, preventDefault) {
+  listenerMap[keycode + ''] = {
+    fn: listener,
+    preventDefault: preventDefault
+  };
 }
 
-function clearListeners(listenerMap, keycode) {
+function clearListener(listenerMap, keycode) {
   if (keycode) {
-    listenerMap[keycode + ''] = [];
+    listenerMap[keycode + ''] = undefined;
   } else {
     for (var key in listenerMap) {
-      listenerMap[key] = [];
+      listenerMap[key] = undefined;
     }
   }
 }
 
 /* exports */
 
-module.exports.addKeydownListener = function(keycode, listener) {
-  addListener(listener, keydownMap, keycode);
+module.exports.setKeydownListener = function(keycode, preventDefault, listener) {
+  setListener(listener, keydownMap, keycode, preventDefault);
 };
 
-module.exports.addKeyupListener = function(keycode, listener) {
-  addListener(listener, keyupMap, keycode);
+module.exports.setKeyupListener = function(keycode, preventDefault, listener) {
+  setListener(listener, keyupMap, keycode, preventDefault);
 };
 
-module.exports.addKeypressListener = function(keycode, listener) {
-  addListener(listener, keypressMap, keycode);
+module.exports.setKeypressListener = function(keycode, preventDefault, listener) {
+  setListener(listener, keypressMap, keycode, preventDefault);
 };
 
-module.exports.clearKeydownListeners = function(keycode) {
-  clearListeners(keydownMap, keycode);
+module.exports.clearKeydownListener = function(keycode) {
+  clearListener(keydownMap, keycode);
 };
 
-module.exports.clearKeyupListeners = function(keycode) {
-  clearListeners(keyupMap, keycode);
+module.exports.clearKeyupListener = function(keycode) {
+  clearListener(keyupMap, keycode);
 };
 
-module.exports.clearKeypressListeners = function(keycode) {
-  clearListeners(keypressMap, keycode);
+module.exports.clearKeypressListener = function(keycode) {
+  clearListener(keypressMap, keycode);
 };
