@@ -11,6 +11,7 @@ var globals = require('./global-state');
 var doorTools = require('./door-tools');
 var avatarTools = require('./avatar-tools');
 var BecomeAvatarComponent = require('./become-avatar-component');
+var keymaster = require('./keymaster');
 
 // states
 var BECOME_AVATAR_STATE = 0;
@@ -137,21 +138,9 @@ $(function() {
   // interaction
 
   function addGeneralInteractionListeners() {
-    $('body').keypress(function(ev) {
-      console.log('key press eh? ' + ev.which);
-      ev.preventDefault();
-
-      keypress(ev.which);
+    keymaster.addKeypressListener(113, function() {
+      console.log('toggle vantage point');
     });
-  }
-
-  function keypress(keycode) {
-    switch (keycode) {
-      case 32: // spacebar
-        break;
-      case 113: // q
-        break;
-    }
   }
 
   // state transitions
@@ -159,11 +148,12 @@ $(function() {
   function startBecomeAvatarState() {
     state.becomeAvatarComponent = new BecomeAvatarComponent();
     state.becomeAvatarComponent.init(scene, socket);
+    state.becomeAvatarComponent.finishedCallback = function() {
+      startGeneralPlanetState();
+    };
   }
 
   function startGeneralPlanetState() {
-    state.becomeAvatarComponent.clean();
-
     cam.requestPointerLock();
     addGeneralInteractionListeners();
   }
