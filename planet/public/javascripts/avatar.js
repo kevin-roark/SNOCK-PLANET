@@ -145,7 +145,7 @@ Avatar.prototype.updateSkinColor = function(hex) {
 
 Avatar.prototype.updateFaceImage = function(image) {
   if (typeof image === 'string') {
-    this.faceImageUrl = imageUrl;
+    this.faceImageUrl = image;
   } else {
     // gotta assume its a texturable image object thing (ie canvas)
     var texture = new THREE.Texture(image);
