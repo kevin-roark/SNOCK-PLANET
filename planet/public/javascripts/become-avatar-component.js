@@ -4,6 +4,7 @@ var SceneComponent = require('./scene-component');
 var Avatar = require('./avatar');
 var globals = require('./global-state');
 var avatarTools = require('./avatar-tools');
+var imageDropper = require('./image-dropper');
 
 module.exports = BecomeAvatarComponent;
 
@@ -83,86 +84,13 @@ BecomeAvatarComponent.prototype.activateColorPicker = function() {
 };
 
 BecomeAvatarComponent.prototype.setupFiledropper = function() {
-  var tests = {
-    filereader: typeof FileReader != 'undefined',
-    dnd: 'draggable' in document.createElement('span'),
-    formdata: !!window.FormData,
-    progress: "upload" in new XMLHttpRequest
+  var self = this;
+
+  imageDropper.previewCallback = function(renderedCanvas) {
+    self.avatar.updateFaceImage(renderedCanvas);
   };
 
-  var acceptedTypes = {
-    'image/png': true,
-    'image/jpeg': true,
-    'image/gif': true
-  };
-
-  var holder = document.getElementById('avatar-image-drop-zone');
-  var progress = document.getElementById('upload-progress');
-
-  function previewfile(file) {
-    if (tests.filereader === true && acceptedTypes[file.type] === true) {
-      var reader = new FileReader();
-      reader.onload = function (event) {
-        var image = new Image();
-        image.src = event.target.result;
-        image.width = 250; // a fake resize
-        holder.appendChild(image);
-      };
-
-      reader.readAsDataURL(file);
-    }
-  }
-
-  function readfiles(files) {
-    var formData = tests.formdata ? new FormData() : null;
-    for (var i = 0; i < files.length; i++) {
-      if (tests.formdata) {
-        formData.append('file', files[i]);
-      }
-      previewfile(files[i]);
-    }
-
-    // now post a new XHR request
-    if (tests.formdata) {
-      var xhr = new XMLHttpRequest();
-      xhr.open('POST', '/devnull.php');
-      xhr.onload = function() {
-        progress.value = progress.innerHTML = 100;
-      };
-
-      if (tests.progress) {
-        xhr.upload.onprogress = function (event) {
-          if (event.lengthComputable) {
-            var complete = (event.loaded / event.total * 100 | 0);
-            progress.value = progress.innerHTML = complete;
-          }
-        }
-      }
-
-      xhr.send(formData);
-    }
-  }
-
-  if (tests.dnd) {
-    holder.ondragover = function () {
-      this.className = 'hover';
-      return false;
-    };
-    holder.ondragend = function () {
-      this.className = '';
-      return false;
-    };
-    holder.ondrop = function (e) {
-      this.className = '';
-      e.preventDefault();
-      readfiles(e.dataTransfer.files);
-    }
-  } else {
-    fileupload.className = 'hidden';
-    fileupload.querySelector('input').onchange = function () {
-      readfiles(this.files);
-    };
-  }
+  imageDropper.init();
 };
 
 BecomeAvatarComponent.prototype.enterAvatarCreationState = function() {

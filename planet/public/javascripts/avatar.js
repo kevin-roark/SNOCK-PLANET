@@ -23,9 +23,8 @@ function Avatar(options) {
 
   this.faceImageUrl = options.faceImageUrl || '';
   this.faceGeometry = new THREE.BoxGeometry(2, 2, 2);
-  this.faceMaterial = new THREE.MeshPhongMaterial({
-      map: THREE.ImageUtils.loadTexture(this.faceImageUrl),
-      reflectivity: 0.15
+  this.faceMaterial = new THREE.MeshBasicMaterial({
+      map: THREE.ImageUtils.loadTexture(this.faceImageUrl)
   });
   this.faceMesh = new THREE.Mesh(this.faceGeometry, this.faceMaterial);
 }
@@ -144,9 +143,16 @@ Avatar.prototype.updateSkinColor = function(hex) {
   }
 };
 
-Avatar.prototype.updateFaceImage = function(imageUrl) {
-  this.faceImageUrl = imageUrl;
-
+Avatar.prototype.updateFaceImage = function(image) {
+  if (typeof image === 'string') {
+    this.faceImageUrl = imageUrl;
+  } else {
+    // gotta assume its a texturable image object thing (ie canvas)
+    var texture = new THREE.Texture(image);
+    texture.needsUpdate = true;
+    this.faceMaterial.map = texture;
+    this.faceMaterial.needsUpdate = true;
+  }
 };
 
 Avatar.prototype.serialize = function() {
