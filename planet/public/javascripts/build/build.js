@@ -16205,6 +16205,7 @@ function toArray(list, index) {
 },{}],52:[function(require,module,exports){
 
 var globals = require('./global-state');
+var $ = require('jquery');
 
 var socket;
 
@@ -16236,6 +16237,22 @@ module.exports.createAvatar = function(avatarData, callback) {
   });
 };
 
+module.exports.createFaceURL = function(faceData, callback) {
+  if (!faceData) {
+    callback(null);
+    return;
+  }
+
+  $.post('/upload-face-image', {
+      imgBase64: faceData
+  }, function(res) {
+    if (res.err) {
+      console.log(res.err);
+    }
+    callback(res.imageURL);
+  });
+};
+
 // Utility
 
 function fetchSocket() {
@@ -16246,7 +16263,7 @@ function fetchSocket() {
   return socket;
 }
 
-},{"./global-state":60}],53:[function(require,module,exports){
+},{"./global-state":60,"jquery":1}],53:[function(require,module,exports){
 
 // requirements
 var kt = require('./lib/kutility');
@@ -16393,11 +16410,18 @@ Avatar.prototype.updateSkinColor = function(hex) {
 };
 
 Avatar.prototype.updateFaceImage = function(image) {
+  var texture;
+
   if (typeof image === 'string') {
     this.faceImageUrl = image;
+    texture = THREE.ImageUtils.loadTexture(image);
   } else {
     // gotta assume its a texturable image object thing (ie canvas)
-    var texture = new THREE.Texture(image);
+    this.faceImageCanvas = image;
+    texture = new THREE.Texture(image);
+  }
+
+  if (texture) {
     texture.needsUpdate = true;
     this.faceMaterial.map = texture;
     this.faceMaterial.needsUpdate = true;
@@ -16417,6 +16441,12 @@ Avatar.prototype.updateFromModel = function(avatarData) {
   this.updateSkinColor(avatarData.color);
   this.updateFaceImage(avatarData.faceImageUrl);
 };
+
+Avatar.prototype.uploadableFaceImageData = function() {
+  if (!this.faceImageCanvas || !this.faceImageCanvas.toDataURL) return null;
+
+  return this.faceImageCanvas.toDataURL();
+}
 
 },{"./lib/kutility":63,"./model-loader":65}],54:[function(require,module,exports){
 
@@ -16469,8 +16499,11 @@ BecomeAvatarComponent.prototype.postInit = function(options) {
   $('.avatar-creation-submit-button').click(function() {
     self.avatar.name = $('#avatar-name-input').val();
 
-    avatarTools.createAvatar(self.avatar.serialize(), function(avatarData) {
-      self.finishAfterCreatingAvatar(avatarData);
+    avatarTools.createFaceURL(self.avatar.uploadableFaceImageData(), function(faceURL) {
+      self.avatar.updateFaceImage(faceURL);
+      avatarTools.createAvatar(self.avatar.serialize(), function(avatarData) {
+        self.finishAfterCreatingAvatar(avatarData);
+      });
     });
   });
 };
@@ -16746,10 +16779,11 @@ Camera.prototype.requestPointerLock = function() {
 }
 
 },{"jquery":1}],56:[function(require,module,exports){
+(function (__dirname){
 
 var debug = true;
 
-var mongo_url, door_texture, io_url;
+var mongo_url, door_texture, io_url, static_path;
 
 if (debug) {
   mongo_url = 'mongodb://localhost/test';
@@ -16757,6 +16791,8 @@ if (debug) {
   door_texture = '/images/wooden_door.jpg';
 
   io_url = 'http://localhost:3000';
+
+  static_path = __dirname + '/..';
 } else {
 
 }
@@ -16764,11 +16800,13 @@ if (debug) {
 module.exports.mongo_url = mongo_url;
 module.exports.door_texture = door_texture;
 module.exports.io_url = io_url;
+module.exports.static_path = static_path;
 
 module.exports.testing = true;
 
 module.exports.addTestDoor = false;
 
+}).call(this,"/public/javascripts")
 },{}],57:[function(require,module,exports){
 
 module.exports.makeDoorFromServer = function(doorData) {

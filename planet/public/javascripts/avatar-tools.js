@@ -1,5 +1,6 @@
 
 var globals = require('./global-state');
+var $ = require('jquery');
 
 var socket;
 
@@ -28,6 +29,22 @@ module.exports.createAvatar = function(avatarData, callback) {
 
   socket.emit('create-avatar', avatarData, function(avatar) {
     callback(avatar);
+  });
+};
+
+module.exports.createFaceURL = function(faceData, callback) {
+  if (!faceData) {
+    callback(null);
+    return;
+  }
+
+  $.post('/upload-face-image', {
+      imgBase64: faceData
+  }, function(res) {
+    if (res.err) {
+      console.log(res.err);
+    }
+    callback(res.imageURL);
   });
 };
 

@@ -48,8 +48,11 @@ BecomeAvatarComponent.prototype.postInit = function(options) {
   $('.avatar-creation-submit-button').click(function() {
     self.avatar.name = $('#avatar-name-input').val();
 
-    avatarTools.createAvatar(self.avatar.serialize(), function(avatarData) {
-      self.finishAfterCreatingAvatar(avatarData);
+    avatarTools.createFaceURL(self.avatar.uploadableFaceImageData(), function(faceURL) {
+      self.avatar.updateFaceImage(faceURL);
+      avatarTools.createAvatar(self.avatar.serialize(), function(avatarData) {
+        self.finishAfterCreatingAvatar(avatarData);
+      });
     });
   });
 };

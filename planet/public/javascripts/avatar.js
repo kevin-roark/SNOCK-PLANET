@@ -144,11 +144,18 @@ Avatar.prototype.updateSkinColor = function(hex) {
 };
 
 Avatar.prototype.updateFaceImage = function(image) {
+  var texture;
+
   if (typeof image === 'string') {
     this.faceImageUrl = image;
+    texture = THREE.ImageUtils.loadTexture(image);
   } else {
     // gotta assume its a texturable image object thing (ie canvas)
-    var texture = new THREE.Texture(image);
+    this.faceImageCanvas = image;
+    texture = new THREE.Texture(image);
+  }
+
+  if (texture) {
     texture.needsUpdate = true;
     this.faceMaterial.map = texture;
     this.faceMaterial.needsUpdate = true;
@@ -168,3 +175,9 @@ Avatar.prototype.updateFromModel = function(avatarData) {
   this.updateSkinColor(avatarData.color);
   this.updateFaceImage(avatarData.faceImageUrl);
 };
+
+Avatar.prototype.uploadableFaceImageData = function() {
+  if (!this.faceImageCanvas || !this.faceImageCanvas.toDataURL) return null;
+
+  return this.faceImageCanvas.toDataURL();
+}
