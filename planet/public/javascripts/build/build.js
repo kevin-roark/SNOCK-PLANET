@@ -16209,10 +16209,6 @@ var $ = require('jquery');
 
 var socket;
 
-module.exports.makeAvatarFromServer = function(avatarData) {
-
-};
-
 module.exports.fetchAvatar = function(name, callback) {
   if (!fetchSocket() || !name) {
     callback(null);
@@ -16272,7 +16268,7 @@ var loader = require('./model-loader');
 module.exports = Avatar;
 
 function Avatar(options) {
-  this.name = options.name || 'default';
+  this.name = options.name || 'nameless_fuck';
 
   if (!options.position) options.position = {};
   this.initX = options.position.x || 0;
@@ -16809,9 +16805,6 @@ module.exports.addTestDoor = false;
 }).call(this,"/public/javascripts")
 },{}],57:[function(require,module,exports){
 
-module.exports.makeDoorFromServer = function(doorData) {
-
-};
 
 },{}],58:[function(require,module,exports){
 
@@ -16879,6 +16872,8 @@ var $ = require('jquery');
 var globals = require('./global-state');
 var SceneComponent = require('./scene-component');
 var keymaster = require('./keymaster');
+var Avatar = require('./avatar');
+var Door = require('./door');
 
 module.exports = GeneralPlanetComponent;
 
@@ -16891,6 +16886,8 @@ GeneralPlanetComponent.prototype.__proto__ = SceneComponent.prototype;
 GeneralPlanetComponent.prototype.postInit = function(options) {
   var self = this;
 
+  this.avatarsByName = {};
+
   this.avatar = globals.playerAvatar;
   this.avatar.rotateTo(0, Math.PI, 0);
   this.renderObjects.push(this.avatar);
@@ -16902,6 +16899,13 @@ GeneralPlanetComponent.prototype.postInit = function(options) {
   keymaster.setKeypressListener(113, true, function(ev) {
     self.toggleCameraPerspective();
   });
+
+  if (this.socket) {
+    this.socket.on('avatar-entry', this.avatarEntered);
+    this.socket.on('avatar-moved', this.avatarMoved);
+    this.socket.on('avatar-sleep', this.avatarSlept);
+    this.socket.on('door-creation', this.doorCreated);
+  }
 };
 
 GeneralPlanetComponent.prototype.preRender = function() {
@@ -16913,14 +16917,53 @@ GeneralPlanetComponent.prototype.preRender = function() {
   }
 };
 
-/** "Custom" methods */
+/** User Interaction */
 
 GeneralPlanetComponent.prototype.toggleCameraPerspective = function() {
   this.firstPerson = !this.firstPerson;
   this.avatar.setVisible(!this.firstPerson);
 };
 
-},{"./global-state":60,"./keymaster":62,"./scene-component":66,"jquery":1}],60:[function(require,module,exports){
+/** IO Response */
+
+GeneralPlanetComponent.prototype.avatarEntered = function(avatarData) {
+  var avatar = this.avatarWithName(avatarData.name);
+  if (!avatar) {
+    avatar = new Avatar(avatarData);
+    this.addObject3d(avatar);
+    this.avatarsByName[avatar.name] = avatar;
+  }
+
+  avatar.wakeUp();
+};
+
+GeneralPlanetComponent.prototype.avatarMoved = function(avatarData) {
+  var avatar = this.avatarWithName(avatarData.name);
+  if (avatar) {
+    var pos = avatarData.position;
+    avatar.moveTo(pos.x, pos.y, pos.z);
+  }
+};
+
+GeneralPlanetComponent.prototype.avatarSlept = function(name) {
+  var avatar = this.avatarWithName(name);
+  if (avatar) {
+    avatar.goSleep();
+  }
+};
+
+GeneralPlanetComponent.prototype.doorCreated = function(doorData) {
+  var door = new Door(doorData);
+  this.addObject3d(door);
+};
+
+/** Utility */
+
+GeneralPlanetComponent.prototype.avatarWithName = function(name) {
+  return this.avatarsByName[name];
+};
+
+},{"./avatar":53,"./door":58,"./global-state":60,"./keymaster":62,"./scene-component":66,"jquery":1}],60:[function(require,module,exports){
 
 // Store anything you think should be accessible everywhere here
 
@@ -17729,9 +17772,7 @@ $(function() {
 
   var state = {
     frameCount: 0,
-    mode: BECOME_AVATAR_MODE,
-    doors: [],
-    avatars: {}
+    mode: BECOME_AVATAR_MODE
   };
   var socket = io(config.io_url);
 
@@ -17807,45 +17848,8 @@ $(function() {
         break;
     }
 
-    for (var i = 0; i < state.doors.length; i++) {
-      state.doors[i].render();
-    }
-
     renderer.render(scene, camera);
   }
-
-  // io events
-
-  socket.on('avatar-entry', function(avatarData) {
-    var avatar = avatarWithName(avatarData.name);
-    if (!avatar) {
-      avatar = avatarTools.makeAvatarFromServer(avatarData);
-      avatar.addTo(scene);
-      state.avatars[avatar.name] = avatar;
-    }
-
-    avatar.wakeUp();
-  });
-
-  socket.on('avatar-move', function(avatarData) {
-    var avatar = avatarWithName(avatarData.name);
-    if (avatar) {
-      avatar.moveTo(avatarData.position.x, avatarData.position.y, avatarData.position.z);
-    }
-  });
-
-  socket.on('avatar-sleep', function(avatarData) {
-    var avatar = avatarWithName(avatarData);
-    if (avatar) {
-      avatar.goSleep();
-    }
-  });
-
-  socket.on('door-creation', function(doorData) {
-    var door = doorTools.makeDoorFromServer(doorData);
-    door.addTo(scene);
-    state.doors.push(door);
-  });
 
   // state transitions
 
@@ -17896,14 +17900,6 @@ $(function() {
         scene.remove(obj);
       }
     }
-  }
-
-  function avatarWithName(name) {
-    if (state.avatars[name]) {
-      return state.avatars[name];
-    }
-
-    return null;
   }
 
 });
@@ -17983,6 +17979,12 @@ SceneComponent.prototype.markFinished = function() {
     this.finishedCallback();
   }
 };
+
+SceneComponent.prototype.addObject3d = function(object3d) {
+  object3d.addTo(this.scene);
+  this.renderObjects.push(object3d);
+};
+
 
 SceneComponent.prototype.preRender = function() {};
 SceneComponent.prototype.postRender = function() {};

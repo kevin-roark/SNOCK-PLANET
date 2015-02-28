@@ -23,9 +23,7 @@ $(function() {
 
   var state = {
     frameCount: 0,
-    mode: BECOME_AVATAR_MODE,
-    doors: [],
-    avatars: {}
+    mode: BECOME_AVATAR_MODE
   };
   var socket = io(config.io_url);
 
@@ -101,45 +99,8 @@ $(function() {
         break;
     }
 
-    for (var i = 0; i < state.doors.length; i++) {
-      state.doors[i].render();
-    }
-
     renderer.render(scene, camera);
   }
-
-  // io events
-
-  socket.on('avatar-entry', function(avatarData) {
-    var avatar = avatarWithName(avatarData.name);
-    if (!avatar) {
-      avatar = avatarTools.makeAvatarFromServer(avatarData);
-      avatar.addTo(scene);
-      state.avatars[avatar.name] = avatar;
-    }
-
-    avatar.wakeUp();
-  });
-
-  socket.on('avatar-move', function(avatarData) {
-    var avatar = avatarWithName(avatarData.name);
-    if (avatar) {
-      avatar.moveTo(avatarData.position.x, avatarData.position.y, avatarData.position.z);
-    }
-  });
-
-  socket.on('avatar-sleep', function(avatarData) {
-    var avatar = avatarWithName(avatarData);
-    if (avatar) {
-      avatar.goSleep();
-    }
-  });
-
-  socket.on('door-creation', function(doorData) {
-    var door = doorTools.makeDoorFromServer(doorData);
-    door.addTo(scene);
-    state.doors.push(door);
-  });
 
   // state transitions
 
@@ -190,14 +151,6 @@ $(function() {
         scene.remove(obj);
       }
     }
-  }
-
-  function avatarWithName(name) {
-    if (state.avatars[name]) {
-      return state.avatars[name];
-    }
-
-    return null;
   }
 
 });

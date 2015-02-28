@@ -4,10 +4,6 @@ var $ = require('jquery');
 
 var socket;
 
-module.exports.makeAvatarFromServer = function(avatarData) {
-
-};
-
 module.exports.fetchAvatar = function(name, callback) {
   if (!fetchSocket() || !name) {
     callback(null);
