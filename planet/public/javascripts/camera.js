@@ -20,7 +20,7 @@ $(window).resize(function() {
   }
 
   if (_camera) {
-    _camera.aspect = window.innerWidth / window.innerHeight;
+    _camera.aspect = window.innerWidth/window.innerHeight;
     _camera.updateProjectionMatrix();
   }
 });
@@ -28,7 +28,7 @@ $(window).resize(function() {
 module.exports = exports = Camera;
 
 function Camera(scene, renderer, config) {
-  this.cam = new THREE.PerspectiveCamera(65, window.innerWidth/window.innerHeight, 1, 3000);
+  this.cam = new THREE.TargetCamera(65, window.innerWidth/window.innerHeight, 0.1, 2000);
   _camera = this.cam;
   _renderer = renderer;
 

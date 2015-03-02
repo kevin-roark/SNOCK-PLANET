@@ -16896,7 +16896,7 @@ GeneralPlanetComponent.prototype.postInit = function(options) {
 
   this.cam.requestPointerLock();
 
-  keymaster.setKeypressListener(113, true, function(ev) {
+  keymaster.keypress(113, true, function(ev) {
     self.toggleCameraPerspective();
   });
 
@@ -17157,15 +17157,15 @@ function clearListener(listenerMap, keycode) {
 
 /* exports */
 
-module.exports.setKeydownListener = function(keycode, preventDefault, listener) {
+module.exports.keydown = function(keycode, preventDefault, listener) {
   setListener(listener, keydownMap, keycode, preventDefault);
 };
 
-module.exports.setKeyupListener = function(keycode, preventDefault, listener) {
+module.exports.keyup = function(keycode, preventDefault, listener) {
   setListener(listener, keyupMap, keycode, preventDefault);
 };
 
-module.exports.setKeypressListener = function(keycode, preventDefault, listener) {
+module.exports.keypress = function(keycode, preventDefault, listener) {
   setListener(listener, keypressMap, keycode, preventDefault);
 };
 

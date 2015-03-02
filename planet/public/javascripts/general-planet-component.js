@@ -3,8 +3,10 @@ var $ = require('jquery');
 var globals = require('./global-state');
 var SceneComponent = require('./scene-component');
 var keymaster = require('./keymaster');
+var mousemaster = require('./mousemaster');
 var Avatar = require('./avatar');
 var Door = require('./door');
+var ObjectControls = require('./ObjectControls');
 
 module.exports = GeneralPlanetComponent;
 
@@ -27,16 +29,30 @@ GeneralPlanetComponent.prototype.postInit = function(options) {
 
   this.cam.requestPointerLock();
 
-  keymaster.setKeypressListener(113, true, function(ev) {
-    self.toggleCameraPerspective();
-  });
-
   if (this.socket) {
     this.socket.on('avatar-entry', this.avatarEntered);
     this.socket.on('avatar-moved', this.avatarMoved);
     this.socket.on('avatar-sleep', this.avatarSlept);
     this.socket.on('door-creation', this.doorCreated);
   }
+
+  keymaster.keypress(113, true, self.toggleCameraPerspective);
+
+  keymaster.keydown([38, 87], true, self.forwardKeydown);
+  keymaster.keydown([37, 65], true, self.leftwardKeydown);
+  keymaster.keydown([40, 83], true, self.downwardKeydown);
+  keymaster.keydown([39, 68], true, self.rightwardKeydown);
+
+  keymaster.keyup([38, 87], true, self.forwardKeyup);
+  keymaster.keyup([37, 65], true, self.leftwardKeyup);
+  keymaster.keyup([40, 83], true, self.downwardKeyup);
+  keymaster.keyup([39, 68], true, self.rightwardKeyup);
+
+  mousemaster.move(self.mouseMove, 'controls');
+
+  this.controls = new ObjectControls({
+    targetObject: this.avatar
+  });
 };
 
 GeneralPlanetComponent.prototype.preRender = function() {
@@ -53,6 +69,47 @@ GeneralPlanetComponent.prototype.preRender = function() {
 GeneralPlanetComponent.prototype.toggleCameraPerspective = function() {
   this.firstPerson = !this.firstPerson;
   this.avatar.setVisible(!this.firstPerson);
+};
+
+GeneralPlanetComponent.prototype.forwardKeydown = function() {
+  this.controls.setForward(true);
+};
+GeneralPlanetComponent.prototype.leftwardKeydown = function() {
+  this.controls.setLeft(true);
+};
+GeneralPlanetComponent.prototype.downwardKeydown = function() {
+  this.controls.setBackward(true);
+};
+GeneralPlanetComponent.prototype.rightwardKeydown = function() {
+  this.controls.setRight(true);
+};
+
+GeneralPlanetComponent.prototype.forwardKeyup = function() {
+  this.controls.setForward(false);
+};
+GeneralPlanetComponent.prototype.leftwardKeyup = function() {
+  this.controls.setLeft(false);
+};
+GeneralPlanetComponent.prototype.downwardKeyup = function() {
+  this.controls.setBackward(false);
+};
+GeneralPlanetComponent.prototype.rightwardKeyup = function() {
+  this.controls.setRight(false);
+};
+
+GeneralPlanetComponent.prototype.mouseMove = function(x, y) {
+  x -= (window.innerWidth/2);
+  y -= (window.innerHeight/2);
+  var threshold = 15;
+
+  if ((x > 0 && x < threshold) || (x < 0 && x > -threshold)) {
+      x = 0;
+  }
+  if ((y > 0 && y < threshold) || (y < 0 && y > -threshold)) {
+      y = 0;
+  }
+
+  this.controls.mousePos.set(x, y);
 };
 
 /** IO Response */

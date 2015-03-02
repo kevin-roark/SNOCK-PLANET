@@ -4,7 +4,6 @@
  */
 
 THREE.PointerLockControls = function ( camera ) {
-
 	var scope = this;
 
 	camera.rotation.set( 0, 0, 0 );
@@ -38,7 +37,6 @@ THREE.PointerLockControls = function ( camera ) {
 	var PI_2 = Math.PI / 2;
 
 	var onMouseMove = function ( event ) {
-
 		if ( scope.enabled === false ) return;
 
 		var movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
@@ -48,13 +46,10 @@ THREE.PointerLockControls = function ( camera ) {
 		pitchObject.rotation.x += movementY * 0.002;
 
 		pitchObject.rotation.x = Math.max( - PI_2, Math.min( PI_2, pitchObject.rotation.x ) );
-
 	};
 
 	var onKeyDown = function ( event ) {
-
 		switch ( event.keyCode ) {
-
 			case 38: // up
 			case 87: // w
 				moveForward = true;
@@ -79,15 +74,11 @@ THREE.PointerLockControls = function ( camera ) {
 				if ( canJump === true ) velocity.y += 600;
 				canJump = false;
 				break;
-
 		}
-
 	};
 
 	var onKeyUp = function ( event ) {
-
 		switch( event.keyCode ) {
-
 			case 38: // up
 			case 87: // w
 				moveForward = false;
@@ -107,9 +98,7 @@ THREE.PointerLockControls = function ( camera ) {
 			case 68: // d
 				moveRight = false;
 				break;
-
 		}
-
 	};
 
 	document.addEventListener( 'mousemove', onMouseMove, false );
@@ -119,16 +108,12 @@ THREE.PointerLockControls = function ( camera ) {
 	this.enabled = false;
 
 	this.getObject = function () {
-
 		return yawObject;
-
 	};
 
-	this.isOnObject = function ( boolean ) {
-
+	this.isOnObject = function(boolean) {
 		isOnObject = boolean;
 		canJump = boolean;
-
 	};
 
 	this.isIdle = function() {
@@ -136,30 +121,22 @@ THREE.PointerLockControls = function ( camera ) {
 	}
 
 	this.getDirection = function() {
-
 		// assumes the camera itself is not rotated
-
 		var direction = new THREE.Vector3( 0, 0, -1 );
 		var rotation = new THREE.Euler( 0, 0, 0, "YXZ" );
 
-		return function( v ) {
-
-			rotation.set( pitchObject.rotation.x, yawObject.rotation.y, 0 );
-
-			v.copy( direction ).applyEuler( rotation );
-
+		return function(v){
+			rotation.set(pitchObject.rotation.x, yawObject.rotation.y, 0);
+			v.copy(direction).applyEuler(rotation);
 			return v;
-
 		}
-
 	}();
 
 	this.update = function () {
-
-		if ( scope.enabled === false ) return;
+		if (scope.enabled === false) return;
 
 		var time = performance.now();
-		var delta = ( time - prevTime ) / 1000;
+		var delta = (time - prevTime) / 1000;
 
 		velocity.x -= velocity.x * 10.0 * delta;
 		velocity.z -= velocity.z * 10.0 * delta;
@@ -172,10 +149,8 @@ THREE.PointerLockControls = function ( camera ) {
 		if (moveLeft) velocity.x -= this.velocityStep * delta;
 		if (moveRight) velocity.x += this.velocityStep * delta;
 
-		if ( isOnObject === true ) {
-
+		if (isOnObject === true) {
 			velocity.y = Math.max(0, velocity.y); // let's you be on top of objects
-
 		}
 
 		var positionBefore = {x: yawObject.position.x, z: yawObject.position.z};
@@ -193,17 +168,13 @@ THREE.PointerLockControls = function ( camera ) {
 			yawObject.translateX(-velocity.x * delta);
 		}
 
-		if ( yawObject.position.y < 10 ) {
-
+		if (yawObject.position.y < 10) {
 			velocity.y = 0;
 			yawObject.position.y = 10;
 
 			canJump = true;
-
 		}
 
 		prevTime = time;
-
 	};
-
 };
