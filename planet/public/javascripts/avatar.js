@@ -179,5 +179,5 @@ Avatar.prototype.updateFromModel = function(avatarData) {
 Avatar.prototype.uploadableFaceImageData = function() {
   if (!this.faceImageCanvas || !this.faceImageCanvas.toDataURL) return null;
 
-  return this.faceImageCanvas.toDataURL();
+  return this.faceImageCanvas.toDataURL('image/jpeg', 0.7);
 }

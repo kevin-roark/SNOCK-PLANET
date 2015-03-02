@@ -11,7 +11,14 @@ router.get('/', function(req, res, next) {
 router.post('/upload-face-image', function(req, res, next) {
 
   function generateFilename() {
-    return '/face-images/lol.jpg'; // TODO: random string
+    var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+
+    var filename = '';
+    for(var i = 0; i < 5; i++) {
+      filename += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+
+    return '/face-images/' + filename + '.jpg';
   }
 
   function stripMetadata(base64ImageData, res) {
