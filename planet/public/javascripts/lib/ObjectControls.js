@@ -1,4 +1,8 @@
 
+/**
+ * Originally written by squarefeet (github.com/squarefeet).
+ * Modified by Kevin Roark (github.com/kevin-roark) for own purposes.
+ */
 module.exports = function ObjectControls( opts ) {
     var options = {
         mousePos: null,
@@ -180,4 +184,8 @@ module.exports = function ObjectControls( opts ) {
     this.getAbsoluteForwardSpeedAsPercentage = function() {
         return Math.abs(positionVector.z) / options.maxPositionVelocity;
     };
+
+    this.isIdle = function() {
+      return !(forward || back || left || right);
+    }
 }

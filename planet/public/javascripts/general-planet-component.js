@@ -6,9 +6,14 @@ var keymaster = require('./keymaster');
 var mousemaster = require('./mousemaster');
 var Avatar = require('./avatar');
 var Door = require('./door');
-var ObjectControls = require('./ObjectControls');
+var ObjectControls = require('./lib/ObjectControls');
 
 module.exports = GeneralPlanetComponent;
+
+/** Constants */
+
+var THIRD_PERSON_CAM_NAME = 'avatar-third';
+var FIRST_PERSON_CAM_NAME = 'avatar-first';
 
 /** Inherited methods */
 
@@ -27,7 +32,41 @@ GeneralPlanetComponent.prototype.postInit = function(options) {
 
   this.firstPerson = false;
 
-  this.cam.requestPointerLock();
+  this.controls = new ObjectControls({
+    targetObject: this.avatar.trackingMesh()
+  });
+
+  this.camera.addTarget({
+    name: THIRD_PERSON_CAM_NAME,
+    targetObject: this.avatar.trackingMesh(),
+    cameraPosition: new THREE.Vector3(0, 10, 20),
+    stiffness: 0.2,
+    fixed: false
+  });
+
+  this.camera.addTarget({
+    name: FIRST_PERSON_CAM_NAME,
+    targetObject: this.avatar.trackingMesh(),
+    cameraPosition: new THREE.Vector3(0, 0, -1),
+    stiffness: 0.5,
+    fixed: false
+  });
+
+  this.camera.setTarget(THIRD_PERSON_CAM_NAME);
+
+  keymaster.keypress(113, true, function(){ self.toggleCameraPerspective(); });
+
+  keymaster.keydown([38, 87], true, function(){ self.forwardKeydown(); });
+  keymaster.keydown([37, 65], true, function(){ self.leftwardKeydown(); });
+  keymaster.keydown([40, 83], true, function(){ self.downwardKeydown(); });
+  keymaster.keydown([39, 68], true, function(){ self.rightwardKeydown(); });
+
+  keymaster.keyup([38, 87], true, function(){ self.forwardKeyup(); });
+  keymaster.keyup([37, 65], true, function(){ self.leftwardKeyup(); });
+  keymaster.keyup([40, 83], true, function(){ self.downwardKeyup(); });
+  keymaster.keyup([39, 68], true, function(){ self.rightwardKeyup(); });
+
+  mousemaster.move(function(){ self.mouseMove(); }, 'controls');
 
   if (this.socket) {
     this.socket.on('avatar-entry', this.avatarEntered);
@@ -35,40 +74,21 @@ GeneralPlanetComponent.prototype.postInit = function(options) {
     this.socket.on('avatar-sleep', this.avatarSlept);
     this.socket.on('door-creation', this.doorCreated);
   }
-
-  keymaster.keypress(113, true, self.toggleCameraPerspective);
-
-  keymaster.keydown([38, 87], true, self.forwardKeydown);
-  keymaster.keydown([37, 65], true, self.leftwardKeydown);
-  keymaster.keydown([40, 83], true, self.downwardKeydown);
-  keymaster.keydown([39, 68], true, self.rightwardKeydown);
-
-  keymaster.keyup([38, 87], true, self.forwardKeyup);
-  keymaster.keyup([37, 65], true, self.leftwardKeyup);
-  keymaster.keyup([40, 83], true, self.downwardKeyup);
-  keymaster.keyup([39, 68], true, self.rightwardKeyup);
-
-  mousemaster.move(self.mouseMove, 'controls');
-
-  this.controls = new ObjectControls({
-    targetObject: this.avatar
-  });
 };
 
 GeneralPlanetComponent.prototype.preRender = function() {
-  var camPosition = this.cam.controlPosition();
-  if (this.firstPerson) {
-    this.avatar.moveTo(camPosition.x, camPosition.y, camPosition.z);
-  } else {
-    this.avatar.moveTo(camPosition.x, camPosition.y, camPosition.z - 20);
-  }
+  this.controls.update(this.nowDelta);
 };
 
 /** User Interaction */
 
 GeneralPlanetComponent.prototype.toggleCameraPerspective = function() {
   this.firstPerson = !this.firstPerson;
+
   this.avatar.setVisible(!this.firstPerson);
+
+  var camName = this.firstPerson? FIRST_PERSON_CAM_NAME : THIRD_PERSON_CAM_NAME;
+  this.camera.setTarget(camName);
 };
 
 GeneralPlanetComponent.prototype.forwardKeydown = function() {
@@ -98,8 +118,8 @@ GeneralPlanetComponent.prototype.rightwardKeyup = function() {
 };
 
 GeneralPlanetComponent.prototype.mouseMove = function(x, y) {
-  x -= (window.innerWidth/2);
-  y -= (window.innerHeight/2);
+  x -= (window.innerWidth / 2);
+  y -= (window.innerHeight / 2);
   var threshold = 15;
 
   if ((x > 0 && x < threshold) || (x < 0 && x > -threshold)) {

@@ -36,7 +36,7 @@ function getListener(listenerMap, keycode) {
 }
 
 function setListener(listener, listenerMap, keycodes, preventDefault) {
-  if (!Array.isArray(keycodes) {
+  if (!Array.isArray(keycodes)) {
     keycodes = [keycodes]
   }
 

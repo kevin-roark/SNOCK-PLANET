@@ -10,6 +10,7 @@ SceneComponent.prototype.init = function(scene, socket, cam, options) {
   this.socket = socket;
   this.cam = cam;
   this.camera = cam.cam;
+  this.prevTime = performance.now();
 
   this.renderObjects = [];
 
@@ -22,6 +23,9 @@ SceneComponent.prototype.init = function(scene, socket, cam, options) {
 SceneComponent.prototype.postInit = function(options) {};
 
 SceneComponent.prototype.render = function() {
+  this.now = performance.now();
+  this.nowDelta = (this.now - this.prevTime) / 1000;
+
   this.preRender();
 
   for (var i = 0; i < this.renderObjects.length; i++) {
@@ -29,6 +33,8 @@ SceneComponent.prototype.render = function() {
   }
 
   this.postRender();
+
+  this.prevTime = performance.now();
 };
 
 SceneComponent.prototype.markFinished = function() {

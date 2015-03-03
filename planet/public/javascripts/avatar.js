@@ -21,15 +21,15 @@ function Avatar(options) {
 
   this.twitching = false;
 
-  this.faceImageUrl = options.faceImageUrl || '';
   this.faceGeometry = new THREE.BoxGeometry(2, 2, 2);
-  this.faceMaterial = new THREE.MeshBasicMaterial({
-      map: THREE.ImageUtils.loadTexture(this.faceImageUrl)
-  });
+  this.faceMaterial = new THREE.MeshBasicMaterial({color: 0x000000});
   this.faceMesh = new THREE.Mesh(this.faceGeometry, this.faceMaterial);
+
+  this.faceImageUrl = options.faceImageUrl;
+  this.updateFaceImage();
 }
 
-Avatar.prototype.addTo = function(scene) {
+Avatar.prototype.addTo = function(scene, callback) {
   var self = this;
 
   loader('/javascripts/3d_models/body.js', function (geometry, materials) {
@@ -51,6 +51,8 @@ Avatar.prototype.addTo = function(scene) {
     for (var i = 0; i < self.postLoadBehaviors.length; i++) {
       self.postLoadBehaviors[i]();
     }
+
+    if (callback) callback();
   });
 };
 
@@ -120,6 +122,10 @@ Avatar.prototype.render = function() {
   }
 };
 
+Avatar.prototype.trackingMesh = function() {
+  return this.faceMesh;
+};
+
 Avatar.prototype.wakeUp = function() {
 
 };
@@ -146,10 +152,10 @@ Avatar.prototype.updateSkinColor = function(hex) {
 Avatar.prototype.updateFaceImage = function(image) {
   var texture;
 
-  if (typeof image === 'string') {
+  if (typeof image === 'string' && image.length > 0) {
     this.faceImageUrl = image;
     texture = THREE.ImageUtils.loadTexture(image);
-  } else {
+  } else if (image) {
     // gotta assume its a texturable image object thing (ie canvas)
     this.faceImageCanvas = image;
     texture = new THREE.Texture(image);
@@ -180,4 +186,4 @@ Avatar.prototype.uploadableFaceImageData = function() {
   if (!this.faceImageCanvas || !this.faceImageCanvas.toDataURL) return null;
 
   return this.faceImageCanvas.toDataURL('image/jpeg', 0.7);
-}
+};

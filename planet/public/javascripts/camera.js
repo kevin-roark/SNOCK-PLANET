@@ -20,7 +20,7 @@ $(window).resize(function() {
   }
 
   if (_camera) {
-    _camera.aspect = window.innerWidth/window.innerHeight;
+    _camera.aspect = window.innerWidth / window.innerHeight;
     _camera.updateProjectionMatrix();
   }
 });
@@ -28,12 +28,11 @@ $(window).resize(function() {
 module.exports = exports = Camera;
 
 function Camera(scene, renderer, config) {
-  this.cam = new THREE.TargetCamera(65, window.innerWidth/window.innerHeight, 0.1, 2000);
+  this.cam = new THREE.TargetCamera(65, window.innerWidth / window.innerHeight, 0.1, 3000);
   _camera = this.cam;
   _renderer = renderer;
 
-  this.controls = new THREE.PointerLockControls(this.cam);
-  scene.add(this.controls.getObject());
+  scene.add(this.cam);
 
   this.raycaster = new THREE.Raycaster( new THREE.Vector3(), new THREE.Vector3( 0, - 1, 0 ), 0, 10 );
 
@@ -43,8 +42,6 @@ function Camera(scene, renderer, config) {
   // to check for proximity with somewhat slow iteration
   this.proximableMeshes = [];
   this.proximityLimit = config.proximityLimit || 22500;
-
-  this.active = false;
 }
 
 Camera.prototype.addCollidableMesh = function(mesh) {
@@ -56,16 +53,14 @@ Camera.prototype.addProximableMesh = function(mesh) {
 }
 
 Camera.prototype.render = function() {
-  this.controls.isOnObject(false);
-
-  var ob = this.controls.getObject();
+  var ob = this.cam;
 
   this.raycaster.ray.origin.copy(ob.position);
   this.raycaster.ray.origin.y -= 10;
 
   var intersections = this.raycaster.intersectObjects(this.collidableMeshes);
   if (intersections.length > 0) {
-    this.controls.isOnObject(true);
+    // got some intersections with collidable meshes
   }
   if (this.collisionCallback) {
     this.collisionCallback(intersections);
@@ -90,33 +85,22 @@ Camera.prototype.render = function() {
     this.proximityCallback(meshesWithinProximity);
   }
 
-  this.controls.update();
-}
-
-Camera.prototype.isIdle = function() {
-  return this.controls.isIdle();
-}
-
-Camera.prototype.controlObject = function() {
-  return this.controls.getObject();
-};
-
-Camera.prototype.controlPosition = function() {
-  return this.controls.getObject().position;
+  if (this.cam.update) {
+    this.cam.update();
+  }
 }
 
 Camera.prototype.pointerlockchange = function (event) {
-  if (!this.active) return;
-
   if (document.pointerLockElement === element || document.mozPointerLockElement === element || document.webkitPointerLockElement === element ) {
-    this.controls.enabled = true;
+    // we got the lock!
   } else {
-    this.controls.enabled = false;
+    // we do not!
   }
 }
 
 Camera.prototype.pointerlockerror = function (event) {
-  console.log('POINTER LOCK ERROR');
+  console.log('POINTER LOCK ERROR:');
+  console.log(event);
 }
 
 Camera.prototype.requestPointerLock = function() {

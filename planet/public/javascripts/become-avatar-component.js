@@ -18,7 +18,7 @@ BecomeAvatarComponent.prototype.postInit = function(options) {
   var self = this;
 
   this.avatar = new Avatar({
-    position: {x: -15, y: 10, z: -20}
+    position: {x: -8, y: 0, z: -20}
   });
 
   globals.playerAvatar = this.avatar;
@@ -111,9 +111,22 @@ BecomeAvatarComponent.prototype.enterAvatarCreationState = function() {
   $('#avatar-name-input').animate({
     top: 60
   }, function() {
-    self.avatar.addTo(self.scene);
     $('#avatar-name-input').val(name);
+    self.avatar.addTo(self.scene, function() {
+      self.setAvatarCameraTarget();
+    });
   });
+};
+
+BecomeAvatarComponent.prototype.setAvatarCameraTarget = function() {
+  // this.camera.addTarget({
+  //   name: 'create-avatar-target',
+  //   targetObject: new THREE.Object3D(),
+  //   cameraPosition: new THREE.Vector3(0, 0, 0),
+  //   fixed: true
+  // });
+  // this.camera.setTarget('create-avatar-target');
+  console.log(this.camera);
 };
 
 BecomeAvatarComponent.prototype.finishAfterFetchingAvatar = function(avatarData) {

@@ -30,7 +30,7 @@ $(function() {
   // create renderer
   var renderer;
   try {
-    renderer = new THREE.WebGLRenderer();
+    renderer = new THREE.WebGLRenderer({antialias: true});
     state.renderMode = 'webgl';
   } catch(e) {
     $('.error').show();
@@ -84,8 +84,8 @@ $(function() {
     state.frameCount += 1;
 
     // every 4 frames lets update our state to the server
-    if (state.frameCount % 4 == 0) {
-      socket.emit('avatar-update', {position: cam.controlPosition()});
+    if (state.frameCount % 4 == 0 && globals.playerAvatar) {
+      socket.emit('avatar-update', globals.playerAvatar.serialize());
     }
 
     cam.render();

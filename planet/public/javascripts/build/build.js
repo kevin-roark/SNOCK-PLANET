@@ -1,4 +1,4 @@
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*!
  * jQuery JavaScript Library v2.1.3
  * http://jquery.com/
@@ -10292,7 +10292,7 @@ function url(uri, loc){
   return obj;
 }
 
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"debug":11,"parseuri":45}],8:[function(require,module,exports){
 
 /**
@@ -11434,7 +11434,7 @@ Socket.prototype.filterUpgrades = function (upgrades) {
   return filteredUpgrades;
 };
 
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./transport":15,"./transports":16,"component-emitter":10,"debug":23,"engine.io-parser":26,"indexof":43,"parsejson":37,"parseqs":38,"parseuri":39}],15:[function(require,module,exports){
 /**
  * Module dependencies.
@@ -11652,7 +11652,7 @@ function polling(opts){
   }
 }
 
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./polling-jsonp":17,"./polling-xhr":18,"./websocket":20,"xmlhttprequest":21}],17:[function(require,module,exports){
 (function (global){
 
@@ -11889,7 +11889,7 @@ JSONPPolling.prototype.doWrite = function (data, fn) {
   }
 };
 
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./polling":19,"component-inherit":22}],18:[function(require,module,exports){
 (function (global){
 /**
@@ -12277,7 +12277,7 @@ function unloadHandler() {
   }
 }
 
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./polling":19,"component-emitter":10,"component-inherit":22,"debug":23,"xmlhttprequest":21}],19:[function(require,module,exports){
 /**
  * Module dependencies.
@@ -13869,7 +13869,7 @@ exports.decodePayloadAsBinary = function (data, binaryType, callback) {
   });
 };
 
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./keys":27,"after":28,"arraybuffer.slice":29,"base64-arraybuffer":30,"blob":31,"has-binary":32,"utf8":34}],27:[function(require,module,exports){
 
 /**
@@ -14065,7 +14065,7 @@ module.exports = (function() {
   }
 })();
 
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],32:[function(require,module,exports){
 (function (global){
 
@@ -14127,7 +14127,7 @@ function hasBinary(data) {
   return _hasBinary(data);
 }
 
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"isarray":33}],33:[function(require,module,exports){
 module.exports = Array.isArray || function (arr) {
   return Object.prototype.toString.call(arr) == '[object Array]';
@@ -14375,7 +14375,7 @@ module.exports = Array.isArray || function (arr) {
 
 }(this));
 
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],35:[function(require,module,exports){
 
 /**
@@ -14445,7 +14445,7 @@ module.exports = function parsejson(data) {
     return (new Function('return ' + data))();
   }
 };
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],38:[function(require,module,exports){
 /**
  * Compiles a querystring
@@ -14632,10 +14632,10 @@ function hasBinary(data) {
   return _hasBinary(data);
 }
 
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"isarray":42}],42:[function(require,module,exports){
-arguments[4][33][0].apply(exports,arguments)
-},{"dup":33}],43:[function(require,module,exports){
+module.exports=require(33)
+},{}],43:[function(require,module,exports){
 
 var indexOf = [].indexOf;
 
@@ -14902,7 +14902,7 @@ exports.removeBlobs = function(data, callback) {
   }
 };
 
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./is-buffer":48,"isarray":49}],47:[function(require,module,exports){
 
 /**
@@ -15321,10 +15321,10 @@ function isBuf(obj) {
          (global.ArrayBuffer && obj instanceof ArrayBuffer);
 }
 
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],49:[function(require,module,exports){
-arguments[4][33][0].apply(exports,arguments)
-},{"dup":33}],50:[function(require,module,exports){
+module.exports=require(33)
+},{}],50:[function(require,module,exports){
 /*! JSON v3.2.6 | http://bestiejs.github.io/json3 | Copyright 2012-2013, Kit Cambridge | http://kit.mit-license.org */
 ;(function (window) {
   // Convenience aliases.
@@ -16283,15 +16283,15 @@ function Avatar(options) {
 
   this.twitching = false;
 
-  this.faceImageUrl = options.faceImageUrl || '';
   this.faceGeometry = new THREE.BoxGeometry(2, 2, 2);
-  this.faceMaterial = new THREE.MeshBasicMaterial({
-      map: THREE.ImageUtils.loadTexture(this.faceImageUrl)
-  });
+  this.faceMaterial = new THREE.MeshBasicMaterial({color: 0x000000});
   this.faceMesh = new THREE.Mesh(this.faceGeometry, this.faceMaterial);
+
+  this.faceImageUrl = options.faceImageUrl;
+  this.updateFaceImage();
 }
 
-Avatar.prototype.addTo = function(scene) {
+Avatar.prototype.addTo = function(scene, callback) {
   var self = this;
 
   loader('/javascripts/3d_models/body.js', function (geometry, materials) {
@@ -16313,6 +16313,8 @@ Avatar.prototype.addTo = function(scene) {
     for (var i = 0; i < self.postLoadBehaviors.length; i++) {
       self.postLoadBehaviors[i]();
     }
+
+    if (callback) callback();
   });
 };
 
@@ -16382,6 +16384,10 @@ Avatar.prototype.render = function() {
   }
 };
 
+Avatar.prototype.trackingMesh = function() {
+  return this.faceMesh;
+};
+
 Avatar.prototype.wakeUp = function() {
 
 };
@@ -16408,10 +16414,10 @@ Avatar.prototype.updateSkinColor = function(hex) {
 Avatar.prototype.updateFaceImage = function(image) {
   var texture;
 
-  if (typeof image === 'string') {
+  if (typeof image === 'string' && image.length > 0) {
     this.faceImageUrl = image;
     texture = THREE.ImageUtils.loadTexture(image);
-  } else {
+  } else if (image) {
     // gotta assume its a texturable image object thing (ie canvas)
     this.faceImageCanvas = image;
     texture = new THREE.Texture(image);
@@ -16441,10 +16447,10 @@ Avatar.prototype.updateFromModel = function(avatarData) {
 Avatar.prototype.uploadableFaceImageData = function() {
   if (!this.faceImageCanvas || !this.faceImageCanvas.toDataURL) return null;
 
-  return this.faceImageCanvas.toDataURL();
-}
+  return this.faceImageCanvas.toDataURL('image/jpeg', 0.7);
+};
 
-},{"./lib/kutility":63,"./model-loader":65}],54:[function(require,module,exports){
+},{"./lib/kutility":64,"./model-loader":66}],54:[function(require,module,exports){
 
 var $ = require('jquery');
 var SceneComponent = require('./scene-component');
@@ -16465,7 +16471,7 @@ BecomeAvatarComponent.prototype.postInit = function(options) {
   var self = this;
 
   this.avatar = new Avatar({
-    position: {x: -15, y: 10, z: -20}
+    position: {x: -8, y: 0, z: -20}
   });
 
   globals.playerAvatar = this.avatar;
@@ -16558,9 +16564,22 @@ BecomeAvatarComponent.prototype.enterAvatarCreationState = function() {
   $('#avatar-name-input').animate({
     top: 60
   }, function() {
-    self.avatar.addTo(self.scene);
     $('#avatar-name-input').val(name);
+    self.avatar.addTo(self.scene, function() {
+      self.setAvatarCameraTarget();
+    });
   });
+};
+
+BecomeAvatarComponent.prototype.setAvatarCameraTarget = function() {
+  // this.camera.addTarget({
+  //   name: 'create-avatar-target',
+  //   targetObject: new THREE.Object3D(),
+  //   cameraPosition: new THREE.Vector3(0, 0, 0),
+  //   fixed: true
+  // });
+  // this.camera.setTarget('create-avatar-target');
+  console.log(this.camera);
 };
 
 BecomeAvatarComponent.prototype.finishAfterFetchingAvatar = function(avatarData) {
@@ -16600,7 +16619,7 @@ function setWidthEqualToHeight($el) {
   $el.css('width', height + 'px');
 }
 
-},{"./avatar":53,"./avatar-tools":52,"./global-state":60,"./image-dropper":61,"./scene-component":66,"jquery":1}],55:[function(require,module,exports){
+},{"./avatar":53,"./avatar-tools":52,"./global-state":60,"./image-dropper":61,"./scene-component":68,"jquery":1}],55:[function(require,module,exports){
 /**
  * BELOW CODE INSPIRED FROM
  * http://threejs.org/examples/misc_controls_pointerlock.html
@@ -16631,12 +16650,11 @@ $(window).resize(function() {
 module.exports = exports = Camera;
 
 function Camera(scene, renderer, config) {
-  this.cam = new THREE.PerspectiveCamera(65, window.innerWidth/window.innerHeight, 1, 3000);
+  this.cam = new THREE.TargetCamera(65, window.innerWidth / window.innerHeight, 0.1, 3000);
   _camera = this.cam;
   _renderer = renderer;
 
-  this.controls = new THREE.PointerLockControls(this.cam);
-  scene.add(this.controls.getObject());
+  scene.add(this.cam);
 
   this.raycaster = new THREE.Raycaster( new THREE.Vector3(), new THREE.Vector3( 0, - 1, 0 ), 0, 10 );
 
@@ -16646,8 +16664,6 @@ function Camera(scene, renderer, config) {
   // to check for proximity with somewhat slow iteration
   this.proximableMeshes = [];
   this.proximityLimit = config.proximityLimit || 22500;
-
-  this.active = false;
 }
 
 Camera.prototype.addCollidableMesh = function(mesh) {
@@ -16659,16 +16675,14 @@ Camera.prototype.addProximableMesh = function(mesh) {
 }
 
 Camera.prototype.render = function() {
-  this.controls.isOnObject(false);
-
-  var ob = this.controls.getObject();
+  var ob = this.cam;
 
   this.raycaster.ray.origin.copy(ob.position);
   this.raycaster.ray.origin.y -= 10;
 
   var intersections = this.raycaster.intersectObjects(this.collidableMeshes);
   if (intersections.length > 0) {
-    this.controls.isOnObject(true);
+    // got some intersections with collidable meshes
   }
   if (this.collisionCallback) {
     this.collisionCallback(intersections);
@@ -16693,33 +16707,22 @@ Camera.prototype.render = function() {
     this.proximityCallback(meshesWithinProximity);
   }
 
-  this.controls.update();
-}
-
-Camera.prototype.isIdle = function() {
-  return this.controls.isIdle();
-}
-
-Camera.prototype.controlObject = function() {
-  return this.controls.getObject();
-};
-
-Camera.prototype.controlPosition = function() {
-  return this.controls.getObject().position;
+  if (this.cam.update) {
+    this.cam.update();
+  }
 }
 
 Camera.prototype.pointerlockchange = function (event) {
-  if (!this.active) return;
-
   if (document.pointerLockElement === element || document.mozPointerLockElement === element || document.webkitPointerLockElement === element ) {
-    this.controls.enabled = true;
+    // we got the lock!
   } else {
-    this.controls.enabled = false;
+    // we do not!
   }
 }
 
 Camera.prototype.pointerlockerror = function (event) {
-  console.log('POINTER LOCK ERROR');
+  console.log('POINTER LOCK ERROR:');
+  console.log(event);
 }
 
 Camera.prototype.requestPointerLock = function() {
@@ -16802,7 +16805,7 @@ module.exports.testing = true;
 
 module.exports.addTestDoor = false;
 
-}).call(this,"/public/javascripts")
+}).call(this,"/")
 },{}],57:[function(require,module,exports){
 
 
@@ -16866,16 +16869,23 @@ Door.prototype.render = function() {
 
 };
 
-},{"./config":56,"./lib/kutility":63}],59:[function(require,module,exports){
+},{"./config":56,"./lib/kutility":64}],59:[function(require,module,exports){
 
 var $ = require('jquery');
 var globals = require('./global-state');
 var SceneComponent = require('./scene-component');
 var keymaster = require('./keymaster');
+var mousemaster = require('./mousemaster');
 var Avatar = require('./avatar');
 var Door = require('./door');
+var ObjectControls = require('./lib/ObjectControls');
 
 module.exports = GeneralPlanetComponent;
+
+/** Constants */
+
+var THIRD_PERSON_CAM_NAME = 'avatar-third';
+var FIRST_PERSON_CAM_NAME = 'avatar-first';
 
 /** Inherited methods */
 
@@ -16894,11 +16904,41 @@ GeneralPlanetComponent.prototype.postInit = function(options) {
 
   this.firstPerson = false;
 
-  this.cam.requestPointerLock();
-
-  keymaster.keypress(113, true, function(ev) {
-    self.toggleCameraPerspective();
+  this.controls = new ObjectControls({
+    targetObject: this.avatar.trackingMesh()
   });
+
+  this.camera.addTarget({
+    name: THIRD_PERSON_CAM_NAME,
+    targetObject: this.avatar.trackingMesh(),
+    cameraPosition: new THREE.Vector3(0, 10, 20),
+    stiffness: 0.2,
+    fixed: false
+  });
+
+  this.camera.addTarget({
+    name: FIRST_PERSON_CAM_NAME,
+    targetObject: this.avatar.trackingMesh(),
+    cameraPosition: new THREE.Vector3(0, 0, -1),
+    stiffness: 0.5,
+    fixed: false
+  });
+
+  this.camera.setTarget(THIRD_PERSON_CAM_NAME);
+
+  keymaster.keypress(113, true, function(){ self.toggleCameraPerspective(); });
+
+  keymaster.keydown([38, 87], true, function(){ self.forwardKeydown(); });
+  keymaster.keydown([37, 65], true, function(){ self.leftwardKeydown(); });
+  keymaster.keydown([40, 83], true, function(){ self.downwardKeydown(); });
+  keymaster.keydown([39, 68], true, function(){ self.rightwardKeydown(); });
+
+  keymaster.keyup([38, 87], true, function(){ self.forwardKeyup(); });
+  keymaster.keyup([37, 65], true, function(){ self.leftwardKeyup(); });
+  keymaster.keyup([40, 83], true, function(){ self.downwardKeyup(); });
+  keymaster.keyup([39, 68], true, function(){ self.rightwardKeyup(); });
+
+  mousemaster.move(function(){ self.mouseMove(); }, 'controls');
 
   if (this.socket) {
     this.socket.on('avatar-entry', this.avatarEntered);
@@ -16909,19 +16949,59 @@ GeneralPlanetComponent.prototype.postInit = function(options) {
 };
 
 GeneralPlanetComponent.prototype.preRender = function() {
-  var camPosition = this.cam.controlPosition();
-  if (this.firstPerson) {
-    this.avatar.moveTo(camPosition.x, camPosition.y, camPosition.z);
-  } else {
-    this.avatar.moveTo(camPosition.x, camPosition.y, camPosition.z - 20);
-  }
+  this.controls.update(this.nowDelta);
 };
 
 /** User Interaction */
 
 GeneralPlanetComponent.prototype.toggleCameraPerspective = function() {
   this.firstPerson = !this.firstPerson;
+
   this.avatar.setVisible(!this.firstPerson);
+
+  var camName = this.firstPerson? FIRST_PERSON_CAM_NAME : THIRD_PERSON_CAM_NAME;
+  this.camera.setTarget(camName);
+};
+
+GeneralPlanetComponent.prototype.forwardKeydown = function() {
+  this.controls.setForward(true);
+};
+GeneralPlanetComponent.prototype.leftwardKeydown = function() {
+  this.controls.setLeft(true);
+};
+GeneralPlanetComponent.prototype.downwardKeydown = function() {
+  this.controls.setBackward(true);
+};
+GeneralPlanetComponent.prototype.rightwardKeydown = function() {
+  this.controls.setRight(true);
+};
+
+GeneralPlanetComponent.prototype.forwardKeyup = function() {
+  this.controls.setForward(false);
+};
+GeneralPlanetComponent.prototype.leftwardKeyup = function() {
+  this.controls.setLeft(false);
+};
+GeneralPlanetComponent.prototype.downwardKeyup = function() {
+  this.controls.setBackward(false);
+};
+GeneralPlanetComponent.prototype.rightwardKeyup = function() {
+  this.controls.setRight(false);
+};
+
+GeneralPlanetComponent.prototype.mouseMove = function(x, y) {
+  x -= (window.innerWidth / 2);
+  y -= (window.innerHeight / 2);
+  var threshold = 15;
+
+  if ((x > 0 && x < threshold) || (x < 0 && x > -threshold)) {
+      x = 0;
+  }
+  if ((y > 0 && y < threshold) || (y < 0 && y > -threshold)) {
+      y = 0;
+  }
+
+  this.controls.mousePos.set(x, y);
 };
 
 /** IO Response */
@@ -16963,7 +17043,7 @@ GeneralPlanetComponent.prototype.avatarWithName = function(name) {
   return this.avatarsByName[name];
 };
 
-},{"./avatar":53,"./door":58,"./global-state":60,"./keymaster":62,"./scene-component":66,"jquery":1}],60:[function(require,module,exports){
+},{"./avatar":53,"./door":58,"./global-state":60,"./keymaster":62,"./lib/ObjectControls":63,"./mousemaster":67,"./scene-component":68,"jquery":1}],60:[function(require,module,exports){
 
 // Store anything you think should be accessible everywhere here
 
@@ -17138,11 +17218,18 @@ function getListener(listenerMap, keycode) {
   return listenerMap[keycode + ''];
 }
 
-function setListener(listener, listenerMap, keycode, preventDefault) {
-  listenerMap[keycode + ''] = {
-    fn: listener,
-    preventDefault: preventDefault
-  };
+function setListener(listener, listenerMap, keycodes, preventDefault) {
+  if (!Array.isArray(keycodes)) {
+    keycodes = [keycodes]
+  }
+
+  for (var i = 0; i < keycodes.length; i++) {
+    var keycode = keycodes[i];
+    listenerMap[keycode + ''] = {
+      fn: listener,
+      preventDefault: preventDefault
+    };
+  }
 }
 
 function clearListener(listenerMap, keycode) {
@@ -17157,16 +17244,16 @@ function clearListener(listenerMap, keycode) {
 
 /* exports */
 
-module.exports.keydown = function(keycode, preventDefault, listener) {
-  setListener(listener, keydownMap, keycode, preventDefault);
+module.exports.keydown = function(keycodes, preventDefault, listener) {
+  setListener(listener, keydownMap, keycodes, preventDefault);
 };
 
-module.exports.keyup = function(keycode, preventDefault, listener) {
-  setListener(listener, keyupMap, keycode, preventDefault);
+module.exports.keyup = function(keycodes, preventDefault, listener) {
+  setListener(listener, keyupMap, keycodes, preventDefault);
 };
 
-module.exports.keypress = function(keycode, preventDefault, listener) {
-  setListener(listener, keypressMap, keycode, preventDefault);
+module.exports.keypress = function(keycodes, preventDefault, listener) {
+  setListener(listener, keypressMap, keycodes, preventDefault);
 };
 
 module.exports.clearKeydownListener = function(keycode) {
@@ -17182,6 +17269,199 @@ module.exports.clearKeypressListener = function(keycode) {
 };
 
 },{"jquery":1}],63:[function(require,module,exports){
+
+/**
+ * Originally written by squarefeet (github.com/squarefeet).
+ * Modified by Kevin Roark (github.com/kevin-roark) for own purposes.
+ */
+module.exports = function ObjectControls( opts ) {
+    var options = {
+        mousePos: null,
+        targetObject: null,
+        positionVelocityIncrement: 5,
+        positionVelocityDecrement: 0.95,
+
+        rotationDamping: 500,
+
+        rollVelocityIncrement: 0.05,
+        rollVelocityDecrement: 0.95,
+
+        maxPositionVelocity: 200,
+        maxRotationVelocity: 10,
+        maxRollVelocity: 2
+    };
+
+    if( opts ) {
+        for( var i in opts ) {
+            options[i] = opts[i];
+        }
+    }
+
+    var self = this;
+    this.mousePos = options.mousePos || new THREE.Vector2();
+
+    var centerX = window.innerWidth/2,
+        centerY = window.innerHeight/2,
+        forward = false,
+        back = false,
+        left = false,
+        right = false,
+        rollLeft = false,
+        rollRight = false,
+        rollRotation = 0,
+        yaw = 0,
+        pitch = 0,
+        rotationVector = new THREE.Vector3(),
+        rotationVectorLerp = new THREE.Vector3(),
+        rotationQuaternion = new THREE.Quaternion(),
+        positionVector = new THREE.Vector3(),
+        cameraQuaternion = new THREE.Quaternion();
+
+    var updateRotation = function( dt ) {
+        var inc = options.rollVelocityIncrement,
+            dec = options.rollVelocityDecrement,
+            max = options.maxRollVelocity;
+
+        if( rollLeft ) {
+            rollRotation += inc;
+        }
+        else if( rollRight ) {
+            rollRotation -= inc;
+        }
+        else {
+            rollRotation *= dec;
+        }
+
+
+        if( rollRotation > max ) {
+            rollRotation = max;
+        }
+        else if( rollRotation < -max ) {
+            rollRotation = -max;
+        }
+
+        rotationVector.y = -self.mousePos.x / options.rotationDamping;
+        rotationVector.x = -self.mousePos.y / options.rotationDamping;
+    };
+
+    var updatePosition = function( dt ) {
+        var inc = options.positionVelocityIncrement,
+            dec = options.positionVelocityDecrement,
+            max = options.maxPositionVelocity;
+
+        if( forward ) {
+            positionVector.z -= inc;
+        }
+        else if( back ) {
+            positionVector.z += inc;
+        }
+        else {
+            positionVector.z *= dec;
+        }
+
+        if( left ) {
+            positionVector.x -= inc;
+        }
+        else if( right ) {
+            positionVector.x += inc;
+        }
+        else {
+            positionVector.x *= dec;
+        }
+
+
+        if( positionVector.z > max ) {
+            positionVector.z = max;
+        }
+        else if( positionVector.z < -max ) {
+            positionVector.z = -max;
+        }
+
+        if( positionVector.x > max ) {
+            positionVector.x = max;
+        }
+        else if( positionVector.x < -max ) {
+            positionVector.x = -max;
+        }
+
+        positionVector.y *= dec;
+    };
+
+    var updateCameras = function( dt ) {
+        var velX = positionVector.x * dt,
+            velY = positionVector.y * dt,
+            velZ = positionVector.z * dt,
+            roll = rollRotation * dt,
+            obj = options.targetObject;
+
+        rotationQuaternion.set(
+            rotationVector.x * dt,
+            rotationVector.y * dt,
+            roll,
+            1
+        ).normalize();
+
+        obj.quaternion.multiply( rotationQuaternion );
+
+        obj.translateX( velX );
+        obj.translateY( velY );
+        obj.translateZ( velZ );
+    };
+
+
+    this.update = function( dt ) {
+        updateRotation( dt );
+        updatePosition( dt );
+        updateCameras( dt );
+    };
+
+
+
+    this.set = function() {};
+
+    this.setForward = function( state ) {
+        forward = state;
+    };
+    this.setBackward = function( state ) {
+        back = state;
+    };
+    this.setLeft = function( state ) {
+        left = state;
+    };
+    this.setRight = function( state ) {
+        right = state;
+    };
+
+    this.setRollLeft = function( state ) {
+        rollLeft = state;
+    };
+    this.setRollRight = function( state ) {
+        rollRight = state;
+    };
+
+
+    this.getCameraRotation = function() {
+        return cameraQuaternion;
+    };
+
+    this.getVelocity = function() {
+        return positionVector;
+    };
+
+    this.getForwardSpeedAsPercentage = function() {
+        return positionVector.z / options.maxPositionVelocity;
+    };
+
+    this.getAbsoluteForwardSpeedAsPercentage = function() {
+        return Math.abs(positionVector.z) / options.maxPositionVelocity;
+    };
+
+    this.isIdle = function() {
+      return !(forward || back || left || right);
+    }
+}
+
+},{}],64:[function(require,module,exports){
 /* export something */
 module.exports = new Kutility;
 
@@ -17746,7 +18026,7 @@ Kutility.prototype.blur = function(el, x) {
   this.setFilter(el, cf + f);
 }
 
-},{}],64:[function(require,module,exports){
+},{}],65:[function(require,module,exports){
 
 var $ = require('jquery');
 var kt = require('./lib/kutility');
@@ -17779,7 +18059,7 @@ $(function() {
   // create renderer
   var renderer;
   try {
-    renderer = new THREE.WebGLRenderer();
+    renderer = new THREE.WebGLRenderer({antialias: true});
     state.renderMode = 'webgl';
   } catch(e) {
     $('.error').show();
@@ -17833,8 +18113,8 @@ $(function() {
     state.frameCount += 1;
 
     // every 4 frames lets update our state to the server
-    if (state.frameCount % 4 == 0) {
-      socket.emit('avatar-update', {position: cam.controlPosition()});
+    if (state.frameCount % 4 == 0 && globals.playerAvatar) {
+      socket.emit('avatar-update', globals.playerAvatar.serialize());
     }
 
     cam.render();
@@ -17904,7 +18184,7 @@ $(function() {
 
 });
 
-},{"./avatar":53,"./avatar-tools":52,"./become-avatar-component":54,"./camera":55,"./config":56,"./door":58,"./door-tools":57,"./general-planet-component":59,"./global-state":60,"./keymaster":62,"./lib/kutility":63,"jquery":1,"socket.io-client":2}],65:[function(require,module,exports){
+},{"./avatar":53,"./avatar-tools":52,"./become-avatar-component":54,"./camera":55,"./config":56,"./door":58,"./door-tools":57,"./general-planet-component":59,"./global-state":60,"./keymaster":62,"./lib/kutility":64,"jquery":1,"socket.io-client":2}],66:[function(require,module,exports){
 
 var cache = {};
 
@@ -17938,7 +18218,36 @@ function fetch(name, clone, callback) {
   callback(cache[name].geometry.clone(), cache[name].materials.clone());
 }
 
-},{}],66:[function(require,module,exports){
+},{}],67:[function(require,module,exports){
+
+var $ = require('jquery');
+
+var moveListeners = {};
+
+$(document).mousemove(function(ev) {
+  callListeners(moveListeners, ev);
+});
+
+function callListeners(listenersMap, ev) {
+  for (var key in moveListeners) {
+    var fn = moveListeners[key];
+    if ('function' === typeof fn) {
+      fn(ev.pageX, ev.pageY, ev);
+    }
+  }
+}
+
+module.exports.move = function(fn, key) {
+  if (!key) key = 'default';
+  moveListeners[key] = fn;
+}
+
+module.exports.clearMove = function(key) {
+  if (!key) key = 'default';
+  delete moveListeners[key];
+}
+
+},{"jquery":1}],68:[function(require,module,exports){
 
 var $ = require('jquery');
 
@@ -17951,6 +18260,7 @@ SceneComponent.prototype.init = function(scene, socket, cam, options) {
   this.socket = socket;
   this.cam = cam;
   this.camera = cam.cam;
+  this.prevTime = performance.now();
 
   this.renderObjects = [];
 
@@ -17963,6 +18273,9 @@ SceneComponent.prototype.init = function(scene, socket, cam, options) {
 SceneComponent.prototype.postInit = function(options) {};
 
 SceneComponent.prototype.render = function() {
+  this.now = performance.now();
+  this.nowDelta = (this.now - this.prevTime) / 1000;
+
   this.preRender();
 
   for (var i = 0; i < this.renderObjects.length; i++) {
@@ -17970,6 +18283,8 @@ SceneComponent.prototype.render = function() {
   }
 
   this.postRender();
+
+  this.prevTime = performance.now();
 };
 
 SceneComponent.prototype.markFinished = function() {
@@ -17993,4 +18308,4 @@ SceneComponent.prototype.clean = function() {};
 
 SceneComponent.prototype.layout = function() {};
 
-},{"jquery":1}]},{},[64]);
+},{"jquery":1}]},{},[65])
