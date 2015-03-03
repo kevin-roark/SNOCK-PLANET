@@ -6,7 +6,7 @@ var keymaster = require('./keymaster');
 var mousemaster = require('./mousemaster');
 var Avatar = require('./avatar');
 var Door = require('./door');
-var ObjectControls = require('./lib/ObjectControls');
+var ObjectControls = require('./object-controls');
 
 module.exports = GeneralPlanetComponent;
 
@@ -33,13 +33,13 @@ GeneralPlanetComponent.prototype.postInit = function(options) {
   this.firstPerson = false;
 
   this.controls = new ObjectControls({
-    targetObject: this.avatar.trackingMesh()
+    target: this.avatar
   });
 
   this.camera.addTarget({
     name: THIRD_PERSON_CAM_NAME,
     targetObject: this.avatar.trackingMesh(),
-    cameraPosition: new THREE.Vector3(0, 10, 20),
+    cameraPosition: new THREE.Vector3(0, 4, 40),
     stiffness: 0.2,
     fixed: false
   });
@@ -66,7 +66,7 @@ GeneralPlanetComponent.prototype.postInit = function(options) {
   keymaster.keyup([40, 83], true, function(){ self.downwardKeyup(); });
   keymaster.keyup([39, 68], true, function(){ self.rightwardKeyup(); });
 
-  mousemaster.move(function(){ self.mouseMove(); }, 'controls');
+  mousemaster.move(function(x, y) { self.mousemove(x, y); }, 'controls');
 
   if (this.socket) {
     this.socket.on('avatar-entry', this.avatarEntered);
@@ -117,7 +117,7 @@ GeneralPlanetComponent.prototype.rightwardKeyup = function() {
   this.controls.setRight(false);
 };
 
-GeneralPlanetComponent.prototype.mouseMove = function(x, y) {
+GeneralPlanetComponent.prototype.mousemove = function(x, y) {
   x -= (window.innerWidth / 2);
   y -= (window.innerHeight / 2);
   var threshold = 15;
@@ -129,7 +129,7 @@ GeneralPlanetComponent.prototype.mouseMove = function(x, y) {
       y = 0;
   }
 
-  this.controls.mousePos.set(x, y);
+  //this.controls.mousePos.set(x, y);
 };
 
 /** IO Response */

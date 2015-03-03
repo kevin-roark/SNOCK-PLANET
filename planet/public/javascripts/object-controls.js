@@ -6,7 +6,7 @@
 module.exports = function ObjectControls( opts ) {
     var options = {
         mousePos: null,
-        targetObject: null,
+        target: null,
         positionVelocityIncrement: 5,
         positionVelocityDecrement: 0.95,
 
@@ -120,8 +120,7 @@ module.exports = function ObjectControls( opts ) {
         var velX = positionVector.x * dt,
             velY = positionVector.y * dt,
             velZ = positionVector.z * dt,
-            roll = rollRotation * dt,
-            obj = options.targetObject;
+            roll = rollRotation * dt;
 
         rotationQuaternion.set(
             rotationVector.x * dt,
@@ -130,11 +129,24 @@ module.exports = function ObjectControls( opts ) {
             1
         ).normalize();
 
-        obj.quaternion.multiply( rotationQuaternion );
+        var targetMeshes;
+        if (options.target.meshes) {
+          targetMeshes = options.target.meshes();
+        } else if (options.target) {
+          targetMeshes = options.target;
+        } else {
+          targetMeshes = [];
+        }
 
-        obj.translateX( velX );
-        obj.translateY( velY );
-        obj.translateZ( velZ );
+        for (var i = 0; i < targetMeshes.length; i++) {
+          var obj = targetMeshes[i];
+
+          obj.quaternion.multiply( rotationQuaternion );
+
+          obj.translateX( velX );
+          obj.translateY( velY );
+          obj.translateZ( velZ );
+        }
     };
 
 
@@ -144,9 +156,6 @@ module.exports = function ObjectControls( opts ) {
         updateCameras( dt );
     };
 
-
-
-    this.set = function() {};
 
     this.setForward = function( state ) {
         forward = state;

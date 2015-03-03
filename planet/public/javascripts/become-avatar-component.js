@@ -18,7 +18,7 @@ BecomeAvatarComponent.prototype.postInit = function(options) {
   var self = this;
 
   this.avatar = new Avatar({
-    position: {x: -8, y: 0, z: -20}
+    position: {x: -13, y: 0, z: -25}
   });
 
   globals.playerAvatar = this.avatar;
@@ -119,14 +119,13 @@ BecomeAvatarComponent.prototype.enterAvatarCreationState = function() {
 };
 
 BecomeAvatarComponent.prototype.setAvatarCameraTarget = function() {
-  // this.camera.addTarget({
-  //   name: 'create-avatar-target',
-  //   targetObject: new THREE.Object3D(),
-  //   cameraPosition: new THREE.Vector3(0, 0, 0),
-  //   fixed: true
-  // });
-  // this.camera.setTarget('create-avatar-target');
-  console.log(this.camera);
+  this.camera.addTarget({
+    name: 'create-avatar-target',
+    targetObject: new THREE.Object3D(),
+    cameraPosition: new THREE.Vector3(0, 0, 0),
+    fixed: true
+  });
+  this.camera.setTarget('create-avatar-target');
 };
 
 BecomeAvatarComponent.prototype.finishAfterFetchingAvatar = function(avatarData) {

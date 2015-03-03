@@ -16388,6 +16388,14 @@ Avatar.prototype.trackingMesh = function() {
   return this.faceMesh;
 };
 
+Avatar.prototype.meshes = function() {
+  var m = [this.faceMesh];
+  if (this.skinnedMesh) {
+    m.push(this.skinnedMesh);
+  }
+  return m;
+};
+
 Avatar.prototype.wakeUp = function() {
 
 };
@@ -16450,7 +16458,7 @@ Avatar.prototype.uploadableFaceImageData = function() {
   return this.faceImageCanvas.toDataURL('image/jpeg', 0.7);
 };
 
-},{"./lib/kutility":64,"./model-loader":66}],54:[function(require,module,exports){
+},{"./lib/kutility":63,"./model-loader":65}],54:[function(require,module,exports){
 
 var $ = require('jquery');
 var SceneComponent = require('./scene-component');
@@ -16471,7 +16479,7 @@ BecomeAvatarComponent.prototype.postInit = function(options) {
   var self = this;
 
   this.avatar = new Avatar({
-    position: {x: -8, y: 0, z: -20}
+    position: {x: -13, y: 0, z: -25}
   });
 
   globals.playerAvatar = this.avatar;
@@ -16572,14 +16580,13 @@ BecomeAvatarComponent.prototype.enterAvatarCreationState = function() {
 };
 
 BecomeAvatarComponent.prototype.setAvatarCameraTarget = function() {
-  // this.camera.addTarget({
-  //   name: 'create-avatar-target',
-  //   targetObject: new THREE.Object3D(),
-  //   cameraPosition: new THREE.Vector3(0, 0, 0),
-  //   fixed: true
-  // });
-  // this.camera.setTarget('create-avatar-target');
-  console.log(this.camera);
+  this.camera.addTarget({
+    name: 'create-avatar-target',
+    targetObject: new THREE.Object3D(),
+    cameraPosition: new THREE.Vector3(0, 0, 0),
+    fixed: true
+  });
+  this.camera.setTarget('create-avatar-target');
 };
 
 BecomeAvatarComponent.prototype.finishAfterFetchingAvatar = function(avatarData) {
@@ -16636,7 +16643,8 @@ var havePointerLock = 'pointerLockElement' in document || 'mozPointerLockElement
 var element = document.body;
 
 var _camera, _renderer;
-$(window).resize(function() {
+
+function resize() {
   if (_renderer) {
     _renderer.setSize(window.innerWidth, window.innerHeight);
   }
@@ -16645,7 +16653,9 @@ $(window).resize(function() {
     _camera.aspect = window.innerWidth / window.innerHeight;
     _camera.updateProjectionMatrix();
   }
-});
+}
+
+$(window).resize(resize);
 
 module.exports = exports = Camera;
 
@@ -16664,6 +16674,8 @@ function Camera(scene, renderer, config) {
   // to check for proximity with somewhat slow iteration
   this.proximableMeshes = [];
   this.proximityLimit = config.proximityLimit || 22500;
+
+  resize();
 }
 
 Camera.prototype.addCollidableMesh = function(mesh) {
@@ -16869,7 +16881,7 @@ Door.prototype.render = function() {
 
 };
 
-},{"./config":56,"./lib/kutility":64}],59:[function(require,module,exports){
+},{"./config":56,"./lib/kutility":63}],59:[function(require,module,exports){
 
 var $ = require('jquery');
 var globals = require('./global-state');
@@ -16878,7 +16890,7 @@ var keymaster = require('./keymaster');
 var mousemaster = require('./mousemaster');
 var Avatar = require('./avatar');
 var Door = require('./door');
-var ObjectControls = require('./lib/ObjectControls');
+var ObjectControls = require('./object-controls');
 
 module.exports = GeneralPlanetComponent;
 
@@ -16905,13 +16917,13 @@ GeneralPlanetComponent.prototype.postInit = function(options) {
   this.firstPerson = false;
 
   this.controls = new ObjectControls({
-    targetObject: this.avatar.trackingMesh()
+    target: this.avatar
   });
 
   this.camera.addTarget({
     name: THIRD_PERSON_CAM_NAME,
     targetObject: this.avatar.trackingMesh(),
-    cameraPosition: new THREE.Vector3(0, 10, 20),
+    cameraPosition: new THREE.Vector3(0, 4, 40),
     stiffness: 0.2,
     fixed: false
   });
@@ -16938,7 +16950,7 @@ GeneralPlanetComponent.prototype.postInit = function(options) {
   keymaster.keyup([40, 83], true, function(){ self.downwardKeyup(); });
   keymaster.keyup([39, 68], true, function(){ self.rightwardKeyup(); });
 
-  mousemaster.move(function(){ self.mouseMove(); }, 'controls');
+  mousemaster.move(function(x, y) { self.mousemove(x, y); }, 'controls');
 
   if (this.socket) {
     this.socket.on('avatar-entry', this.avatarEntered);
@@ -16989,7 +17001,7 @@ GeneralPlanetComponent.prototype.rightwardKeyup = function() {
   this.controls.setRight(false);
 };
 
-GeneralPlanetComponent.prototype.mouseMove = function(x, y) {
+GeneralPlanetComponent.prototype.mousemove = function(x, y) {
   x -= (window.innerWidth / 2);
   y -= (window.innerHeight / 2);
   var threshold = 15;
@@ -17001,7 +17013,7 @@ GeneralPlanetComponent.prototype.mouseMove = function(x, y) {
       y = 0;
   }
 
-  this.controls.mousePos.set(x, y);
+  //this.controls.mousePos.set(x, y);
 };
 
 /** IO Response */
@@ -17043,7 +17055,7 @@ GeneralPlanetComponent.prototype.avatarWithName = function(name) {
   return this.avatarsByName[name];
 };
 
-},{"./avatar":53,"./door":58,"./global-state":60,"./keymaster":62,"./lib/ObjectControls":63,"./mousemaster":67,"./scene-component":68,"jquery":1}],60:[function(require,module,exports){
+},{"./avatar":53,"./door":58,"./global-state":60,"./keymaster":62,"./mousemaster":66,"./object-controls":67,"./scene-component":68,"jquery":1}],60:[function(require,module,exports){
 
 // Store anything you think should be accessible everywhere here
 
@@ -17269,199 +17281,6 @@ module.exports.clearKeypressListener = function(keycode) {
 };
 
 },{"jquery":1}],63:[function(require,module,exports){
-
-/**
- * Originally written by squarefeet (github.com/squarefeet).
- * Modified by Kevin Roark (github.com/kevin-roark) for own purposes.
- */
-module.exports = function ObjectControls( opts ) {
-    var options = {
-        mousePos: null,
-        targetObject: null,
-        positionVelocityIncrement: 5,
-        positionVelocityDecrement: 0.95,
-
-        rotationDamping: 500,
-
-        rollVelocityIncrement: 0.05,
-        rollVelocityDecrement: 0.95,
-
-        maxPositionVelocity: 200,
-        maxRotationVelocity: 10,
-        maxRollVelocity: 2
-    };
-
-    if( opts ) {
-        for( var i in opts ) {
-            options[i] = opts[i];
-        }
-    }
-
-    var self = this;
-    this.mousePos = options.mousePos || new THREE.Vector2();
-
-    var centerX = window.innerWidth/2,
-        centerY = window.innerHeight/2,
-        forward = false,
-        back = false,
-        left = false,
-        right = false,
-        rollLeft = false,
-        rollRight = false,
-        rollRotation = 0,
-        yaw = 0,
-        pitch = 0,
-        rotationVector = new THREE.Vector3(),
-        rotationVectorLerp = new THREE.Vector3(),
-        rotationQuaternion = new THREE.Quaternion(),
-        positionVector = new THREE.Vector3(),
-        cameraQuaternion = new THREE.Quaternion();
-
-    var updateRotation = function( dt ) {
-        var inc = options.rollVelocityIncrement,
-            dec = options.rollVelocityDecrement,
-            max = options.maxRollVelocity;
-
-        if( rollLeft ) {
-            rollRotation += inc;
-        }
-        else if( rollRight ) {
-            rollRotation -= inc;
-        }
-        else {
-            rollRotation *= dec;
-        }
-
-
-        if( rollRotation > max ) {
-            rollRotation = max;
-        }
-        else if( rollRotation < -max ) {
-            rollRotation = -max;
-        }
-
-        rotationVector.y = -self.mousePos.x / options.rotationDamping;
-        rotationVector.x = -self.mousePos.y / options.rotationDamping;
-    };
-
-    var updatePosition = function( dt ) {
-        var inc = options.positionVelocityIncrement,
-            dec = options.positionVelocityDecrement,
-            max = options.maxPositionVelocity;
-
-        if( forward ) {
-            positionVector.z -= inc;
-        }
-        else if( back ) {
-            positionVector.z += inc;
-        }
-        else {
-            positionVector.z *= dec;
-        }
-
-        if( left ) {
-            positionVector.x -= inc;
-        }
-        else if( right ) {
-            positionVector.x += inc;
-        }
-        else {
-            positionVector.x *= dec;
-        }
-
-
-        if( positionVector.z > max ) {
-            positionVector.z = max;
-        }
-        else if( positionVector.z < -max ) {
-            positionVector.z = -max;
-        }
-
-        if( positionVector.x > max ) {
-            positionVector.x = max;
-        }
-        else if( positionVector.x < -max ) {
-            positionVector.x = -max;
-        }
-
-        positionVector.y *= dec;
-    };
-
-    var updateCameras = function( dt ) {
-        var velX = positionVector.x * dt,
-            velY = positionVector.y * dt,
-            velZ = positionVector.z * dt,
-            roll = rollRotation * dt,
-            obj = options.targetObject;
-
-        rotationQuaternion.set(
-            rotationVector.x * dt,
-            rotationVector.y * dt,
-            roll,
-            1
-        ).normalize();
-
-        obj.quaternion.multiply( rotationQuaternion );
-
-        obj.translateX( velX );
-        obj.translateY( velY );
-        obj.translateZ( velZ );
-    };
-
-
-    this.update = function( dt ) {
-        updateRotation( dt );
-        updatePosition( dt );
-        updateCameras( dt );
-    };
-
-
-
-    this.set = function() {};
-
-    this.setForward = function( state ) {
-        forward = state;
-    };
-    this.setBackward = function( state ) {
-        back = state;
-    };
-    this.setLeft = function( state ) {
-        left = state;
-    };
-    this.setRight = function( state ) {
-        right = state;
-    };
-
-    this.setRollLeft = function( state ) {
-        rollLeft = state;
-    };
-    this.setRollRight = function( state ) {
-        rollRight = state;
-    };
-
-
-    this.getCameraRotation = function() {
-        return cameraQuaternion;
-    };
-
-    this.getVelocity = function() {
-        return positionVector;
-    };
-
-    this.getForwardSpeedAsPercentage = function() {
-        return positionVector.z / options.maxPositionVelocity;
-    };
-
-    this.getAbsoluteForwardSpeedAsPercentage = function() {
-        return Math.abs(positionVector.z) / options.maxPositionVelocity;
-    };
-
-    this.isIdle = function() {
-      return !(forward || back || left || right);
-    }
-}
-
-},{}],64:[function(require,module,exports){
 /* export something */
 module.exports = new Kutility;
 
@@ -18026,7 +17845,7 @@ Kutility.prototype.blur = function(el, x) {
   this.setFilter(el, cf + f);
 }
 
-},{}],65:[function(require,module,exports){
+},{}],64:[function(require,module,exports){
 
 var $ = require('jquery');
 var kt = require('./lib/kutility');
@@ -18184,7 +18003,7 @@ $(function() {
 
 });
 
-},{"./avatar":53,"./avatar-tools":52,"./become-avatar-component":54,"./camera":55,"./config":56,"./door":58,"./door-tools":57,"./general-planet-component":59,"./global-state":60,"./keymaster":62,"./lib/kutility":64,"jquery":1,"socket.io-client":2}],66:[function(require,module,exports){
+},{"./avatar":53,"./avatar-tools":52,"./become-avatar-component":54,"./camera":55,"./config":56,"./door":58,"./door-tools":57,"./general-planet-component":59,"./global-state":60,"./keymaster":62,"./lib/kutility":63,"jquery":1,"socket.io-client":2}],65:[function(require,module,exports){
 
 var cache = {};
 
@@ -18218,7 +18037,7 @@ function fetch(name, clone, callback) {
   callback(cache[name].geometry.clone(), cache[name].materials.clone());
 }
 
-},{}],67:[function(require,module,exports){
+},{}],66:[function(require,module,exports){
 
 var $ = require('jquery');
 
@@ -18247,7 +18066,209 @@ module.exports.clearMove = function(key) {
   delete moveListeners[key];
 }
 
-},{"jquery":1}],68:[function(require,module,exports){
+},{"jquery":1}],67:[function(require,module,exports){
+
+/**
+ * Originally written by squarefeet (github.com/squarefeet).
+ * Modified by Kevin Roark (github.com/kevin-roark) for own purposes.
+ */
+module.exports = function ObjectControls( opts ) {
+    var options = {
+        mousePos: null,
+        target: null,
+        positionVelocityIncrement: 5,
+        positionVelocityDecrement: 0.95,
+
+        rotationDamping: 500,
+
+        rollVelocityIncrement: 0.05,
+        rollVelocityDecrement: 0.95,
+
+        maxPositionVelocity: 200,
+        maxRotationVelocity: 10,
+        maxRollVelocity: 2
+    };
+
+    if( opts ) {
+        for( var i in opts ) {
+            options[i] = opts[i];
+        }
+    }
+
+    var self = this;
+    this.mousePos = options.mousePos || new THREE.Vector2();
+
+    var centerX = window.innerWidth/2,
+        centerY = window.innerHeight/2,
+        forward = false,
+        back = false,
+        left = false,
+        right = false,
+        rollLeft = false,
+        rollRight = false,
+        rollRotation = 0,
+        yaw = 0,
+        pitch = 0,
+        rotationVector = new THREE.Vector3(),
+        rotationVectorLerp = new THREE.Vector3(),
+        rotationQuaternion = new THREE.Quaternion(),
+        positionVector = new THREE.Vector3(),
+        cameraQuaternion = new THREE.Quaternion();
+
+    var updateRotation = function( dt ) {
+        var inc = options.rollVelocityIncrement,
+            dec = options.rollVelocityDecrement,
+            max = options.maxRollVelocity;
+
+        if( rollLeft ) {
+            rollRotation += inc;
+        }
+        else if( rollRight ) {
+            rollRotation -= inc;
+        }
+        else {
+            rollRotation *= dec;
+        }
+
+
+        if( rollRotation > max ) {
+            rollRotation = max;
+        }
+        else if( rollRotation < -max ) {
+            rollRotation = -max;
+        }
+
+        rotationVector.y = -self.mousePos.x / options.rotationDamping;
+        rotationVector.x = -self.mousePos.y / options.rotationDamping;
+    };
+
+    var updatePosition = function( dt ) {
+        var inc = options.positionVelocityIncrement,
+            dec = options.positionVelocityDecrement,
+            max = options.maxPositionVelocity;
+
+        if( forward ) {
+            positionVector.z -= inc;
+        }
+        else if( back ) {
+            positionVector.z += inc;
+        }
+        else {
+            positionVector.z *= dec;
+        }
+
+        if( left ) {
+            positionVector.x -= inc;
+        }
+        else if( right ) {
+            positionVector.x += inc;
+        }
+        else {
+            positionVector.x *= dec;
+        }
+
+
+        if( positionVector.z > max ) {
+            positionVector.z = max;
+        }
+        else if( positionVector.z < -max ) {
+            positionVector.z = -max;
+        }
+
+        if( positionVector.x > max ) {
+            positionVector.x = max;
+        }
+        else if( positionVector.x < -max ) {
+            positionVector.x = -max;
+        }
+
+        positionVector.y *= dec;
+    };
+
+    var updateCameras = function( dt ) {
+        var velX = positionVector.x * dt,
+            velY = positionVector.y * dt,
+            velZ = positionVector.z * dt,
+            roll = rollRotation * dt;
+
+        rotationQuaternion.set(
+            rotationVector.x * dt,
+            rotationVector.y * dt,
+            roll,
+            1
+        ).normalize();
+
+        var targetMeshes;
+        if (options.target.meshes) {
+          targetMeshes = options.target.meshes();
+        } else if (options.target) {
+          targetMeshes = options.target;
+        } else {
+          targetMeshes = [];
+        }
+
+        for (var i = 0; i < targetMeshes.length; i++) {
+          var obj = targetMeshes[i];
+
+          obj.quaternion.multiply( rotationQuaternion );
+
+          obj.translateX( velX );
+          obj.translateY( velY );
+          obj.translateZ( velZ );
+        }
+    };
+
+
+    this.update = function( dt ) {
+        updateRotation( dt );
+        updatePosition( dt );
+        updateCameras( dt );
+    };
+
+
+    this.setForward = function( state ) {
+        forward = state;
+    };
+    this.setBackward = function( state ) {
+        back = state;
+    };
+    this.setLeft = function( state ) {
+        left = state;
+    };
+    this.setRight = function( state ) {
+        right = state;
+    };
+
+    this.setRollLeft = function( state ) {
+        rollLeft = state;
+    };
+    this.setRollRight = function( state ) {
+        rollRight = state;
+    };
+
+
+    this.getCameraRotation = function() {
+        return cameraQuaternion;
+    };
+
+    this.getVelocity = function() {
+        return positionVector;
+    };
+
+    this.getForwardSpeedAsPercentage = function() {
+        return positionVector.z / options.maxPositionVelocity;
+    };
+
+    this.getAbsoluteForwardSpeedAsPercentage = function() {
+        return Math.abs(positionVector.z) / options.maxPositionVelocity;
+    };
+
+    this.isIdle = function() {
+      return !(forward || back || left || right);
+    }
+}
+
+},{}],68:[function(require,module,exports){
 
 var $ = require('jquery');
 
@@ -18308,4 +18329,4 @@ SceneComponent.prototype.clean = function() {};
 
 SceneComponent.prototype.layout = function() {};
 
-},{"jquery":1}]},{},[65])
+},{"jquery":1}]},{},[64])

@@ -2,6 +2,8 @@
  * THREE.TargetCamera 0.1.0
  * (c) 2013 Luke Moody (http://www.github.com/squarefeet)
  *
+ * Modified by Kevin Roark (github.com/kevin-roark) for my purposes.
+ *
  * THREE.TargetCamera may be freely distributed under the MIT license
  *  (See the LICENSE file at root of this repository.)
  */

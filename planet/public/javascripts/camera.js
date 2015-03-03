@@ -14,7 +14,8 @@ var havePointerLock = 'pointerLockElement' in document || 'mozPointerLockElement
 var element = document.body;
 
 var _camera, _renderer;
-$(window).resize(function() {
+
+function resize() {
   if (_renderer) {
     _renderer.setSize(window.innerWidth, window.innerHeight);
   }
@@ -23,7 +24,9 @@ $(window).resize(function() {
     _camera.aspect = window.innerWidth / window.innerHeight;
     _camera.updateProjectionMatrix();
   }
-});
+}
+
+$(window).resize(resize);
 
 module.exports = exports = Camera;
 
@@ -42,6 +45,8 @@ function Camera(scene, renderer, config) {
   // to check for proximity with somewhat slow iteration
   this.proximableMeshes = [];
   this.proximityLimit = config.proximityLimit || 22500;
+
+  resize();
 }
 
 Camera.prototype.addCollidableMesh = function(mesh) {

@@ -126,6 +126,14 @@ Avatar.prototype.trackingMesh = function() {
   return this.faceMesh;
 };
 
+Avatar.prototype.meshes = function() {
+  var m = [this.faceMesh];
+  if (this.skinnedMesh) {
+    m.push(this.skinnedMesh);
+  }
+  return m;
+};
+
 Avatar.prototype.wakeUp = function() {
 
 };
