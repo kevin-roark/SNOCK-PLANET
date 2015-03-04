@@ -3,7 +3,7 @@ var $ = require('jquery');
 
 module.exports = SceneComponent;
 
-function SceneComponent() {};
+function SceneComponent() {}
 
 SceneComponent.prototype.init = function(scene, socket, cam, options) {
   this.scene = scene;

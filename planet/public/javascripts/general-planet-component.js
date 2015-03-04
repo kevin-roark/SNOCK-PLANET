@@ -27,7 +27,6 @@ GeneralPlanetComponent.prototype.postInit = function(options) {
   this.avatarsByName = {};
 
   this.avatar = globals.playerAvatar;
-  this.avatar.rotateTo(0, Math.PI, 0);
   this.renderObjects.push(this.avatar);
 
   this.firstPerson = false;
@@ -40,6 +39,7 @@ GeneralPlanetComponent.prototype.postInit = function(options) {
     name: THIRD_PERSON_CAM_NAME,
     targetObject: this.avatar.trackingMesh(),
     cameraPosition: new THREE.Vector3(0, 4, 40),
+    cameraRotation: new THREE.Euler(0, Math.PI, 0),
     stiffness: 0.2,
     fixed: false
   });
@@ -48,11 +48,14 @@ GeneralPlanetComponent.prototype.postInit = function(options) {
     name: FIRST_PERSON_CAM_NAME,
     targetObject: this.avatar.trackingMesh(),
     cameraPosition: new THREE.Vector3(0, 0, -1),
+    cameraRotation: new THREE.Euler(0, Math.PI, 0),
     stiffness: 0.5,
     fixed: false
   });
 
   this.camera.setTarget(THIRD_PERSON_CAM_NAME);
+
+  this.cam.requestPointerlock();
 
   keymaster.keypress(113, true, function(){ self.toggleCameraPerspective(); });
 
@@ -66,7 +69,7 @@ GeneralPlanetComponent.prototype.postInit = function(options) {
   keymaster.keyup([40, 83], true, function(){ self.downwardKeyup(); });
   keymaster.keyup([39, 68], true, function(){ self.rightwardKeyup(); });
 
-  mousemaster.move(function(x, y) { self.mousemove(x, y); }, 'controls');
+  mousemaster.move(function(x, y, ev) { self.mousemove(x, y, ev); }, 'controls');
 
   if (this.socket) {
     this.socket.on('avatar-entry', this.avatarEntered);
@@ -117,7 +120,14 @@ GeneralPlanetComponent.prototype.rightwardKeyup = function() {
   this.controls.setRight(false);
 };
 
-GeneralPlanetComponent.prototype.mousemove = function(x, y) {
+GeneralPlanetComponent.prototype.mousemove = function(x, y, ev) {
+  var event = ev.originalEvent || ev;
+  var movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
+  var movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
+  console.log(movementX);
+  this.controls.mouseUpdate(movementX, movementY);
+  return;
+
   x -= (window.innerWidth / 2);
   y -= (window.innerHeight / 2);
   var threshold = 15;

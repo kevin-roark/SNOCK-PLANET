@@ -11,7 +11,7 @@ var $ = require('jquery');
 
 var havePointerLock = 'pointerLockElement' in document || 'mozPointerLockElement' in document || 'webkitPointerLockElement' in document;
 
-var element = document.body;
+var pointerlockElement = document.body;
 
 var _camera, _renderer;
 
@@ -46,16 +46,18 @@ function Camera(scene, renderer, config) {
   this.proximableMeshes = [];
   this.proximityLimit = config.proximityLimit || 22500;
 
+  this.hasPointerlock = false;
+
   resize();
 }
 
 Camera.prototype.addCollidableMesh = function(mesh) {
   this.collidableMeshes.push(mesh);
-}
+};
 
 Camera.prototype.addProximableMesh = function(mesh) {
   this.proximableMeshes.push(mesh);
-}
+};
 
 Camera.prototype.render = function() {
   var ob = this.cam;
@@ -93,22 +95,22 @@ Camera.prototype.render = function() {
   if (this.cam.update) {
     this.cam.update();
   }
-}
+};
 
-Camera.prototype.pointerlockchange = function (event) {
-  if (document.pointerLockElement === element || document.mozPointerLockElement === element || document.webkitPointerLockElement === element ) {
-    // we got the lock!
+Camera.prototype.pointerlockchange = function () {
+  if (document.pointerLockElement === pointerlockElement || document.mozPointerLockElement === pointerlockElement || document.webkitPointerLockElement === pointerlockElement ) {
+    this.hasPointerlock = true;
   } else {
-    // we do not!
+    this.hasPointerlock = false;
   }
-}
+};
 
 Camera.prototype.pointerlockerror = function (event) {
   console.log('POINTER LOCK ERROR:');
   console.log(event);
-}
+};
 
-Camera.prototype.requestPointerLock = function() {
+Camera.prototype.requestPointerlock = function() {
   var self = this;
 
   if (havePointerLock) {
@@ -133,29 +135,29 @@ Camera.prototype.requestPointerLock = function() {
       self.pointerlockerror();
     }, false);
 
-    document.addEventListener('click', function (event) {
+    document.addEventListener('click', function() {
       // Ask the browser to lock the pointer
-      element.requestPointerLock = element.requestPointerLock || element.mozRequestPointerLock || element.webkitRequestPointerLock;
+      pointerlockElement.requestPointerLock = pointerlockElement.requestPointerLock || pointerlockElement.mozRequestPointerLock || pointerlockElement.webkitRequestPointerLock;
 
       if (/Firefox/i.test( navigator.userAgent)) {
 
-        var fullscreenchange = function ( event ) {
-          if ( document.fullscreenElement === element || document.mozFullscreenElement === element || document.mozFullScreenElement === element ) {
+        var fullscreenchange = function() {
+          if ( document.fullscreenElement === pointerlockElement || document.mozFullscreenElement === pointerlockElement || document.mozFullScreenElement === pointerlockElement ) {
             document.removeEventListener( 'fullscreenchange', fullscreenchange );
             document.removeEventListener( 'mozfullscreenchange', fullscreenchange );
 
-            element.requestPointerLock();
+            pointerlockElement.requestPointerLock();
           }
-        }
+        };
 
         document.addEventListener('fullscreenchange', fullscreenchange, false);
         document.addEventListener('mozfullscreenchange', fullscreenchange, false);
 
-        element.requestFullscreen = element.requestFullscreen || element.mozRequestFullscreen || element.mozRequestFullScreen || element.webkitRequestFullscreen;
-        element.requestFullscreen();
+        pointerlockElement.requestFullscreen = pointerlockElement.requestFullscreen || pointerlockElement.mozRequestFullScreen || pointerlockElement.webkitRequestFullscreen;
+        pointerlockElement.requestFullscreen();
       } else {
-        element.requestPointerLock();
+        pointerlockElement.requestPointerLock();
       }
     }, false);
   }
-}
+};

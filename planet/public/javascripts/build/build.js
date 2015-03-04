@@ -16262,7 +16262,6 @@ function fetchSocket() {
 },{"./global-state":60,"jquery":1}],53:[function(require,module,exports){
 
 // requirements
-var kt = require('./lib/kutility');
 var loader = require('./model-loader');
 
 module.exports = Avatar;
@@ -16342,6 +16341,7 @@ Avatar.prototype.rotate = function(rx, ry, rz) {
 
 Avatar.prototype.rotateTo = function(x, y, z) {
   if (!this.skinnedMesh) {
+    console.log('rotating post load');
     var self = this;
     this.postLoadBehaviors.push(function() {
       self.rotateTo(x, y, z);
@@ -16349,6 +16349,7 @@ Avatar.prototype.rotateTo = function(x, y, z) {
     return;
   }
 
+  console.log('rotating loaded: ' + y);
   this.skinnedMesh.rotation.set(x, y, z);
   this.rotate(0, 0, 0);
 };
@@ -16443,7 +16444,7 @@ Avatar.prototype.serialize = function() {
     name: this.name,
     color: this.color,
     faceImageUrl: this.faceImageUrl
-  }
+  };
 };
 
 Avatar.prototype.updateFromModel = function(avatarData) {
@@ -16458,7 +16459,7 @@ Avatar.prototype.uploadableFaceImageData = function() {
   return this.faceImageCanvas.toDataURL('image/jpeg', 0.7);
 };
 
-},{"./lib/kutility":63,"./model-loader":65}],54:[function(require,module,exports){
+},{"./model-loader":65}],54:[function(require,module,exports){
 
 var $ = require('jquery');
 var SceneComponent = require('./scene-component');
@@ -16640,7 +16641,7 @@ var $ = require('jquery');
 
 var havePointerLock = 'pointerLockElement' in document || 'mozPointerLockElement' in document || 'webkitPointerLockElement' in document;
 
-var element = document.body;
+var pointerlockElement = document.body;
 
 var _camera, _renderer;
 
@@ -16675,16 +16676,18 @@ function Camera(scene, renderer, config) {
   this.proximableMeshes = [];
   this.proximityLimit = config.proximityLimit || 22500;
 
+  this.hasPointerlock = false;
+
   resize();
 }
 
 Camera.prototype.addCollidableMesh = function(mesh) {
   this.collidableMeshes.push(mesh);
-}
+};
 
 Camera.prototype.addProximableMesh = function(mesh) {
   this.proximableMeshes.push(mesh);
-}
+};
 
 Camera.prototype.render = function() {
   var ob = this.cam;
@@ -16722,22 +16725,22 @@ Camera.prototype.render = function() {
   if (this.cam.update) {
     this.cam.update();
   }
-}
+};
 
-Camera.prototype.pointerlockchange = function (event) {
-  if (document.pointerLockElement === element || document.mozPointerLockElement === element || document.webkitPointerLockElement === element ) {
-    // we got the lock!
+Camera.prototype.pointerlockchange = function () {
+  if (document.pointerLockElement === pointerlockElement || document.mozPointerLockElement === pointerlockElement || document.webkitPointerLockElement === pointerlockElement ) {
+    this.hasPointerlock = true;
   } else {
-    // we do not!
+    this.hasPointerlock = false;
   }
-}
+};
 
 Camera.prototype.pointerlockerror = function (event) {
   console.log('POINTER LOCK ERROR:');
   console.log(event);
-}
+};
 
-Camera.prototype.requestPointerLock = function() {
+Camera.prototype.requestPointerlock = function() {
   var self = this;
 
   if (havePointerLock) {
@@ -16762,32 +16765,32 @@ Camera.prototype.requestPointerLock = function() {
       self.pointerlockerror();
     }, false);
 
-    document.addEventListener('click', function (event) {
+    document.addEventListener('click', function() {
       // Ask the browser to lock the pointer
-      element.requestPointerLock = element.requestPointerLock || element.mozRequestPointerLock || element.webkitRequestPointerLock;
+      pointerlockElement.requestPointerLock = pointerlockElement.requestPointerLock || pointerlockElement.mozRequestPointerLock || pointerlockElement.webkitRequestPointerLock;
 
       if (/Firefox/i.test( navigator.userAgent)) {
 
-        var fullscreenchange = function ( event ) {
-          if ( document.fullscreenElement === element || document.mozFullscreenElement === element || document.mozFullScreenElement === element ) {
+        var fullscreenchange = function() {
+          if ( document.fullscreenElement === pointerlockElement || document.mozFullscreenElement === pointerlockElement || document.mozFullScreenElement === pointerlockElement ) {
             document.removeEventListener( 'fullscreenchange', fullscreenchange );
             document.removeEventListener( 'mozfullscreenchange', fullscreenchange );
 
-            element.requestPointerLock();
+            pointerlockElement.requestPointerLock();
           }
-        }
+        };
 
         document.addEventListener('fullscreenchange', fullscreenchange, false);
         document.addEventListener('mozfullscreenchange', fullscreenchange, false);
 
-        element.requestFullscreen = element.requestFullscreen || element.mozRequestFullscreen || element.mozRequestFullScreen || element.webkitRequestFullscreen;
-        element.requestFullscreen();
+        pointerlockElement.requestFullscreen = pointerlockElement.requestFullscreen || pointerlockElement.mozRequestFullScreen || pointerlockElement.webkitRequestFullscreen;
+        pointerlockElement.requestFullscreen();
       } else {
-        element.requestPointerLock();
+        pointerlockElement.requestPointerLock();
       }
     }, false);
   }
-}
+};
 
 },{"jquery":1}],56:[function(require,module,exports){
 (function (__dirname){
@@ -16911,7 +16914,6 @@ GeneralPlanetComponent.prototype.postInit = function(options) {
   this.avatarsByName = {};
 
   this.avatar = globals.playerAvatar;
-  this.avatar.rotateTo(0, Math.PI, 0);
   this.renderObjects.push(this.avatar);
 
   this.firstPerson = false;
@@ -16924,6 +16926,8 @@ GeneralPlanetComponent.prototype.postInit = function(options) {
     name: THIRD_PERSON_CAM_NAME,
     targetObject: this.avatar.trackingMesh(),
     cameraPosition: new THREE.Vector3(0, 4, 40),
+    cameraRotation: new THREE.Euler(0, Math.PI, 0),
+    matchRotation: false,
     stiffness: 0.2,
     fixed: false
   });
@@ -16932,11 +16936,14 @@ GeneralPlanetComponent.prototype.postInit = function(options) {
     name: FIRST_PERSON_CAM_NAME,
     targetObject: this.avatar.trackingMesh(),
     cameraPosition: new THREE.Vector3(0, 0, -1),
+    cameraRotation: new THREE.Euler(0, Math.PI, 0),
     stiffness: 0.5,
     fixed: false
   });
 
   this.camera.setTarget(THIRD_PERSON_CAM_NAME);
+
+  this.cam.requestPointerlock();
 
   keymaster.keypress(113, true, function(){ self.toggleCameraPerspective(); });
 
@@ -16950,7 +16957,7 @@ GeneralPlanetComponent.prototype.postInit = function(options) {
   keymaster.keyup([40, 83], true, function(){ self.downwardKeyup(); });
   keymaster.keyup([39, 68], true, function(){ self.rightwardKeyup(); });
 
-  mousemaster.move(function(x, y) { self.mousemove(x, y); }, 'controls');
+  mousemaster.move(function(x, y, ev) { self.mousemove(x, y, ev); }, 'controls');
 
   if (this.socket) {
     this.socket.on('avatar-entry', this.avatarEntered);
@@ -17001,7 +17008,14 @@ GeneralPlanetComponent.prototype.rightwardKeyup = function() {
   this.controls.setRight(false);
 };
 
-GeneralPlanetComponent.prototype.mousemove = function(x, y) {
+GeneralPlanetComponent.prototype.mousemove = function(x, y, ev) {
+  var event = ev.originalEvent || ev;
+  var movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
+  var movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
+  console.log(movementX);
+  this.controls.mouseUpdate(movementX, movementY);
+  return;
+
   x -= (window.innerWidth / 2);
   y -= (window.innerHeight / 2);
   var threshold = 15;
@@ -18078,8 +18092,10 @@ module.exports = function ObjectControls( opts ) {
         target: null,
         positionVelocityIncrement: 5,
         positionVelocityDecrement: 0.95,
+        invertX: true,
+        invertZ: true,
 
-        rotationDamping: 500,
+        rotationDamping: 20,
 
         rollVelocityIncrement: 0.05,
         rollVelocityDecrement: 0.95,
@@ -18089,17 +18105,16 @@ module.exports = function ObjectControls( opts ) {
         maxRollVelocity: 2
     };
 
-    if( opts ) {
-        for( var i in opts ) {
-            options[i] = opts[i];
-        }
+    if (!opts) opts = {};
+    for(var i in opts) {
+      if (opts.hasOwnProperty(i)) {
+        options[i] = opts[i];
+      }
     }
 
-    var self = this;
     this.mousePos = options.mousePos || new THREE.Vector2();
 
-    var centerX = window.innerWidth/2,
-        centerY = window.innerHeight/2,
+    var PI_2 = Math.PI / 2,
         forward = false,
         back = false,
         left = false,
@@ -18107,61 +18122,62 @@ module.exports = function ObjectControls( opts ) {
         rollLeft = false,
         rollRight = false,
         rollRotation = 0,
-        yaw = 0,
-        pitch = 0,
-        rotationVector = new THREE.Vector3(),
-        rotationVectorLerp = new THREE.Vector3(),
         rotationQuaternion = new THREE.Quaternion(),
         positionVector = new THREE.Vector3(),
         cameraQuaternion = new THREE.Quaternion();
 
-    var updateRotation = function( dt ) {
-        var inc = options.rollVelocityIncrement,
-            dec = options.rollVelocityDecrement,
-            max = options.maxRollVelocity;
+    var pitchVector = new THREE.Object3D();
+    var yawVector = new THREE.Object3D();
+    yawVector.add(pitchVector);
 
-        if( rollLeft ) {
-            rollRotation += inc;
-        }
-        else if( rollRight ) {
-            rollRotation -= inc;
-        }
-        else {
-            rollRotation *= dec;
-        }
+    var updateRolling = function(dt) {
+      var inc = options.rollVelocityIncrement,
+          dec = options.rollVelocityDecrement,
+          max = options.maxRollVelocity;
 
+      if (rollLeft) {
+          rollRotation += inc;
+      }
+      else if (rollRight) {
+          rollRotation -= inc;
+      }
+      else {
+          rollRotation *= dec;
+      }
 
-        if( rollRotation > max ) {
-            rollRotation = max;
-        }
-        else if( rollRotation < -max ) {
-            rollRotation = -max;
-        }
-
-        rotationVector.y = -self.mousePos.x / options.rotationDamping;
-        rotationVector.x = -self.mousePos.y / options.rotationDamping;
+      if (rollRotation > max) {
+        rollRotation = max;
+      }
+      else if (rollRotation < -max) {
+        rollRotation = -max;
+      }
     };
 
-    var updatePosition = function( dt ) {
+    var updateRotation = function(dt) {
+        //rotationVector.y = -self.mousePos.x / options.rotationDamping;
+        //rotationVector.x = -self.mousePos.y / options.rotationDamping;
+    };
+
+    var updatePosition = function(dt) {
         var inc = options.positionVelocityIncrement,
             dec = options.positionVelocityDecrement,
             max = options.maxPositionVelocity;
 
         if( forward ) {
-            positionVector.z -= inc;
+            positionVector.z -= (options.invertZ? -inc : inc);;
         }
         else if( back ) {
-            positionVector.z += inc;
+            positionVector.z += (options.invertZ? -inc : inc);;
         }
         else {
             positionVector.z *= dec;
         }
 
         if( left ) {
-            positionVector.x -= inc;
+            positionVector.x -= (options.invertX? -inc : inc);
         }
         else if( right ) {
-            positionVector.x += inc;
+            positionVector.x += (options.invertX? -inc : inc);
         }
         else {
             positionVector.x *= dec;
@@ -18185,15 +18201,15 @@ module.exports = function ObjectControls( opts ) {
         positionVector.y *= dec;
     };
 
-    var updateCameras = function( dt ) {
+    var updateCameras = function(dt) {
         var velX = positionVector.x * dt,
             velY = positionVector.y * dt,
             velZ = positionVector.z * dt,
             roll = rollRotation * dt;
 
         rotationQuaternion.set(
-            rotationVector.x * dt,
-            rotationVector.y * dt,
+            yawVector.rotation.x * dt,
+            -yawVector.rotation.y * dt,
             roll,
             1
         ).normalize();
@@ -18210,7 +18226,8 @@ module.exports = function ObjectControls( opts ) {
         for (var i = 0; i < targetMeshes.length; i++) {
           var obj = targetMeshes[i];
 
-          obj.quaternion.multiply( rotationQuaternion );
+          //obj.quaternion.multiply( rotationQuaternion );
+          obj.rotation.copy(yawVector.rotation);
 
           obj.translateX( velX );
           obj.translateY( velY );
@@ -18220,9 +18237,17 @@ module.exports = function ObjectControls( opts ) {
 
 
     this.update = function( dt ) {
-        updateRotation( dt );
-        updatePosition( dt );
-        updateCameras( dt );
+      updateRolling(dt);
+      updateRotation(dt);
+      updatePosition(dt);
+      updateCameras(dt);
+    };
+
+    this.mouseUpdate = function(movementX, movementY) {
+      yawVector.rotation.y += movementX / options.rotationDamping;
+
+      pitchVector.rotation.x += movementY / options.rotationDamping;
+      pitchVector.rotation.x = Math.max(-PI_2, Math.min(PI_2, pitchVector.rotation.x));
     };
 
 
@@ -18265,8 +18290,8 @@ module.exports = function ObjectControls( opts ) {
 
     this.isIdle = function() {
       return !(forward || back || left || right);
-    }
-}
+    };
+};
 
 },{}],68:[function(require,module,exports){
 
@@ -18274,7 +18299,7 @@ var $ = require('jquery');
 
 module.exports = SceneComponent;
 
-function SceneComponent() {};
+function SceneComponent() {}
 
 SceneComponent.prototype.init = function(scene, socket, cam, options) {
   this.scene = scene;

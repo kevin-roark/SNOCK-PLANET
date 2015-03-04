@@ -1,6 +1,5 @@
 
 // requirements
-var kt = require('./lib/kutility');
 var loader = require('./model-loader');
 
 module.exports = Avatar;
@@ -80,6 +79,7 @@ Avatar.prototype.rotate = function(rx, ry, rz) {
 
 Avatar.prototype.rotateTo = function(x, y, z) {
   if (!this.skinnedMesh) {
+    console.log('rotating post load');
     var self = this;
     this.postLoadBehaviors.push(function() {
       self.rotateTo(x, y, z);
@@ -87,6 +87,7 @@ Avatar.prototype.rotateTo = function(x, y, z) {
     return;
   }
 
+  console.log('rotating loaded: ' + y);
   this.skinnedMesh.rotation.set(x, y, z);
   this.rotate(0, 0, 0);
 };
@@ -181,7 +182,7 @@ Avatar.prototype.serialize = function() {
     name: this.name,
     color: this.color,
     faceImageUrl: this.faceImageUrl
-  }
+  };
 };
 
 Avatar.prototype.updateFromModel = function(avatarData) {

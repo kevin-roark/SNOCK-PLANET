@@ -8,7 +8,7 @@
  *  (See the LICENSE file at root of this repository.)
  */
 
-THREE.TargetCamera = function( fov, aspect, near, far ) {
+THREE.TargetCamera = function(fov, aspect, near, far) {
 
     // super constructor
     THREE.PerspectiveCamera.call(this);
