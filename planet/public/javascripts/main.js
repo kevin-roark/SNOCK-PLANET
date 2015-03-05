@@ -1,18 +1,13 @@
 
 var $ = require('jquery');
-var kt = require('./lib/kutility');
 var io = require('socket.io-client');
 
 var Camera = require('./camera');
-var Avatar = require('./avatar');
 var Door = require('./door');
 var config = require('./config');
 var globals = require('./global-state');
-var doorTools = require('./door-tools');
-var avatarTools = require('./avatar-tools');
 var BecomeAvatarComponent = require('./become-avatar-component');
 var GeneralPlanetComponent = require('./general-planet-component');
-var keymaster = require('./keymaster');
 
 // modes
 var BECOME_AVATAR_MODE = 0;

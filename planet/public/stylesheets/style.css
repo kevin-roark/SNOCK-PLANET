@@ -124,3 +124,50 @@ progress {
   .avatar-creation-submit-button:hover {
     background-color: red;
   }
+
+/* Door creation */
+
+.door-ui-wrapper {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  background-color: rgba(255, 0, 255, 0.5);
+  display: none;
+}
+
+#door-name-input {
+  position: absolute;
+  left: 50%;
+  top: 33%;
+  height: 40px;
+  width: 450px;
+  margin: -40px -225px;
+
+  border-radius: 10px;
+  border: none;
+  text-align: center;
+
+  background-color: rgba(30, 30, 30, 0.9);
+  color: white;
+  font-size: 24px;
+  font-family: monospace;
+  letter-spacing: 2px;
+}
+
+.door-submit-button {
+  position: relative;
+  top: 50%;
+  left: 50%;
+  height: 60px;
+  width: 200px;
+  margin: -60px -100px;
+
+  line-height: 60px;
+  background-color: white;
+  border: 2px solid black;
+  cursor: pointer;
+}
+  .door-submit-button:hover {
+    background-color: orange;
+  }

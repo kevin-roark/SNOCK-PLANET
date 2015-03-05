@@ -22,14 +22,17 @@ function GeneralPlanetComponent() {};
 GeneralPlanetComponent.prototype.__proto__ = SceneComponent.prototype;
 
 GeneralPlanetComponent.prototype.postInit = function(options) {
-  var self = this;
-
   this.avatarsByName = {};
 
   this.avatar = globals.playerAvatar;
   this.renderObjects.push(this.avatar);
 
   this.firstPerson = false;
+
+  this.creatingThread = false;
+  this.threadCreationDoor = new Door();
+  this.threadCreationDoor.setVisible(false);
+  this.addObject3d(this.threadCreationDoor);
 
   this.controls = new ObjectControls({
     target: this.avatar
@@ -55,21 +58,9 @@ GeneralPlanetComponent.prototype.postInit = function(options) {
 
   this.camera.setTarget(THIRD_PERSON_CAM_NAME);
 
+  keymaster.setPreventDefaults(true);
   this.cam.requestPointerlock();
-
-  keymaster.keypress(113, true, function(){ self.toggleCameraPerspective(); });
-
-  keymaster.keydown([38, 87], true, function(){ self.forwardKeydown(); });
-  keymaster.keydown([37, 65], true, function(){ self.leftwardKeydown(); });
-  keymaster.keydown([40, 83], true, function(){ self.downwardKeydown(); });
-  keymaster.keydown([39, 68], true, function(){ self.rightwardKeydown(); });
-
-  keymaster.keyup([38, 87], true, function(){ self.forwardKeyup(); });
-  keymaster.keyup([37, 65], true, function(){ self.leftwardKeyup(); });
-  keymaster.keyup([40, 83], true, function(){ self.downwardKeyup(); });
-  keymaster.keyup([39, 68], true, function(){ self.rightwardKeyup(); });
-
-  mousemaster.move(function(x, y, ev) { self.mousemove(x, y, ev); }, 'controls');
+  this.addInteractionGlue();
 
   if (this.socket) {
     this.socket.on('avatar-entry', this.avatarEntered);
@@ -85,7 +76,39 @@ GeneralPlanetComponent.prototype.preRender = function() {
 
 /** User Interaction */
 
+GeneralPlanetComponent.prototype.addInteractionGlue = function() {
+  var self = this;
+
+  keymaster.keypress(113, function(){ self.toggleCameraPerspective(); });
+  keymaster.keypress(110, function(){ self.enterThreadCreation(); });
+
+  keymaster.keydown([38, 87], function(){ self.forwardKeydown(); });
+  keymaster.keydown([37, 65], function(){ self.leftwardKeydown(); });
+  keymaster.keydown([40, 83], function(){ self.downwardKeydown(); });
+  keymaster.keydown([39, 68], function(){ self.rightwardKeydown(); });
+
+  keymaster.keyup([38, 87], function(){ self.forwardKeyup(); });
+  keymaster.keyup([37, 65], function(){ self.leftwardKeyup(); });
+  keymaster.keyup([40, 83], function(){ self.downwardKeyup(); });
+  keymaster.keyup([39, 68], function(){ self.rightwardKeyup(); });
+
+  keymaster.keydown(27, function(){ self.exitThreadCreation(); });
+
+  mousemaster.move(function(x, y, ev) { self.mousemove(x, y, ev); }, 'controls');
+
+  $('#door-name-form').submit(function(e) {
+    e.preventDefault();
+    self.exitThreadCreation();
+  });
+
+  $('.door-submit-button').click(function() {
+    self.exitThreadCreation();
+  });
+};
+
 GeneralPlanetComponent.prototype.toggleCameraPerspective = function() {
+  if (!this.controlsActive()) return;
+
   this.firstPerson = !this.firstPerson;
 
   this.avatar.setVisible(!this.firstPerson);
@@ -94,16 +117,46 @@ GeneralPlanetComponent.prototype.toggleCameraPerspective = function() {
   this.camera.setTarget(camName);
 };
 
+GeneralPlanetComponent.prototype.enterThreadCreation = function() {
+  if (this.creatingThread) return;
+
+  this.creatingThread = true;
+  keymaster.setPreventDefaults(false);
+  this.cam.exitPointerlock();
+
+  this.threadCreationDoor.setVisible(true);
+  var avatarPos = this.avatar.trackingMesh().position;
+  this.threadCreationDoor.moveTo(avatarPos.x - 10, 4, avatarPos.z - 5);
+
+  $('.door-ui-wrapper').fadeIn();
+  $('#door-name-input').focus();
+};
+
+GeneralPlanetComponent.prototype.exitThreadCreation = function() {
+  if (!this.creatingThread) return;
+
+  this.creatingThread = false;
+  keymaster.setPreventDefaults(true);
+  this.cam.requestPointerlock();
+  this.threadCreationDoor.setVisible(false);
+
+  $('.door-ui-wrapper').fadeOut();
+};
+
 GeneralPlanetComponent.prototype.forwardKeydown = function() {
+  if (!this.controlsActive()) return;
   this.controls.setForward(true);
 };
 GeneralPlanetComponent.prototype.leftwardKeydown = function() {
+  if (!this.controlsActive()) return;
   this.controls.setLeft(true);
 };
 GeneralPlanetComponent.prototype.downwardKeydown = function() {
+  if (!this.controlsActive()) return;
   this.controls.setBackward(true);
 };
 GeneralPlanetComponent.prototype.rightwardKeydown = function() {
+  if (!this.controlsActive()) return;
   this.controls.setRight(true);
 };
 
@@ -121,10 +174,11 @@ GeneralPlanetComponent.prototype.rightwardKeyup = function() {
 };
 
 GeneralPlanetComponent.prototype.mousemove = function(x, y, ev) {
+  if (!this.controlsActive()) return;
+
   var event = ev.originalEvent || ev;
   var movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
   var movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
-  console.log(movementX);
   this.controls.mouseUpdate(movementX, movementY);
   return;
 
@@ -179,4 +233,8 @@ GeneralPlanetComponent.prototype.doorCreated = function(doorData) {
 
 GeneralPlanetComponent.prototype.avatarWithName = function(name) {
   return this.avatarsByName[name];
+};
+
+GeneralPlanetComponent.prototype.controlsActive = function() {
+  return !this.creatingThread;
 };

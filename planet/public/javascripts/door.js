@@ -1,29 +1,33 @@
 
 // requirements
-var kt = require('./lib/kutility');
 var config = require('./config');
 
 module.exports = Door;
 
 function Door(options) {
+  if (!options) options = {};
   if (!options.position) options.position = {};
+
   this.initX = options.position.x || 0;
   this.initY = options.position.y || 0;
   this.initZ = options.position.z || 0;
 
   this.scale = options.scale || 2;
 
+  this.subject = options.subject || 'default_subject';
+  this.texture = options.texture || config.door_texture;
+
   this.material = new THREE.MeshPhongMaterial({
-      map: THREE.ImageUtils.loadTexture(config.door_texture),
+      map: THREE.ImageUtils.loadTexture(this.texture),
       reflectivity: 0.15
   });
-  this.geometry = new THREE.BoxGeometry(2, 10, 0.5);
+  this.geometry = new THREE.BoxGeometry(8, 20, 0.5);
   this.mesh = new THREE.Mesh(this.geometry, this.material);
 
   this.moveTo(this.initX, this.initY, this.initZ);
-};
+}
 
-Door.prototype.addTo = function(scene, renderer) {
+Door.prototype.addTo = function(scene) {
   scene.add(this.mesh);
 };
 
@@ -46,13 +50,30 @@ Door.prototype.rotate = function(rx, ry, rz) {
 Door.prototype.moveTo = function(x, y, z) {
   if (!this.mesh) return;
 
-  this.mesh.position.x = x;
-  this.mesh.position.y = y;
-  this.mesh.position.z = z;
-
+  this.mesh.position.set(x, y, z);
   this.move(0, 0, 0);
 };
 
 Door.prototype.render = function() {
 
+};
+
+Door.prototype.meshes = function() {
+  return [this.mesh];
+};
+
+Door.prototype.setVisible = function(visible) {
+  this.mesh.visible = visible;
+};
+
+Door.prototype.serialize = function() {
+  return {
+    subject: this.subject,
+    texture: this.texture,
+    position: {
+      x: this.mesh.position.x,
+      z: this.mesh.position.z
+    },
+    when: new Date()
+  };
 };

@@ -4,6 +4,7 @@ var $ = require('jquery');
 var keydownMap = {};
 var keyupMap = {};
 var keypressMap = {};
+var shouldPreventDefaults = false;
 
 $('body').keydown(function(ev) {
   callListener(keydownMap, ev);
@@ -21,7 +22,7 @@ $('body').keypress(function(ev) {
 function callListener(listenerMap, ev) {
   var listener = getListener(listenerMap, ev.which);
   if (listener) {
-    if (listener.preventDefault) {
+    if (shouldPreventDefaults) {
       ev.preventDefault();
     }
 
@@ -35,16 +36,15 @@ function getListener(listenerMap, keycode) {
   return listenerMap[keycode + ''];
 }
 
-function setListener(listener, listenerMap, keycodes, preventDefault) {
+function setListener(listener, listenerMap, keycodes) {
   if (!Array.isArray(keycodes)) {
-    keycodes = [keycodes]
+    keycodes = [keycodes];
   }
 
   for (var i = 0; i < keycodes.length; i++) {
     var keycode = keycodes[i];
     listenerMap[keycode + ''] = {
-      fn: listener,
-      preventDefault: preventDefault
+      fn: listener
     };
   }
 }
@@ -54,23 +54,25 @@ function clearListener(listenerMap, keycode) {
     listenerMap[keycode + ''] = undefined;
   } else {
     for (var key in listenerMap) {
-      listenerMap[key] = undefined;
+      if (listenerMap.hasOwnProperty(key)) {
+        delete listenerMap[key];
+      }
     }
   }
 }
 
 /* exports */
 
-module.exports.keydown = function(keycodes, preventDefault, listener) {
-  setListener(listener, keydownMap, keycodes, preventDefault);
+module.exports.keydown = function(keycodes, listener) {
+  setListener(listener, keydownMap, keycodes);
 };
 
-module.exports.keyup = function(keycodes, preventDefault, listener) {
-  setListener(listener, keyupMap, keycodes, preventDefault);
+module.exports.keyup = function(keycodes, listener) {
+  setListener(listener, keyupMap, keycodes);
 };
 
-module.exports.keypress = function(keycodes, preventDefault, listener) {
-  setListener(listener, keypressMap, keycodes, preventDefault);
+module.exports.keypress = function(keycodes, listener) {
+  setListener(listener, keypressMap, keycodes);
 };
 
 module.exports.clearKeydownListener = function(keycode) {
@@ -83,4 +85,8 @@ module.exports.clearKeyupListener = function(keycode) {
 
 module.exports.clearKeypressListener = function(keycode) {
   clearListener(keypressMap, keycode);
+};
+
+module.exports.setPreventDefaults = function(preventDefaults) {
+  shouldPreventDefaults = preventDefaults;
 };

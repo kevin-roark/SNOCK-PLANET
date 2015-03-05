@@ -16259,7 +16259,7 @@ function fetchSocket() {
   return socket;
 }
 
-},{"./global-state":60,"jquery":1}],53:[function(require,module,exports){
+},{"./global-state":59,"jquery":1}],53:[function(require,module,exports){
 
 // requirements
 var loader = require('./model-loader');
@@ -16341,7 +16341,6 @@ Avatar.prototype.rotate = function(rx, ry, rz) {
 
 Avatar.prototype.rotateTo = function(x, y, z) {
   if (!this.skinnedMesh) {
-    console.log('rotating post load');
     var self = this;
     this.postLoadBehaviors.push(function() {
       self.rotateTo(x, y, z);
@@ -16349,7 +16348,6 @@ Avatar.prototype.rotateTo = function(x, y, z) {
     return;
   }
 
-  console.log('rotating loaded: ' + y);
   this.skinnedMesh.rotation.set(x, y, z);
   this.rotate(0, 0, 0);
 };
@@ -16459,7 +16457,7 @@ Avatar.prototype.uploadableFaceImageData = function() {
   return this.faceImageCanvas.toDataURL('image/jpeg', 0.7);
 };
 
-},{"./model-loader":65}],54:[function(require,module,exports){
+},{"./model-loader":63}],54:[function(require,module,exports){
 
 var $ = require('jquery');
 var SceneComponent = require('./scene-component');
@@ -16627,7 +16625,7 @@ function setWidthEqualToHeight($el) {
   $el.css('width', height + 'px');
 }
 
-},{"./avatar":53,"./avatar-tools":52,"./global-state":60,"./image-dropper":61,"./scene-component":68,"jquery":1}],55:[function(require,module,exports){
+},{"./avatar":53,"./avatar-tools":52,"./global-state":59,"./image-dropper":60,"./scene-component":66,"jquery":1}],55:[function(require,module,exports){
 /**
  * BELOW CODE INSPIRED FROM
  * http://threejs.org/examples/misc_controls_pointerlock.html
@@ -16642,6 +16640,8 @@ var $ = require('jquery');
 var havePointerLock = 'pointerLockElement' in document || 'mozPointerLockElement' in document || 'webkitPointerLockElement' in document;
 
 var pointerlockElement = document.body;
+
+var canRequestPointerlock = false;
 
 var _camera, _renderer;
 
@@ -16677,6 +16677,7 @@ function Camera(scene, renderer, config) {
   this.proximityLimit = config.proximityLimit || 22500;
 
   this.hasPointerlock = false;
+  this.addPointerlockListeners();
 
   resize();
 }
@@ -16741,6 +16742,47 @@ Camera.prototype.pointerlockerror = function (event) {
 };
 
 Camera.prototype.requestPointerlock = function() {
+  canRequestPointerlock = true;
+
+  if (/Firefox/i.test( navigator.userAgent)) {
+    var fullscreenchange = function() {
+      if ( document.fullscreenElement === pointerlockElement || document.mozFullscreenElement === pointerlockElement || document.mozFullScreenElement === pointerlockElement ) {
+        document.removeEventListener( 'fullscreenchange', fullscreenchange );
+        document.removeEventListener( 'mozfullscreenchange', fullscreenchange );
+
+        pointerlockElement.requestPointerLock();
+      }
+    };
+
+    document.addEventListener('fullscreenchange', fullscreenchange, false);
+    document.addEventListener('mozfullscreenchange', fullscreenchange, false);
+
+    pointerlockElement.requestFullscreen = pointerlockElement.requestFullscreen || pointerlockElement.mozRequestFullScreen || pointerlockElement.webkitRequestFullscreen;
+    pointerlockElement.requestFullscreen();
+  } else {
+    pointerlockElement.requestPointerLock = pointerlockElement.requestPointerLock ||
+                                            pointerlockElement.mozRequestPointerLock ||
+                                            pointerlockElement.webkitRequestPointerLock;
+
+    if (pointerlockElement.requestPointerLock) {
+      pointerlockElement.requestPointerLock();
+    }
+  }
+};
+
+Camera.prototype.exitPointerlock = function() {
+  pointerlockElement.exitPointerLock =  pointerlockElement.exitPointerLock    ||
+                                        pointerlockElement.mozExitPointerLock ||
+                                        pointerlockElement.webkitExitPointerLock;
+
+  if (pointerlockElement.exitPointerLock) {
+    pointerlockElement.exitPointerLock();
+  }
+
+  canRequestPointerlock = false;
+};
+
+Camera.prototype.addPointerlockListeners = function() {
   var self = this;
 
   if (havePointerLock) {
@@ -16766,28 +16808,9 @@ Camera.prototype.requestPointerlock = function() {
     }, false);
 
     document.addEventListener('click', function() {
-      // Ask the browser to lock the pointer
-      pointerlockElement.requestPointerLock = pointerlockElement.requestPointerLock || pointerlockElement.mozRequestPointerLock || pointerlockElement.webkitRequestPointerLock;
+      if (!canRequestPointerlock) return;
 
-      if (/Firefox/i.test( navigator.userAgent)) {
-
-        var fullscreenchange = function() {
-          if ( document.fullscreenElement === pointerlockElement || document.mozFullscreenElement === pointerlockElement || document.mozFullScreenElement === pointerlockElement ) {
-            document.removeEventListener( 'fullscreenchange', fullscreenchange );
-            document.removeEventListener( 'mozfullscreenchange', fullscreenchange );
-
-            pointerlockElement.requestPointerLock();
-          }
-        };
-
-        document.addEventListener('fullscreenchange', fullscreenchange, false);
-        document.addEventListener('mozfullscreenchange', fullscreenchange, false);
-
-        pointerlockElement.requestFullscreen = pointerlockElement.requestFullscreen || pointerlockElement.mozRequestFullScreen || pointerlockElement.webkitRequestFullscreen;
-        pointerlockElement.requestFullscreen();
-      } else {
-        pointerlockElement.requestPointerLock();
-      }
+      self.requestPointerlock();
     }, false);
   }
 };
@@ -16823,34 +16846,35 @@ module.exports.addTestDoor = false;
 }).call(this,"/")
 },{}],57:[function(require,module,exports){
 
-
-},{}],58:[function(require,module,exports){
-
 // requirements
-var kt = require('./lib/kutility');
 var config = require('./config');
 
 module.exports = Door;
 
 function Door(options) {
+  if (!options) options = {};
   if (!options.position) options.position = {};
+
   this.initX = options.position.x || 0;
   this.initY = options.position.y || 0;
   this.initZ = options.position.z || 0;
 
   this.scale = options.scale || 2;
 
+  this.subject = options.subject || 'default_subject';
+  this.texture = options.texture || config.door_texture;
+
   this.material = new THREE.MeshPhongMaterial({
-      map: THREE.ImageUtils.loadTexture(config.door_texture),
+      map: THREE.ImageUtils.loadTexture(this.texture),
       reflectivity: 0.15
   });
-  this.geometry = new THREE.BoxGeometry(2, 10, 0.5);
+  this.geometry = new THREE.BoxGeometry(8, 20, 0.5);
   this.mesh = new THREE.Mesh(this.geometry, this.material);
 
   this.moveTo(this.initX, this.initY, this.initZ);
-};
+}
 
-Door.prototype.addTo = function(scene, renderer) {
+Door.prototype.addTo = function(scene) {
   scene.add(this.mesh);
 };
 
@@ -16873,10 +16897,7 @@ Door.prototype.rotate = function(rx, ry, rz) {
 Door.prototype.moveTo = function(x, y, z) {
   if (!this.mesh) return;
 
-  this.mesh.position.x = x;
-  this.mesh.position.y = y;
-  this.mesh.position.z = z;
-
+  this.mesh.position.set(x, y, z);
   this.move(0, 0, 0);
 };
 
@@ -16884,7 +16905,27 @@ Door.prototype.render = function() {
 
 };
 
-},{"./config":56,"./lib/kutility":63}],59:[function(require,module,exports){
+Door.prototype.meshes = function() {
+  return [this.mesh];
+};
+
+Door.prototype.setVisible = function(visible) {
+  this.mesh.visible = visible;
+};
+
+Door.prototype.serialize = function() {
+  return {
+    subject: this.subject,
+    texture: this.texture,
+    position: {
+      x: this.mesh.position.x,
+      z: this.mesh.position.z
+    },
+    when: new Date()
+  };
+};
+
+},{"./config":56}],58:[function(require,module,exports){
 
 var $ = require('jquery');
 var globals = require('./global-state');
@@ -16909,14 +16950,17 @@ function GeneralPlanetComponent() {};
 GeneralPlanetComponent.prototype.__proto__ = SceneComponent.prototype;
 
 GeneralPlanetComponent.prototype.postInit = function(options) {
-  var self = this;
-
   this.avatarsByName = {};
 
   this.avatar = globals.playerAvatar;
   this.renderObjects.push(this.avatar);
 
   this.firstPerson = false;
+
+  this.creatingThread = false;
+  this.threadCreationDoor = new Door();
+  this.threadCreationDoor.setVisible(false);
+  this.addObject3d(this.threadCreationDoor);
 
   this.controls = new ObjectControls({
     target: this.avatar
@@ -16927,7 +16971,6 @@ GeneralPlanetComponent.prototype.postInit = function(options) {
     targetObject: this.avatar.trackingMesh(),
     cameraPosition: new THREE.Vector3(0, 4, 40),
     cameraRotation: new THREE.Euler(0, Math.PI, 0),
-    matchRotation: false,
     stiffness: 0.2,
     fixed: false
   });
@@ -16943,21 +16986,9 @@ GeneralPlanetComponent.prototype.postInit = function(options) {
 
   this.camera.setTarget(THIRD_PERSON_CAM_NAME);
 
+  keymaster.setPreventDefaults(true);
   this.cam.requestPointerlock();
-
-  keymaster.keypress(113, true, function(){ self.toggleCameraPerspective(); });
-
-  keymaster.keydown([38, 87], true, function(){ self.forwardKeydown(); });
-  keymaster.keydown([37, 65], true, function(){ self.leftwardKeydown(); });
-  keymaster.keydown([40, 83], true, function(){ self.downwardKeydown(); });
-  keymaster.keydown([39, 68], true, function(){ self.rightwardKeydown(); });
-
-  keymaster.keyup([38, 87], true, function(){ self.forwardKeyup(); });
-  keymaster.keyup([37, 65], true, function(){ self.leftwardKeyup(); });
-  keymaster.keyup([40, 83], true, function(){ self.downwardKeyup(); });
-  keymaster.keyup([39, 68], true, function(){ self.rightwardKeyup(); });
-
-  mousemaster.move(function(x, y, ev) { self.mousemove(x, y, ev); }, 'controls');
+  this.addInteractionGlue();
 
   if (this.socket) {
     this.socket.on('avatar-entry', this.avatarEntered);
@@ -16973,7 +17004,39 @@ GeneralPlanetComponent.prototype.preRender = function() {
 
 /** User Interaction */
 
+GeneralPlanetComponent.prototype.addInteractionGlue = function() {
+  var self = this;
+
+  keymaster.keypress(113, function(){ self.toggleCameraPerspective(); });
+  keymaster.keypress(110, function(){ self.enterThreadCreation(); });
+
+  keymaster.keydown([38, 87], function(){ self.forwardKeydown(); });
+  keymaster.keydown([37, 65], function(){ self.leftwardKeydown(); });
+  keymaster.keydown([40, 83], function(){ self.downwardKeydown(); });
+  keymaster.keydown([39, 68], function(){ self.rightwardKeydown(); });
+
+  keymaster.keyup([38, 87], function(){ self.forwardKeyup(); });
+  keymaster.keyup([37, 65], function(){ self.leftwardKeyup(); });
+  keymaster.keyup([40, 83], function(){ self.downwardKeyup(); });
+  keymaster.keyup([39, 68], function(){ self.rightwardKeyup(); });
+
+  keymaster.keydown(27, function(){ self.exitThreadCreation(); });
+
+  mousemaster.move(function(x, y, ev) { self.mousemove(x, y, ev); }, 'controls');
+
+  $('#door-name-form').submit(function(e) {
+    e.preventDefault();
+    self.exitThreadCreation();
+  });
+
+  $('.door-submit-button').click(function() {
+    self.exitThreadCreation();
+  });
+};
+
 GeneralPlanetComponent.prototype.toggleCameraPerspective = function() {
+  if (!this.controlsActive()) return;
+
   this.firstPerson = !this.firstPerson;
 
   this.avatar.setVisible(!this.firstPerson);
@@ -16982,16 +17045,46 @@ GeneralPlanetComponent.prototype.toggleCameraPerspective = function() {
   this.camera.setTarget(camName);
 };
 
+GeneralPlanetComponent.prototype.enterThreadCreation = function() {
+  if (this.creatingThread) return;
+
+  this.creatingThread = true;
+  keymaster.setPreventDefaults(false);
+  this.cam.exitPointerlock();
+
+  this.threadCreationDoor.setVisible(true);
+  var avatarPos = this.avatar.trackingMesh().position;
+  this.threadCreationDoor.moveTo(avatarPos.x - 10, 4, avatarPos.z - 5);
+
+  $('.door-ui-wrapper').fadeIn();
+  $('#door-name-input').focus();
+};
+
+GeneralPlanetComponent.prototype.exitThreadCreation = function() {
+  if (!this.creatingThread) return;
+
+  this.creatingThread = false;
+  keymaster.setPreventDefaults(true);
+  this.cam.requestPointerlock();
+  this.threadCreationDoor.setVisible(false);
+
+  $('.door-ui-wrapper').fadeOut();
+};
+
 GeneralPlanetComponent.prototype.forwardKeydown = function() {
+  if (!this.controlsActive()) return;
   this.controls.setForward(true);
 };
 GeneralPlanetComponent.prototype.leftwardKeydown = function() {
+  if (!this.controlsActive()) return;
   this.controls.setLeft(true);
 };
 GeneralPlanetComponent.prototype.downwardKeydown = function() {
+  if (!this.controlsActive()) return;
   this.controls.setBackward(true);
 };
 GeneralPlanetComponent.prototype.rightwardKeydown = function() {
+  if (!this.controlsActive()) return;
   this.controls.setRight(true);
 };
 
@@ -17009,10 +17102,11 @@ GeneralPlanetComponent.prototype.rightwardKeyup = function() {
 };
 
 GeneralPlanetComponent.prototype.mousemove = function(x, y, ev) {
+  if (!this.controlsActive()) return;
+
   var event = ev.originalEvent || ev;
   var movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
   var movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
-  console.log(movementX);
   this.controls.mouseUpdate(movementX, movementY);
   return;
 
@@ -17069,13 +17163,17 @@ GeneralPlanetComponent.prototype.avatarWithName = function(name) {
   return this.avatarsByName[name];
 };
 
-},{"./avatar":53,"./door":58,"./global-state":60,"./keymaster":62,"./mousemaster":66,"./object-controls":67,"./scene-component":68,"jquery":1}],60:[function(require,module,exports){
+GeneralPlanetComponent.prototype.controlsActive = function() {
+  return !this.creatingThread;
+};
+
+},{"./avatar":53,"./door":57,"./global-state":59,"./keymaster":61,"./mousemaster":64,"./object-controls":65,"./scene-component":66,"jquery":1}],59:[function(require,module,exports){
 
 // Store anything you think should be accessible everywhere here
 
 module.exports = {};
 
-},{}],61:[function(require,module,exports){
+},{}],60:[function(require,module,exports){
 
 var options = module.exports.options = {
   dragAreaSelector: '#avatar-image-drop-zone',
@@ -17206,13 +17304,14 @@ function readfiles(files) {
   module.exports.fileCallback(trimmedFiles);
 }
 
-},{}],62:[function(require,module,exports){
+},{}],61:[function(require,module,exports){
 
 var $ = require('jquery');
 
 var keydownMap = {};
 var keyupMap = {};
 var keypressMap = {};
+var shouldPreventDefaults = false;
 
 $('body').keydown(function(ev) {
   callListener(keydownMap, ev);
@@ -17230,7 +17329,7 @@ $('body').keypress(function(ev) {
 function callListener(listenerMap, ev) {
   var listener = getListener(listenerMap, ev.which);
   if (listener) {
-    if (listener.preventDefault) {
+    if (shouldPreventDefaults) {
       ev.preventDefault();
     }
 
@@ -17244,16 +17343,15 @@ function getListener(listenerMap, keycode) {
   return listenerMap[keycode + ''];
 }
 
-function setListener(listener, listenerMap, keycodes, preventDefault) {
+function setListener(listener, listenerMap, keycodes) {
   if (!Array.isArray(keycodes)) {
-    keycodes = [keycodes]
+    keycodes = [keycodes];
   }
 
   for (var i = 0; i < keycodes.length; i++) {
     var keycode = keycodes[i];
     listenerMap[keycode + ''] = {
-      fn: listener,
-      preventDefault: preventDefault
+      fn: listener
     };
   }
 }
@@ -17263,23 +17361,25 @@ function clearListener(listenerMap, keycode) {
     listenerMap[keycode + ''] = undefined;
   } else {
     for (var key in listenerMap) {
-      listenerMap[key] = undefined;
+      if (listenerMap.hasOwnProperty(key)) {
+        delete listenerMap[key];
+      }
     }
   }
 }
 
 /* exports */
 
-module.exports.keydown = function(keycodes, preventDefault, listener) {
-  setListener(listener, keydownMap, keycodes, preventDefault);
+module.exports.keydown = function(keycodes, listener) {
+  setListener(listener, keydownMap, keycodes);
 };
 
-module.exports.keyup = function(keycodes, preventDefault, listener) {
-  setListener(listener, keyupMap, keycodes, preventDefault);
+module.exports.keyup = function(keycodes, listener) {
+  setListener(listener, keyupMap, keycodes);
 };
 
-module.exports.keypress = function(keycodes, preventDefault, listener) {
-  setListener(listener, keypressMap, keycodes, preventDefault);
+module.exports.keypress = function(keycodes, listener) {
+  setListener(listener, keypressMap, keycodes);
 };
 
 module.exports.clearKeydownListener = function(keycode) {
@@ -17294,587 +17394,21 @@ module.exports.clearKeypressListener = function(keycode) {
   clearListener(keypressMap, keycode);
 };
 
-},{"jquery":1}],63:[function(require,module,exports){
-/* export something */
-module.exports = new Kutility;
-
-/* constructor does nothing at this point */
-function Kutility() {
-
-}
-
-/**
- * get a random object from the array arr
- *
- * @api public
- */
-
-Kutility.prototype.choice = function(arr) {
-    var i = Math.floor(Math.random() * arr.length);
-    return arr[i];
-}
-
-/**
- * return shuffled version of an array.
- *
- * adapted from css tricks
- *
- * @api public
- */
-Kutility.prototype.shuffle = function(arr) {
-  var newArray = new Array(arr.length);
-  for (var i = 0; i < arr.length; i++)
-    newArray[i] = arr[i];
-
-  newArray.sort(function() { return 0.5 - Math.random() });
-  return newArray;
-}
-
-/**
- * returns a random color as an 'rgb(x, y, z)' string
- *
- * @api public
- */
-Kutility.prototype.randColor = function() {
-    var r = Math.floor(Math.random() * 256);
-    var g = Math.floor(Math.random() * 256);
-    var b = Math.floor(Math.random() * 256);
-    return 'rgb(' + r + ',' + g + ',' + b + ')';
-}
-
-Kutility.prototype.randInt = function(max, min) {
-  if (min)
-    return Math.floor(Math.random() * (max - min)) + min;
-  else
-    return Math.floor(Math.random() * (max));
-}
-
-/**
- * Color wheel 1 -> 1536.
- *
- * Written by Henry Van Dusen, all attribution to the big boy.
- * Slightly modified by Kev.
- *
- * @api public
- */
- Kutility.prototype.colorWheel = function(num) {
-    var text = "rgb(";
-    var entry = num % 1536;
-    var num = entry % 256;
-
-    if(entry < 256 * 1)
-    	return text + "0,255," + num + ")";
-    else if(entry < 256 * 2)
-    	return text + "0," + (255 - num) + ",255)";
-    else if(entry < 256 * 3)
-      return text + num + ",0,255)";
-    else if(entry < 256 * 4)
-      return text + "255,0," + (255 - num) + ")";
-    else if(entry < 256 * 5)
-      return text + "255," + num + ",0)";
-    else
-      return text + (255 - num) + ",255,0)";
- }
-
- /**
-  * Make an rbg() color string an rgba() color string
-  *
-  * @api public
-  */
-Kutility.prototype.alphize = function(color, alpha) {
-  color.replace('rgb', 'rgba');
-  color.replace(')', ', ' + alpha + ')');
-  return color;
-}
-
-/**
- * Get an array of two random contrasting colors.
- *
- * @api public
- */
-Kutility.prototype.contrasters = function() {
-  var num = Math.floor(Math.random() * 1536);
-  var fg = this.colorWheel(num);
-  var bg = this.colorWheel(num + 650);
-  return [fg, bg];
-}
-
-/**
- * Add a random shadow to a jquery element
- *
- * @api public
- */
-Kutility.prototype.randomShadow = function(el, size) {
-  var s = size + 'px';
-  var shadow = '0px 0px ' + s + ' ' + s + ' ' + this.randColor();
-  addShadow(el, shadow);
-}
-
-/**
- * Add shadow with offset x and y pixels, z pixels of blur radius,
- * w pizels of spread radius, and cool color
- *
- * @api public
- */
-Kutility.prototype.shadow = function(el, x, y, z, w, color) {
-  var xp = x + "px";
-  var yp = y + "px";
-  var zp = z + "px";
-  var wp = w + "px";
-
-  var shadow = xp + " " + yp + " " + zp + " " + wp + " " + color;
-  addShadow(el, shadow);
-}
-
-function addShadow(el, shadow) {
-  el.css('-webkit-box-shadow', shadow);
-  el.css('-moz-box-shadow', shadow);
-  el.css('box-shadow', shadow);
-}
-
-/**
- * Add transform to element with all the lame browser prefixes.
- *
- * @api public
- */
-Kutility.prototype.addTransform = function(el, transform) {
-  var curTransform = this.getTransform(el);
-  curTransform = curTransform.replace('none', '');
-  var newTransform = curTransform + transform;
-  this.setTransform(el, newTransform);
-}
-
-/**
- * Set transform of element with all the lame browser prefixes.
- *
- * @api public
- */
-Kutility.prototype.setTransform = function(el, transform) {
-  el.css('-webkit-transform', transform);
-  el.css('-moz-transform', transform);
-  el.css('-ms-transform', transform);
-  el.css('-o-transform', transform);
-  el.css('transform', transform);
-}
-
-/**
- * Check an elements tansform.
- *
- * @api public
- */
-Kutility.prototype.getTransform = function(el) {
-  var possible = ['transform', '-webkit-transform', '-moz-transform', '-ms-transform', '-o-transform'];
-
-  for (var i = 0; i < possible.length; i++) {
-    var f = el.css(possible[i]);
-    if (f == 'none' && i + 1 < possible.length) {
-      var pf = el.css(possible[i + 1]);
-      if (pf)
-        continue;
-    }
-    return f;
-  }
-}
-
-/**
- * Remove all transforms from element.
- *
- * @api public
- */
-Kutility.prototype.clearTransforms = function(el) {
-  el.css('-webkit-transform', '');
-  el.css('-moz-transform', '');
-  el.css('-ms-transform', '');
-  el.css('-o-transform', '');
-  el.css('transform', '');
-}
-
-/**
- * Rotate an element by x degrees.
- *
- * @api public
- */
-Kutility.prototype.rotate = function(el, x) {
-  var ct = this.getTransform(el);
-  ct = ct.replace(/matrix\(.*?\)/, '').replace('none', '');
-
-  var t = ' rotate(' + x + 'deg)';
-  this.setTransform(el, ct  + t);
-}
-
-/**
- * Scale an element by x (no units);
- *
- * @api public
- */
-Kutility.prototype.scale = function(el, x) {
-  var ct = this.getTransform(el);
-  ct = ct.replace(/matrix\(.*?\)/, '').replace('none', '');
-
-  var t = ' scale(' + x + ',' + x + ')';
-  this.setTransform(el, ct + t);
-}
-
-/**
- * Translate an element by x, y (include your own units);
- *
- * @api public
- */
-Kutility.prototype.translate = function(el, x, y) {
-  var ct = this.getTransform(el);
-  console.log(ct);
-  ct = ct.replace(/matrix\(.*?\)/, '').replace('none', '');
-
-  var t = ' translate(' + x + ', '  + y + ')';
-  this.setTransform(el, ct + t);
-}
-
-/**
- * Skew an element by x, y degrees;
- *
- * @api public
- */
-Kutility.prototype.skew = function(el, x, y) {
-  var ct = this.getTransform(el);
-  ct = ct.replace(/skew\(.*?\)/, '').replace(/matrix\(.*?\)/, '').replace('none', '');
-
-  var xd = x + 'deg';
-  var yd = y + 'deg';
-  var t = ' skew(' + xd + ', ' + yd + ')';
-  this.setTransform(el, ct + t);
-}
-
-/**
- * Warp an element by rotating and skewing it.
- *
- * @api public
- */
-Kutility.prototype.warp = function(el, d, x, y) {
-  var ct = this.getTransform(el);
-  ct = ct.replace(/matrix\(.*?\)/, '').replace('none', '');
-
-  var r = ' rotate(' + d + 'deg)';
-  var xd = x + 'deg';
-  var yd = y + 'deg';
-  var s = ' skew(' + xd + ', ' + yd + ')';
-
-  this.setTransform(el, ct + r + s);
-}
-
-/**
- * scale by w, translate x y
- *
- * @api public
- */
-Kutility.prototype.slaw = function(el, w, x, y) {
-  var ct = this.getTransform(el);
-  ct = ct.replace(/matrix\(.*?\)/, '').replace('none', '');
-
-  var s = ' scale(' + w + ',' + w + ')';
-  var t = ' translate(' + x + ', '  + y + ')';
-  this.setTransform(el, ct + s + t);
-}
-
-/**
- * scale by w, rotate by x
- *
- * @api public
- */
-Kutility.prototype.straw = function(el, w, x) {
-  var ct = this.getTransform(el);
-  ct = ct.replace(/matrix\(.*?\)/, '').replace('none', '');
-
-  var s = ' scale(' + w + ',' + w + ')';
-  var r = ' rotate(' + x + 'deg)';
-  this.setTransform(el, ct + s + r);
-}
-
-/**
- * Set perspective to x pixels
- *
- * @api public
- */
-Kutility.prototype.perp = function(el, x) {
-  var p = x + 'px';
-  el.css('-webkit-perspective', p);
-  el.css('-moz-perspective', p);
-  el.css('-ms-perspective', p);
-  el.css('-o-perspective', p);
-  el.css('perspective', p);
-}
-
-/**
- * Set perspective-origin to x and y percents.
- *
- * @api public
- */
-Kutility.prototype.perpo = function(el, x, y) {
-  var p = x + "% " + y + "%";
-  el.css('-webkit-perspective-origin', p);
-  el.css('-moz-perspective-origin', p);
-  el.css('-ms-perspective-origin', p);
-  el.css('-o-perspective-origin', p);
-  el.css('perspective-origin', p);
-}
-
-/**
- * Translate an element by x, y, z pixels
- *
- * @api public
- */
-Kutility.prototype.trans3d = function(el, x, y, z) {
-  var ct = this.getTransform(el);
-  ct = ct.replace(/matrix3d\(.*?\)/, '').replace('none', '');
-
-  var t = ' translate3d(' + x + 'px, ' + y + 'px, ' + z + 'px)';
-  this.setTransform(el, ct + t);
-}
-
-/**
- * Scale an element by x (no units)
- *
- * @api public
- */
-Kutility.prototype.scale3d = function(el, x) {
-  var ct = this.getTransform(el);
-  ct = ct.replace(/matrix3d\(.*?\)/, '').replace('none', '');
-
-  var t = ' scale3d(' + x + ', ' + x + ', ' + z + ')';
-  this.setTransform(el, ct + t);
-}
-
-/**
- * Rotate an element about <x, y, z> by d degrees
- *
- * @api public
- */
-Kutility.prototype.rotate3d = function(el, x, y, z, d) {
-  var ct = this.getTransform(el);
-  ct = ct.replace(/matrix3d\(.*?\)/, '').replace('none', '');
-
-  var t = ' rotate3d(' + x + ', ' + y + ', ' + z + ', ' + d + 'deg)';
-  this.setTransform(el, ct + t);
-}
-
-/**
- * Rotate an element about x axis by d degrees
- *
- * @api public
- */
-Kutility.prototype.rotate3dx = function(el, d) {
-  this.rotate3d(el, 1, 0, 0, d);
-}
-
-/**
- * Rotate an element about y axis by d degrees
- *
- * @api public
- */
-Kutility.prototype.rotate3dy = function(el, d) {
-  this.rotate3d(el, 0, 1, 0, d);
-}
-
-/**
- * Rotate an element about z axis by d degrees
- *
- * @api public
- */
-Kutility.prototype.rotate3dz = function(el, d) {
-  this.rotate3d(el, 0, 0, 1, d);
-}
-
-/**
- * Add filter to element with all the lame browser prefixes.
- *
- * @api public
- */
-Kutility.prototype.addFilter = function(el, filter) {
-  var curFilter = this.getFilter(el);
-  curFilter = curFilter.replace('none', '');
-  var newFilter = curFilter + ' ' + filter;
-  this.setFilter(el, newFilter);
-}
-
-/**
- * Set filter to element with all lame prefixes.
- *
- * @api public
- */
-Kutility.prototype.setFilter = function(el, filter) {
-  el.css('-webkit-filter', filter);
-  el.css('-moz-filter', filter);
-  el.css('-ms-filter', filter);
-  el.css('-o-filter', filter);
-  el.css('filter', filter);
-}
-
-/**
- * Check an elements filter.
- *
- * @api public
- */
-Kutility.prototype.getFilter = function(el) {
-  var possible = ['filter', '-webkit-filter', '-moz-filter', '-ms-filter', '-o-filter'];
-
-  for (var i = 0; i < possible.length; i++) {
-    var f = el.css(possible[i]);
-    if (f == 'none' && i + 1 < possible.length) {
-      var pf = el.css(possible[i + 1]);
-      if (pf)
-        continue;
-    }
-    return f;
-  }
-}
-
-/**
- * Remove all filters from element.
- *
- * @api public
- */
-Kutility.prototype.clearFilters = function(el) {
-  el.css('-webkit-filter', '');
-  el.css('-moz-filter', '');
-  el.css('-ms-filter', '');
-  el.css('-o-filter', '');
-  el.css('filter', '');
-}
-
-/**
-
-/**
- * Grayscale an element by x percent.
- *
- * @api public
- */
-Kutility.prototype.grayscale = function(el, x) {
-  var cf = this.getFilter(el);
-  cf = cf.replace(/grayscale\(.*?\)/, '').replace('none', '');
-
-  var f = ' grayscale(' + x + '%)';
-  this.setFilter(el, cf  + f);
-}
-
-/**
- * Sepia an element by x percent.
- *
- * @api public
- */
-Kutility.prototype.sepia = function(el, x) {
-  var cf = this.getFilter(el);
-  cf = cf.replace(/sepia\(.*?\)/, '').replace('none', '');
-
-  var f = ' sepia(' + x + '%)';
-  this.setFilter(el, cf + f);
-}
-
-/**
- * Saturate an element by x percent.
- *
- * @api public
- */
-Kutility.prototype.saturate = function(el, x) {
-  var cf = this.getFilter(el);
-  cf = cf.replace(/saturate\(.*?\)/, '').replace('none', '');
-
-  var f = ' saturate(' + x + '%)';
-  this.setFilter(el, cf + f);
-}
-
-/**
- * Invert an element by x percent.
- *
- * @api public
- */
-Kutility.prototype.invert = function(el, x) {
-  var cf = this.getFilter(el);
-  cf = cf.replace(/invert\(.*?\)/, '').replace('none', '');
-
-  var f = ' invert(' + x + '%)';
-  this.setFilter(el, cf + f);
-}
-
-/**
- * Hue-rotate an element by x degrees.
- *
- * @api public
- */
-Kutility.prototype.hutate = function(el, x) {
-  var cf = this.getFilter(el);
-  cf = cf.replace(/hue-rotate\(.*?\)/, '').replace('none', '');
-
-  var f = ' hue-rotate(' + x + 'deg)';
-  this.setFilter(el, cf + f);
-}
-
-/**
- * Set opacity of an element to x percent.
- *
- * @api public
- */
-Kutility.prototype.opace = function(el, x) {
-  var cf = this.getFilter(el);
-  cf = cf.replace(/opacity\(.*?\)/, '').replace('none', '');
-
-  var f = ' opacity(' + x + '%)';
-  this.setFilter(el, cf + f);
-}
-
-/**
- * Set brightness of an element to x percent.
- *
- * @api public
- */
-Kutility.prototype.brightness = function(el, x) {
-  var cf = this.getFilter(el);
-  cf = cf.replace(/brightness\(.*?\)/, '').replace('none', '');
-
-  var f = ' brightness(' + x + '%)';
-  this.setFilter(el, cf + f);
-}
-
-/**
- * Set contrast of an element to x percent.
- *
- * @api public
- */
-Kutility.prototype.contrast = function(el, x) {
-  var cf = this.getFilter(el);
-  cf = cf.replace(/contrast\(.*?\)/, '').replace('none', '');
-
-  var f = ' contrast(' + x + '%)';
-  this.setFilter(el, cf + f);
-}
-
-/**
- * Blur an element by x pixels.
- *
- * @api public
- */
-Kutility.prototype.blur = function(el, x) {
-  var cf = this.getFilter(el);
-  cf = cf.replace(/blur\(.*?\)/, '').replace('none', '');
-
-  var f = ' blur(' + x + 'px)';
-  this.setFilter(el, cf + f);
-}
-
-},{}],64:[function(require,module,exports){
+module.exports.setPreventDefaults = function(preventDefaults) {
+  shouldPreventDefaults = preventDefaults;
+};
+
+},{"jquery":1}],62:[function(require,module,exports){
 
 var $ = require('jquery');
-var kt = require('./lib/kutility');
 var io = require('socket.io-client');
 
 var Camera = require('./camera');
-var Avatar = require('./avatar');
 var Door = require('./door');
 var config = require('./config');
 var globals = require('./global-state');
-var doorTools = require('./door-tools');
-var avatarTools = require('./avatar-tools');
 var BecomeAvatarComponent = require('./become-avatar-component');
 var GeneralPlanetComponent = require('./general-planet-component');
-var keymaster = require('./keymaster');
 
 // modes
 var BECOME_AVATAR_MODE = 0;
@@ -18017,7 +17551,7 @@ $(function() {
 
 });
 
-},{"./avatar":53,"./avatar-tools":52,"./become-avatar-component":54,"./camera":55,"./config":56,"./door":58,"./door-tools":57,"./general-planet-component":59,"./global-state":60,"./keymaster":62,"./lib/kutility":63,"jquery":1,"socket.io-client":2}],65:[function(require,module,exports){
+},{"./become-avatar-component":54,"./camera":55,"./config":56,"./door":57,"./general-planet-component":58,"./global-state":59,"jquery":1,"socket.io-client":2}],63:[function(require,module,exports){
 
 var cache = {};
 
@@ -18051,7 +17585,7 @@ function fetch(name, clone, callback) {
   callback(cache[name].geometry.clone(), cache[name].materials.clone());
 }
 
-},{}],66:[function(require,module,exports){
+},{}],64:[function(require,module,exports){
 
 var $ = require('jquery');
 
@@ -18080,7 +17614,7 @@ module.exports.clearMove = function(key) {
   delete moveListeners[key];
 }
 
-},{"jquery":1}],67:[function(require,module,exports){
+},{"jquery":1}],65:[function(require,module,exports){
 
 /**
  * Originally written by squarefeet (github.com/squarefeet).
@@ -18293,7 +17827,7 @@ module.exports = function ObjectControls( opts ) {
     };
 };
 
-},{}],68:[function(require,module,exports){
+},{}],66:[function(require,module,exports){
 
 var $ = require('jquery');
 
@@ -18354,4 +17888,4 @@ SceneComponent.prototype.clean = function() {};
 
 SceneComponent.prototype.layout = function() {};
 
-},{"jquery":1}]},{},[64])
+},{"jquery":1}]},{},[62])

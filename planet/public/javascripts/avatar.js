@@ -79,7 +79,6 @@ Avatar.prototype.rotate = function(rx, ry, rz) {
 
 Avatar.prototype.rotateTo = function(x, y, z) {
   if (!this.skinnedMesh) {
-    console.log('rotating post load');
     var self = this;
     this.postLoadBehaviors.push(function() {
       self.rotateTo(x, y, z);
@@ -87,7 +86,6 @@ Avatar.prototype.rotateTo = function(x, y, z) {
     return;
   }
 
-  console.log('rotating loaded: ' + y);
   this.skinnedMesh.rotation.set(x, y, z);
   this.rotate(0, 0, 0);
 };

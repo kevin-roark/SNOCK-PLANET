@@ -13,6 +13,8 @@ var havePointerLock = 'pointerLockElement' in document || 'mozPointerLockElement
 
 var pointerlockElement = document.body;
 
+var canRequestPointerlock = false;
+
 var _camera, _renderer;
 
 function resize() {
@@ -47,6 +49,7 @@ function Camera(scene, renderer, config) {
   this.proximityLimit = config.proximityLimit || 22500;
 
   this.hasPointerlock = false;
+  this.addPointerlockListeners();
 
   resize();
 }
@@ -111,6 +114,47 @@ Camera.prototype.pointerlockerror = function (event) {
 };
 
 Camera.prototype.requestPointerlock = function() {
+  canRequestPointerlock = true;
+
+  if (/Firefox/i.test( navigator.userAgent)) {
+    var fullscreenchange = function() {
+      if ( document.fullscreenElement === pointerlockElement || document.mozFullscreenElement === pointerlockElement || document.mozFullScreenElement === pointerlockElement ) {
+        document.removeEventListener( 'fullscreenchange', fullscreenchange );
+        document.removeEventListener( 'mozfullscreenchange', fullscreenchange );
+
+        pointerlockElement.requestPointerLock();
+      }
+    };
+
+    document.addEventListener('fullscreenchange', fullscreenchange, false);
+    document.addEventListener('mozfullscreenchange', fullscreenchange, false);
+
+    pointerlockElement.requestFullscreen = pointerlockElement.requestFullscreen || pointerlockElement.mozRequestFullScreen || pointerlockElement.webkitRequestFullscreen;
+    pointerlockElement.requestFullscreen();
+  } else {
+    pointerlockElement.requestPointerLock = pointerlockElement.requestPointerLock ||
+                                            pointerlockElement.mozRequestPointerLock ||
+                                            pointerlockElement.webkitRequestPointerLock;
+
+    if (pointerlockElement.requestPointerLock) {
+      pointerlockElement.requestPointerLock();
+    }
+  }
+};
+
+Camera.prototype.exitPointerlock = function() {
+  pointerlockElement.exitPointerLock =  pointerlockElement.exitPointerLock    ||
+                                        pointerlockElement.mozExitPointerLock ||
+                                        pointerlockElement.webkitExitPointerLock;
+
+  if (pointerlockElement.exitPointerLock) {
+    pointerlockElement.exitPointerLock();
+  }
+
+  canRequestPointerlock = false;
+};
+
+Camera.prototype.addPointerlockListeners = function() {
   var self = this;
 
   if (havePointerLock) {
@@ -136,28 +180,9 @@ Camera.prototype.requestPointerlock = function() {
     }, false);
 
     document.addEventListener('click', function() {
-      // Ask the browser to lock the pointer
-      pointerlockElement.requestPointerLock = pointerlockElement.requestPointerLock || pointerlockElement.mozRequestPointerLock || pointerlockElement.webkitRequestPointerLock;
+      if (!canRequestPointerlock) return;
 
-      if (/Firefox/i.test( navigator.userAgent)) {
-
-        var fullscreenchange = function() {
-          if ( document.fullscreenElement === pointerlockElement || document.mozFullscreenElement === pointerlockElement || document.mozFullScreenElement === pointerlockElement ) {
-            document.removeEventListener( 'fullscreenchange', fullscreenchange );
-            document.removeEventListener( 'mozfullscreenchange', fullscreenchange );
-
-            pointerlockElement.requestPointerLock();
-          }
-        };
-
-        document.addEventListener('fullscreenchange', fullscreenchange, false);
-        document.addEventListener('mozfullscreenchange', fullscreenchange, false);
-
-        pointerlockElement.requestFullscreen = pointerlockElement.requestFullscreen || pointerlockElement.mozRequestFullScreen || pointerlockElement.webkitRequestFullscreen;
-        pointerlockElement.requestFullscreen();
-      } else {
-        pointerlockElement.requestPointerLock();
-      }
+      self.requestPointerlock();
     }, false);
   }
 };

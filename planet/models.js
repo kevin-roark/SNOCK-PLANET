@@ -11,10 +11,11 @@ mongoose.connect(config.mongo_url);
 var doorSchema = Schema({
   subject: {type: String, trim: true},
   when: {type: Date, default: Date.now},
+  texture: String,
   creator: {type: Schema.Types.ObjectId, ref: 'Avatar'},
   position: {
     x: Number,
-    y: Number
+    z: Number
   }
 });
 
@@ -24,7 +25,7 @@ var letterSchema = Schema({
   creator: {type: Schema.Types.ObjectId, ref: 'Avatar'},
   position: {
     x: Number,
-    y: Number
+    z: Number
   }
 });
 
