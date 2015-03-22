@@ -32,10 +32,10 @@ GeneralPlanetComponent.prototype.postInit = function(options) {
 
   this.firstPerson = false;
 
-  this.creatingThread = false;
-  this.threadCreationDoor = new Door();
-  this.threadCreationDoor.setVisible(false);
-  this.addObject3d(this.threadCreationDoor);
+  this.creatingDoor = false;
+  this.creationDoor = new Door();
+  this.creationDoor.setVisible(false);
+  this.addObject3d(this.creationDoor);
 
   this.controls = new ObjectControls({
     target: this.avatar
@@ -89,7 +89,7 @@ GeneralPlanetComponent.prototype.addInteractionGlue = function() {
   var self = this;
 
   keymaster.keypress(113, function(){ self.toggleCameraPerspective(); });
-  keymaster.keypress(110, function(){ self.enterThreadCreation(); });
+  keymaster.keypress(110, function(){ self.enterDoorCreation(); });
 
   keymaster.keydown([38, 87], function(){ self.forwardKeydown(); });
   keymaster.keydown([37, 65], function(){ self.leftwardKeydown(); });
@@ -101,17 +101,17 @@ GeneralPlanetComponent.prototype.addInteractionGlue = function() {
   keymaster.keyup([40, 83], function(){ self.downwardKeyup(); });
   keymaster.keyup([39, 68], function(){ self.rightwardKeyup(); });
 
-  keymaster.keydown(27, function(){ self.exitThreadCreation(); });
+  keymaster.keydown(27, function(){ self.exitDoorCreation(); });
 
   mousemaster.move(function(x, y, ev) { self.mousemove(x, y, ev); }, 'controls');
 
   $('#door-name-form').submit(function(e) {
     e.preventDefault();
-    self.attemptThreadCreation();
+    self.attemptDoorCreation();
   });
 
   $('.door-submit-button').click(function() {
-    self.attemptThreadCreation();
+    self.attemptDoorCreation();
   });
 };
 
@@ -126,53 +126,53 @@ GeneralPlanetComponent.prototype.toggleCameraPerspective = function() {
   this.camera.setTarget(camName);
 };
 
-GeneralPlanetComponent.prototype.enterThreadCreation = function() {
-  if (this.creatingThread) return;
+GeneralPlanetComponent.prototype.enterDoorCreation = function() {
+  if (this.creatingDoor) return;
 
-  this.creatingThread = true;
+  this.creatingDoor = true;
   keymaster.setPreventDefaults(false);
   this.cam.exitPointerlock();
 
-  this.threadCreationDoor.setVisible(true);
+  this.creationDoor.setVisible(true);
   var avatarPos = this.avatar.trackingMesh().position;
-  this.threadCreationDoor.moveTo(avatarPos.x - 10, 4, avatarPos.z - 5);
+  this.creationDoor.moveTo(avatarPos.x - 10, 4, avatarPos.z - 5);
 
   $('.door-ui-wrapper').fadeIn();
   $('#door-name-input').focus();
 };
 
-GeneralPlanetComponent.prototype.attemptThreadCreation = function() {
+GeneralPlanetComponent.prototype.attemptDoorCreation = function() {
   var self = this;
 
-  var threadData = {
+  var doorData = {
     subject: $('#door-name-input').val(),
-    position: this.threadCreationDoor.mesh.position,
+    position: this.creationDoor.mesh.position,
     creator: this.avatar._id,
-    texture: this.threadCreationDoor.texture
+    texture: this.creationDoor.texture
   };
 
-  apiTools.createThread(threadData, function(result) {
+  apiTools.createDoor(doorData, function(result) {
     if (result.error) {
-      self.showThreadError(result.error);
+      self.showDoorError(result.error);
     } else {
-      self.addDoor(result.thread);
-      self.exitThreadCreation();
+      self.addDoor(result.door);
+      self.exitDoorCreation();
     }
   });
 };
 
-GeneralPlanetComponent.prototype.exitThreadCreation = function() {
-  if (!this.creatingThread) return;
+GeneralPlanetComponent.prototype.exitDoorCreation = function() {
+  if (!this.creatingDoor) return;
 
-  this.creatingThread = false;
+  this.creatingDoor = false;
   keymaster.setPreventDefaults(true);
   this.cam.requestPointerlock();
-  this.threadCreationDoor.setVisible(false);
+  this.creationDoor.setVisible(false);
 
   $('.door-ui-wrapper').fadeOut();
 };
 
-GeneralPlanetComponent.prototype.showThreadError = function(message) {
+GeneralPlanetComponent.prototype.showDoorError = function(message) {
   var div = $('.door-error');
   div.text(message);
   div.fadeIn(function() {
@@ -276,5 +276,5 @@ GeneralPlanetComponent.prototype.avatarWithName = function(name) {
 };
 
 GeneralPlanetComponent.prototype.controlsActive = function() {
-  return !this.creatingThread;
+  return !this.creatingDoor;
 };

@@ -19,9 +19,8 @@ module.exports.init = function(app) {
     socket.on('get-avatar', getAvatar);
     socket.on('create-avatar', createAvatar);
 
-    socket.on('get-thread', getThread);
-    socket.on('create-thread', createThread);
-
+    socket.on('get-door', getDoor);
+    socket.on('create-door', createDoor);
     socket.on('get-doors', getDoors);
 
   });
@@ -37,12 +36,12 @@ var createAvatar = function(avatarData, callback) {
   createModel(Avatar, avatarData, 'avatar', callback);
 };
 
-var getThread = function(subject, callback) {
+var getDoor = function(subject, callback) {
   getModel(Door, 'subject', subject, 'door', callback);
 };
 
-var createThread = function(threadData, callback) {
-  createModel(Door, threadData, 'door', callback);
+var createDoor = function(doorData, callback) {
+  createModel(Door, doorData, 'door', callback);
 };
 
 var getDoors = function(queryData, callback) {
