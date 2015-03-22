@@ -22,6 +22,8 @@ module.exports.init = function(app) {
     socket.on('get-thread', getThread);
     socket.on('create-thread', createThread);
 
+    socket.on('get-doors', getDoors);
+
   });
 
   app.server_ = server;
@@ -41,6 +43,20 @@ var getThread = function(subject, callback) {
 
 var createThread = function(threadData, callback) {
   createModel(Door, threadData, 'door', callback);
+};
+
+var getDoors = function(queryData, callback) {
+  // TODO: incorporate query data. Obviously cannot return all doors forever ...
+
+  Door.find({}, function(err, users) {
+    if (err) {
+      console.log('error fetching door query:');
+      console.log(err);
+      callback(null);
+    } else {
+      callback(users);
+    }
+  });
 };
 
 var getModel = function(Model, key, value, modelName, callback) {

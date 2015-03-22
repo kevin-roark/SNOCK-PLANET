@@ -5,6 +5,7 @@ var loader = require('./model-loader');
 module.exports = Avatar;
 
 function Avatar(options) {
+  this._id = options._id || '_';
   this.name = options.name || 'nameless_fuck';
 
   if (!options.position) options.position = {};
@@ -185,6 +186,7 @@ Avatar.prototype.serialize = function() {
 
 Avatar.prototype.updateFromModel = function(avatarData) {
   this.name = avatarData.name;
+  this._id = avatarData._id;
   this.updateSkinColor(avatarData.color);
   this.updateFaceImage(avatarData.faceImageUrl);
 };

@@ -23,6 +23,8 @@ function GeneralPlanetComponent() {};
 GeneralPlanetComponent.prototype.__proto__ = SceneComponent.prototype;
 
 GeneralPlanetComponent.prototype.postInit = function(options) {
+  var self = this;
+
   this.avatarsByName = {};
 
   this.avatar = globals.playerAvatar;
@@ -64,10 +66,16 @@ GeneralPlanetComponent.prototype.postInit = function(options) {
   this.addInteractionGlue();
 
   if (this.socket) {
-    this.socket.on('avatar-entry', this.avatarEntered);
-    this.socket.on('avatar-moved', this.avatarMoved);
-    this.socket.on('avatar-sleep', this.avatarSlept);
-    this.socket.on('door-creation', this.doorCreated);
+    this.socket.on('avatar-entry', this.avatarEntered.bind(this));
+    this.socket.on('avatar-moved', this.avatarMoved.bind(this));
+    this.socket.on('avatar-sleep', this.avatarSlept.bind(this));
+    this.socket.on('door-creation', this.addDoor.bind(this));
+
+    this.socket.emit('get-doors', {position: {x: 0, y: 0, z: 0}}, function(doors) {
+      for (var i = 0; i < doors.length; i++) {
+        self.addDoor(doors[i]);
+      }
+    });
   }
 };
 
@@ -93,17 +101,17 @@ GeneralPlanetComponent.prototype.addInteractionGlue = function() {
   keymaster.keyup([40, 83], function(){ self.downwardKeyup(); });
   keymaster.keyup([39, 68], function(){ self.rightwardKeyup(); });
 
-  keymaster.keydown(27, function(){ self.exitThreadCreation(true); });
+  keymaster.keydown(27, function(){ self.exitThreadCreation(); });
 
   mousemaster.move(function(x, y, ev) { self.mousemove(x, y, ev); }, 'controls');
 
   $('#door-name-form').submit(function(e) {
     e.preventDefault();
-    self.exitThreadCreation(false);
+    self.attemptThreadCreation();
   });
 
   $('.door-submit-button').click(function() {
-    self.exitThreadCreation(false);
+    self.attemptThreadCreation();
   });
 };
 
@@ -133,7 +141,27 @@ GeneralPlanetComponent.prototype.enterThreadCreation = function() {
   $('#door-name-input').focus();
 };
 
-GeneralPlanetComponent.prototype.exitThreadCreation = function(cancelled) {
+GeneralPlanetComponent.prototype.attemptThreadCreation = function() {
+  var self = this;
+
+  var threadData = {
+    subject: $('#door-name-input').val(),
+    position: this.threadCreationDoor.mesh.position,
+    creator: this.avatar._id,
+    texture: this.threadCreationDoor.texture
+  };
+
+  apiTools.createThread(threadData, function(result) {
+    if (result.error) {
+      self.showThreadError(result.error);
+    } else {
+      self.addDoor(result.thread);
+      self.exitThreadCreation();
+    }
+  });
+};
+
+GeneralPlanetComponent.prototype.exitThreadCreation = function() {
   if (!this.creatingThread) return;
 
   this.creatingThread = false;
@@ -142,22 +170,16 @@ GeneralPlanetComponent.prototype.exitThreadCreation = function(cancelled) {
   this.threadCreationDoor.setVisible(false);
 
   $('.door-ui-wrapper').fadeOut();
+};
 
-  if (!cancelled) {
-    var threadData = {
-      subject: $('#door-name-input').value(),
-      position: this.threadCreationDoor.mesh.position,
-      creator: this.avatar,
-      texture: this.threadCreationDoor.texture
-    };
-    apiTools.createThread(threadData, function(result) {
-      if (result.error) {
-
-      } else {
-        
-      }
-    });
-  }
+GeneralPlanetComponent.prototype.showThreadError = function(message) {
+  var div = $('.door-error');
+  div.text(message);
+  div.fadeIn(function() {
+    setTimeout(function() {
+      div.fadeOut();
+    }, 3333);
+  });
 };
 
 GeneralPlanetComponent.prototype.forwardKeydown = function() {
@@ -242,7 +264,7 @@ GeneralPlanetComponent.prototype.avatarSlept = function(name) {
   }
 };
 
-GeneralPlanetComponent.prototype.doorCreated = function(doorData) {
+GeneralPlanetComponent.prototype.addDoor = function(doorData) {
   var door = new Door(doorData);
   this.addObject3d(door);
 };

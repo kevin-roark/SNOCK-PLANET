@@ -171,3 +171,11 @@ progress {
   .door-submit-button:hover {
     background-color: orange;
   }
+
+.door-error {
+  display: none;
+  background-color: white;
+  padding: 40px;
+  color: red;
+  font-size: 18px;
+}
