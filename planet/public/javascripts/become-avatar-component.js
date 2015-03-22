@@ -3,7 +3,7 @@ var $ = require('jquery');
 var SceneComponent = require('./scene-component');
 var Avatar = require('./avatar');
 var globals = require('./global-state');
-var avatarTools = require('./avatar-tools');
+var apiTools = require('./api-tools');
 var imageDropper = require('./image-dropper');
 
 module.exports = BecomeAvatarComponent;
@@ -33,7 +33,7 @@ BecomeAvatarComponent.prototype.postInit = function(options) {
     var name = $('#avatar-name-input').val();
 
     if (!self.hasEnteredName) {
-      avatarTools.fetchAvatar(name, function(avatarData) {
+      apiTools.fetchAvatar(name, function(avatarData) {
         if (avatarData) {
           self.finishAfterFetchingAvatar(avatarData);
         } else {
@@ -48,9 +48,9 @@ BecomeAvatarComponent.prototype.postInit = function(options) {
   $('.avatar-creation-submit-button').click(function() {
     self.avatar.name = $('#avatar-name-input').val();
 
-    avatarTools.createFaceURL(self.avatar.uploadableFaceImageData(), function(faceURL) {
+    apiTools.createFaceURL(self.avatar.uploadableFaceImageData(), function(faceURL) {
       self.avatar.updateFaceImage(faceURL);
-      avatarTools.createAvatar(self.avatar.serialize(), function(avatarData) {
+      apiTools.createAvatar(self.avatar.serialize(), function(avatarData) {
         self.finishAfterCreatingAvatar(avatarData);
       });
     });

@@ -44,6 +44,23 @@ module.exports.createFaceURL = function(faceData, callback) {
   });
 };
 
+module.exports.createThread = function(threadData, callback) {
+  if (!fetchSocket() || !threadData || !threadData.subject) {
+    callback({error: 'bad call brah'});
+    return;
+  }
+
+  socket.emit('get-thread', threadData.subject, function(thread) {
+    if (thread) {
+      callback({thread: thread, error: 'thread exists'});
+    } else {
+      socket.emit('create-thread', threadData, function(thread) {
+        callback({thread: thread});
+      });
+    }
+  });
+};
+
 // Utility
 
 function fetchSocket() {

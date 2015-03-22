@@ -7,6 +7,7 @@ var mousemaster = require('./mousemaster');
 var Avatar = require('./avatar');
 var Door = require('./door');
 var ObjectControls = require('./object-controls');
+var apiTools = require('./api-tools');
 
 module.exports = GeneralPlanetComponent;
 
@@ -92,17 +93,17 @@ GeneralPlanetComponent.prototype.addInteractionGlue = function() {
   keymaster.keyup([40, 83], function(){ self.downwardKeyup(); });
   keymaster.keyup([39, 68], function(){ self.rightwardKeyup(); });
 
-  keymaster.keydown(27, function(){ self.exitThreadCreation(); });
+  keymaster.keydown(27, function(){ self.exitThreadCreation(true); });
 
   mousemaster.move(function(x, y, ev) { self.mousemove(x, y, ev); }, 'controls');
 
   $('#door-name-form').submit(function(e) {
     e.preventDefault();
-    self.exitThreadCreation();
+    self.exitThreadCreation(false);
   });
 
   $('.door-submit-button').click(function() {
-    self.exitThreadCreation();
+    self.exitThreadCreation(false);
   });
 };
 
@@ -132,7 +133,7 @@ GeneralPlanetComponent.prototype.enterThreadCreation = function() {
   $('#door-name-input').focus();
 };
 
-GeneralPlanetComponent.prototype.exitThreadCreation = function() {
+GeneralPlanetComponent.prototype.exitThreadCreation = function(cancelled) {
   if (!this.creatingThread) return;
 
   this.creatingThread = false;
@@ -141,6 +142,22 @@ GeneralPlanetComponent.prototype.exitThreadCreation = function() {
   this.threadCreationDoor.setVisible(false);
 
   $('.door-ui-wrapper').fadeOut();
+
+  if (!cancelled) {
+    var threadData = {
+      subject: $('#door-name-input').value(),
+      position: this.threadCreationDoor.mesh.position,
+      creator: this.avatar,
+      texture: this.threadCreationDoor.texture
+    };
+    apiTools.createThread(threadData, function(result) {
+      if (result.error) {
+
+      } else {
+        
+      }
+    });
+  }
 };
 
 GeneralPlanetComponent.prototype.forwardKeydown = function() {
@@ -180,6 +197,7 @@ GeneralPlanetComponent.prototype.mousemove = function(x, y, ev) {
   var movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
   var movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
   this.controls.mouseUpdate(movementX, movementY);
+
   return;
 
   x -= (window.innerWidth / 2);

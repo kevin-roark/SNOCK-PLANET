@@ -1,4 +1,4 @@
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*!
  * jQuery JavaScript Library v2.1.3
  * http://jquery.com/
@@ -10292,7 +10292,7 @@ function url(uri, loc){
   return obj;
 }
 
-}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"debug":11,"parseuri":45}],8:[function(require,module,exports){
 
 /**
@@ -11434,7 +11434,7 @@ Socket.prototype.filterUpgrades = function (upgrades) {
   return filteredUpgrades;
 };
 
-}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./transport":15,"./transports":16,"component-emitter":10,"debug":23,"engine.io-parser":26,"indexof":43,"parsejson":37,"parseqs":38,"parseuri":39}],15:[function(require,module,exports){
 /**
  * Module dependencies.
@@ -11652,7 +11652,7 @@ function polling(opts){
   }
 }
 
-}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./polling-jsonp":17,"./polling-xhr":18,"./websocket":20,"xmlhttprequest":21}],17:[function(require,module,exports){
 (function (global){
 
@@ -11889,7 +11889,7 @@ JSONPPolling.prototype.doWrite = function (data, fn) {
   }
 };
 
-}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./polling":19,"component-inherit":22}],18:[function(require,module,exports){
 (function (global){
 /**
@@ -12277,7 +12277,7 @@ function unloadHandler() {
   }
 }
 
-}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./polling":19,"component-emitter":10,"component-inherit":22,"debug":23,"xmlhttprequest":21}],19:[function(require,module,exports){
 /**
  * Module dependencies.
@@ -13869,7 +13869,7 @@ exports.decodePayloadAsBinary = function (data, binaryType, callback) {
   });
 };
 
-}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./keys":27,"after":28,"arraybuffer.slice":29,"base64-arraybuffer":30,"blob":31,"has-binary":32,"utf8":34}],27:[function(require,module,exports){
 
 /**
@@ -14065,7 +14065,7 @@ module.exports = (function() {
   }
 })();
 
-}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],32:[function(require,module,exports){
 (function (global){
 
@@ -14127,7 +14127,7 @@ function hasBinary(data) {
   return _hasBinary(data);
 }
 
-}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"isarray":33}],33:[function(require,module,exports){
 module.exports = Array.isArray || function (arr) {
   return Object.prototype.toString.call(arr) == '[object Array]';
@@ -14375,7 +14375,7 @@ module.exports = Array.isArray || function (arr) {
 
 }(this));
 
-}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],35:[function(require,module,exports){
 
 /**
@@ -14445,7 +14445,7 @@ module.exports = function parsejson(data) {
     return (new Function('return ' + data))();
   }
 };
-}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],38:[function(require,module,exports){
 /**
  * Compiles a querystring
@@ -14632,10 +14632,10 @@ function hasBinary(data) {
   return _hasBinary(data);
 }
 
-}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"isarray":42}],42:[function(require,module,exports){
-module.exports=require(33)
-},{}],43:[function(require,module,exports){
+arguments[4][33][0].apply(exports,arguments)
+},{"dup":33}],43:[function(require,module,exports){
 
 var indexOf = [].indexOf;
 
@@ -14902,7 +14902,7 @@ exports.removeBlobs = function(data, callback) {
   }
 };
 
-}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./is-buffer":48,"isarray":49}],47:[function(require,module,exports){
 
 /**
@@ -15321,10 +15321,10 @@ function isBuf(obj) {
          (global.ArrayBuffer && obj instanceof ArrayBuffer);
 }
 
-}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],49:[function(require,module,exports){
-module.exports=require(33)
-},{}],50:[function(require,module,exports){
+arguments[4][33][0].apply(exports,arguments)
+},{"dup":33}],50:[function(require,module,exports){
 /*! JSON v3.2.6 | http://bestiejs.github.io/json3 | Copyright 2012-2013, Kit Cambridge | http://kit.mit-license.org */
 ;(function (window) {
   // Convenience aliases.
@@ -16249,6 +16249,23 @@ module.exports.createFaceURL = function(faceData, callback) {
   });
 };
 
+module.exports.createThread = function(threadData, callback) {
+  if (!fetchSocket() || !threadData || !threadData.subject) {
+    callback({error: 'bad call brah'});
+    return;
+  }
+
+  socket.emit('get-thread', threadData.subject, function(thread) {
+    if (thread) {
+      callback({thread: thread, error: 'thread exists'});
+    } else {
+      socket.emit('create-thread', threadData, function(thread) {
+        callback({thread: thread});
+      });
+    }
+  });
+};
+
 // Utility
 
 function fetchSocket() {
@@ -16463,7 +16480,7 @@ var $ = require('jquery');
 var SceneComponent = require('./scene-component');
 var Avatar = require('./avatar');
 var globals = require('./global-state');
-var avatarTools = require('./avatar-tools');
+var apiTools = require('./api-tools');
 var imageDropper = require('./image-dropper');
 
 module.exports = BecomeAvatarComponent;
@@ -16493,7 +16510,7 @@ BecomeAvatarComponent.prototype.postInit = function(options) {
     var name = $('#avatar-name-input').val();
 
     if (!self.hasEnteredName) {
-      avatarTools.fetchAvatar(name, function(avatarData) {
+      apiTools.fetchAvatar(name, function(avatarData) {
         if (avatarData) {
           self.finishAfterFetchingAvatar(avatarData);
         } else {
@@ -16508,9 +16525,9 @@ BecomeAvatarComponent.prototype.postInit = function(options) {
   $('.avatar-creation-submit-button').click(function() {
     self.avatar.name = $('#avatar-name-input').val();
 
-    avatarTools.createFaceURL(self.avatar.uploadableFaceImageData(), function(faceURL) {
+    apiTools.createFaceURL(self.avatar.uploadableFaceImageData(), function(faceURL) {
       self.avatar.updateFaceImage(faceURL);
-      avatarTools.createAvatar(self.avatar.serialize(), function(avatarData) {
+      apiTools.createAvatar(self.avatar.serialize(), function(avatarData) {
         self.finishAfterCreatingAvatar(avatarData);
       });
     });
@@ -16625,7 +16642,7 @@ function setWidthEqualToHeight($el) {
   $el.css('width', height + 'px');
 }
 
-},{"./avatar":53,"./avatar-tools":52,"./global-state":59,"./image-dropper":60,"./scene-component":66,"jquery":1}],55:[function(require,module,exports){
+},{"./api-tools":52,"./avatar":53,"./global-state":59,"./image-dropper":60,"./scene-component":66,"jquery":1}],55:[function(require,module,exports){
 /**
  * BELOW CODE INSPIRED FROM
  * http://threejs.org/examples/misc_controls_pointerlock.html
@@ -16843,7 +16860,7 @@ module.exports.testing = true;
 
 module.exports.addTestDoor = false;
 
-}).call(this,"/")
+}).call(this,"/public/javascripts")
 },{}],57:[function(require,module,exports){
 
 // requirements
@@ -16935,6 +16952,7 @@ var mousemaster = require('./mousemaster');
 var Avatar = require('./avatar');
 var Door = require('./door');
 var ObjectControls = require('./object-controls');
+var apiTools = require('./api-tools');
 
 module.exports = GeneralPlanetComponent;
 
@@ -17020,17 +17038,17 @@ GeneralPlanetComponent.prototype.addInteractionGlue = function() {
   keymaster.keyup([40, 83], function(){ self.downwardKeyup(); });
   keymaster.keyup([39, 68], function(){ self.rightwardKeyup(); });
 
-  keymaster.keydown(27, function(){ self.exitThreadCreation(); });
+  keymaster.keydown(27, function(){ self.exitThreadCreation(true); });
 
   mousemaster.move(function(x, y, ev) { self.mousemove(x, y, ev); }, 'controls');
 
   $('#door-name-form').submit(function(e) {
     e.preventDefault();
-    self.exitThreadCreation();
+    self.exitThreadCreation(false);
   });
 
   $('.door-submit-button').click(function() {
-    self.exitThreadCreation();
+    self.exitThreadCreation(false);
   });
 };
 
@@ -17060,7 +17078,7 @@ GeneralPlanetComponent.prototype.enterThreadCreation = function() {
   $('#door-name-input').focus();
 };
 
-GeneralPlanetComponent.prototype.exitThreadCreation = function() {
+GeneralPlanetComponent.prototype.exitThreadCreation = function(cancelled) {
   if (!this.creatingThread) return;
 
   this.creatingThread = false;
@@ -17069,6 +17087,22 @@ GeneralPlanetComponent.prototype.exitThreadCreation = function() {
   this.threadCreationDoor.setVisible(false);
 
   $('.door-ui-wrapper').fadeOut();
+
+  if (!cancelled) {
+    var threadData = {
+      subject: $('#door-name-input').value(),
+      position: this.threadCreationDoor.mesh.position,
+      creator: this.avatar,
+      texture: this.threadCreationDoor.texture
+    };
+    apiTools.createThread(threadData, function(result) {
+      if (result.error) {
+
+      } else {
+        
+      }
+    });
+  }
 };
 
 GeneralPlanetComponent.prototype.forwardKeydown = function() {
@@ -17108,6 +17142,7 @@ GeneralPlanetComponent.prototype.mousemove = function(x, y, ev) {
   var movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
   var movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
   this.controls.mouseUpdate(movementX, movementY);
+
   return;
 
   x -= (window.innerWidth / 2);
@@ -17167,7 +17202,7 @@ GeneralPlanetComponent.prototype.controlsActive = function() {
   return !this.creatingThread;
 };
 
-},{"./avatar":53,"./door":57,"./global-state":59,"./keymaster":61,"./mousemaster":64,"./object-controls":65,"./scene-component":66,"jquery":1}],59:[function(require,module,exports){
+},{"./api-tools":52,"./avatar":53,"./door":57,"./global-state":59,"./keymaster":61,"./mousemaster":64,"./object-controls":65,"./scene-component":66,"jquery":1}],59:[function(require,module,exports){
 
 // Store anything you think should be accessible everywhere here
 
@@ -17888,4 +17923,4 @@ SceneComponent.prototype.clean = function() {};
 
 SceneComponent.prototype.layout = function() {};
 
-},{"jquery":1}]},{},[62])
+},{"jquery":1}]},{},[62]);
