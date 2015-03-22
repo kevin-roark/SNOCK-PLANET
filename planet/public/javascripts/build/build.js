@@ -16880,7 +16880,7 @@ function Door(options) {
 
   this.scale = options.scale || 2;
 
-  this.subject = options.subject || 'default_subject';
+  this.subject = options.subject || '';
   this.texture = options.texture || config.door_texture;
 
   this.material = new THREE.MeshPhongMaterial({
@@ -16890,8 +16890,36 @@ function Door(options) {
   this.geometry = new THREE.BoxGeometry(8, 20, 0.5);
   this.mesh = new THREE.Mesh(this.geometry, this.material);
 
+  this.createTextMesh();
+
   this.moveTo(this.initX, this.initY, this.initZ);
 }
+
+Door.prototype.createTextMesh = function() {
+  this.textMaterial = new THREE.MeshBasicMaterial({
+    color: 0x000000
+  });
+
+  this.textGeometry = new THREE.TextGeometry(this.subject, {
+    size: 2.2,
+    height: 0.01,
+    curveSegments: 1,
+    font: 'droid sans',
+    bevelThickness: 0.35,
+    bevelSize: 0.15,
+    bevelSegments: 1,
+    bevelEnabled: true
+  });
+  this.textGeometry.computeBoundingBox();
+  this.textGeometry.computeBoundingSphere();
+  this.textGeometry.computeVertexNormals();
+  this.textGeometry.center();
+
+  this.textMesh = new THREE.Mesh(this.textGeometry, this.textMaterial);
+
+  this.mesh.add(this.textMesh);
+  this.textMesh.position.set(0, 13, 0);
+};
 
 Door.prototype.addTo = function(scene) {
   scene.add(this.mesh);
@@ -16900,17 +16928,21 @@ Door.prototype.addTo = function(scene) {
 Door.prototype.move = function(x, y, z) {
   if (!this.mesh) return;
 
-  this.mesh.position.x += x;
-  this.mesh.position.y += y;
-  this.mesh.position.z += z;
+  this.mesh.translateX(x);
+  this.mesh.translateY(y);
+  this.mesh.translateZ(z);
 };
 
 Door.prototype.rotate = function(rx, ry, rz) {
   if (!this.mesh) return;
 
-  this.mesh.rotation.x += rx;
-  this.mesh.rotation.y += ry;
-  this.mesh.rotation.z += rz;
+  var meshes = this.meshes();
+  for (var i = 0; i < meshes.length; i++) {
+    var mesh = meshes[i];
+    mesh.rotation.x += rx;
+    mesh.rotation.y += ry;
+    mesh.rotation.z += rz;
+  }
 };
 
 Door.prototype.moveTo = function(x, y, z) {
@@ -16921,11 +16953,11 @@ Door.prototype.moveTo = function(x, y, z) {
 };
 
 Door.prototype.render = function() {
-
+  this.textMesh.rotation.y += 0.015;
 };
 
 Door.prototype.meshes = function() {
-  return [this.mesh];
+  return [this.mesh, this.textMesh];
 };
 
 Door.prototype.setVisible = function(visible) {
