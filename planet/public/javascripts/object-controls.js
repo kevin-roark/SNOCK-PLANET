@@ -7,18 +7,19 @@ module.exports = function ObjectControls( opts ) {
     var options = {
         mousePos: null,
         target: null,
-        positionVelocityIncrement: 5,
-        positionVelocityDecrement: 0.95,
+
         invertX: true,
         invertZ: true,
 
-        rotationDamping: 20,
+        positionVelocityIncrement: 2,
+        positionVelocityDecrement: 0.95,
+        maxPositionVelocity: 40,
+
+        rotationDamping: {x: 100, y: 500},
+        rotationLimit: {y: {min: -Math.PI/12, max: Math.PI/12}},
 
         rollVelocityIncrement: 0.05,
         rollVelocityDecrement: 0.95,
-
-        maxPositionVelocity: 200,
-        maxRotationVelocity: 10,
         maxRollVelocity: 2
     };
 
@@ -39,13 +40,12 @@ module.exports = function ObjectControls( opts ) {
         rollLeft = false,
         rollRight = false,
         rollRotation = 0,
-        rotationQuaternion = new THREE.Quaternion(),
         positionVector = new THREE.Vector3(),
         cameraQuaternion = new THREE.Quaternion();
 
-    var pitchVector = new THREE.Object3D();
-    var yawVector = new THREE.Object3D();
-    yawVector.add(pitchVector);
+    var pitchObject = new THREE.Object3D();
+    var yawObject = new THREE.Object3D();
+    yawObject.add(pitchObject);
 
     var updateRolling = function(dt) {
       var inc = options.rollVelocityIncrement,
@@ -68,11 +68,6 @@ module.exports = function ObjectControls( opts ) {
       else if (rollRotation < -max) {
         rollRotation = -max;
       }
-    };
-
-    var updateRotation = function(dt) {
-        //rotationVector.y = -self.mousePos.x / options.rotationDamping;
-        //rotationVector.x = -self.mousePos.y / options.rotationDamping;
     };
 
     var updatePosition = function(dt) {
@@ -124,13 +119,6 @@ module.exports = function ObjectControls( opts ) {
             velZ = positionVector.z * dt,
             roll = rollRotation * dt;
 
-        rotationQuaternion.set(
-            yawVector.rotation.x * dt,
-            -yawVector.rotation.y * dt,
-            roll,
-            1
-        ).normalize();
-
         var targetMeshes;
         if (options.target.meshes) {
           targetMeshes = options.target.meshes();
@@ -143,8 +131,7 @@ module.exports = function ObjectControls( opts ) {
         for (var i = 0; i < targetMeshes.length; i++) {
           var obj = targetMeshes[i];
 
-          //obj.quaternion.multiply( rotationQuaternion );
-          obj.rotation.copy(yawVector.rotation);
+          obj.rotation.set(pitchObject.getWorldQuaternion().x, yawObject.rotation.y, 0);
 
           obj.translateX( velX );
           obj.translateY( velY );
@@ -155,16 +142,20 @@ module.exports = function ObjectControls( opts ) {
 
     this.update = function( dt ) {
       updateRolling(dt);
-      updateRotation(dt);
       updatePosition(dt);
       updateCameras(dt);
     };
 
     this.mouseUpdate = function(movementX, movementY) {
-      yawVector.rotation.y += movementX / options.rotationDamping;
+      yawObject.rotation.y -= movementX / options.rotationDamping.x;
 
-      pitchVector.rotation.x += movementY / options.rotationDamping;
-      pitchVector.rotation.x = Math.max(-PI_2, Math.min(PI_2, pitchVector.rotation.x));
+      var x = pitchObject.rotation.x - movementY / options.rotationDamping.y;
+      if (x < options.rotationLimit.y.min) {
+        x = options.rotationLimit.y.min;
+      } else if (x > options.rotationLimit.y.max) {
+        x = options.rotationLimit.y.max;
+      }
+      pitchObject.rotation.x = x;
     };
 
 

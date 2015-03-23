@@ -22,6 +22,7 @@ function Door(options) {
       reflectivity: 0.15
   });
   this.geometry = new THREE.BoxGeometry(8, 20, 0.5);
+  this.geometry.center();
   this.mesh = new THREE.Mesh(this.geometry, this.material);
 
   this.createTextMesh();
@@ -78,7 +79,7 @@ Door.prototype.rotate = function(rx, ry, rz) {
 Door.prototype.moveTo = function(x, y, z) {
   if (!this.mesh) return;
 
-  this.mesh.position.set(x, y, z);
+  this.mesh.position.set(x, y + 4, z);
   this.move(0, 0, 0);
 };
 
