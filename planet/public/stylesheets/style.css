@@ -155,9 +155,35 @@ progress {
   letter-spacing: 2px;
 }
 
-.door-submit-button {
+.door-texture-picker {
+  text-align: center;
+
   position: relative;
   top: 50%;
+  left: 50%;
+  height: 160px;
+  width: 600px;
+  margin: -60px -300px;
+}
+
+.door-texture-option {
+  cursor: pointer;
+  display: inline;
+
+  margin: 20px;
+}
+
+  .door-texture-option img {
+    width: 100px;
+    box-shadow: 0px 0px 10px 10px yellow;
+  }
+    .door-texture-option img:hover {
+      box-shadow: 0px 0px 10px 10px red;
+    }
+
+.door-submit-button {
+  position: relative;
+  top: 65%;
   left: 50%;
   height: 60px;
   width: 200px;

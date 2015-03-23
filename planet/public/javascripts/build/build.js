@@ -16961,6 +16961,13 @@ Door.prototype.setVisible = function(visible) {
   this.mesh.visible = visible;
 };
 
+Door.prototype.setTexture = function(texture) {
+  this.texture = texture;
+
+  this.material.map = THREE.ImageUtils.loadTexture(this.texture);
+  this.material.needsUpdate = true;
+};
+
 Door.prototype.serialize = function() {
   return {
     subject: this.subject,
@@ -17081,6 +17088,10 @@ GeneralPlanetComponent.prototype.addInteractionGlue = function() {
 
   mousemaster.move(function(x, y, ev) { self.mousemove(x, y, ev); }, 'controls');
 
+  $('.door-texture-option').click(function() {
+    self.doorTextureSelected($(this));
+  });
+
   $('#door-name-form').submit(function(e) {
     e.preventDefault();
     self.attemptDoorCreation();
@@ -17156,6 +17167,20 @@ GeneralPlanetComponent.prototype.showDoorError = function(message) {
       div.fadeOut();
     }, 3333);
   });
+};
+
+GeneralPlanetComponent.prototype.doorTextureSelected = function(elem) {
+  var id = elem.attr('id');
+
+  var textureMap = {
+    'wood-door-texture': '/images/wooden_door.jpg',
+    'metal-door-texture': '/images/metal_door.jpg',
+    'neon-door-texture': '/images/neon_door.jpg',
+    'rainbow-door-texture': '/images/rainbow_door.jpg'
+  };
+
+  var texture = textureMap[id];
+  this.creationDoor.setTexture(texture);
 };
 
 GeneralPlanetComponent.prototype.forwardKeydown = function() {

@@ -95,6 +95,13 @@ Door.prototype.setVisible = function(visible) {
   this.mesh.visible = visible;
 };
 
+Door.prototype.setTexture = function(texture) {
+  this.texture = texture;
+
+  this.material.map = THREE.ImageUtils.loadTexture(this.texture);
+  this.material.needsUpdate = true;
+};
+
 Door.prototype.serialize = function() {
   return {
     subject: this.subject,
