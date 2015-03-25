@@ -6,16 +6,14 @@ module.exports = Door;
 
 function Door(options) {
   if (!options) options = {};
-  if (!options.position) options.position = {};
 
-  this.initX = options.position.x || 0;
-  this.initY = options.position.y || 0;
-  this.initZ = options.position.z || 0;
-
-  this.scale = options.scale || 2;
-
+  this._id = options._id || '_';
   this.subject = options.subject || '';
   this.texture = options.texture || config.door_texture;
+
+  this.initialPosition = options.position || {x: 0, y: 0, z: 0};
+
+  this.scale = options.scale || 2;
 
   this.material = new THREE.MeshPhongMaterial({
       map: THREE.ImageUtils.loadTexture(this.texture),
@@ -27,7 +25,7 @@ function Door(options) {
 
   this.createTextMesh();
 
-  this.moveTo(this.initX, this.initY, this.initZ);
+  this.moveTo(this.initialPosition.x, this.initialPosition.y, this.initialPosition.z);
 }
 
 Door.prototype.createTextMesh = function() {
@@ -108,6 +106,7 @@ Door.prototype.toString = function() {
 
 Door.prototype.serialize = function() {
   return {
+    _id: this._id,
     subject: this.subject,
     texture: this.texture,
     position: {

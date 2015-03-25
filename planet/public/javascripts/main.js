@@ -8,6 +8,7 @@ var config = require('./config');
 var globals = require('./global-state');
 var BecomeAvatarComponent = require('./become-avatar-component');
 var GeneralPlanetComponent = require('./general-planet-component');
+var InnerDoorComponent = require('./inner-door-component');
 
 // modes
 var BECOME_AVATAR_MODE = 0;
@@ -55,6 +56,7 @@ $(function() {
 
   // set up globals
   globals.io = socket;
+  globals.renderer = renderer;
   globals.scene = scene;
   globals.camera = cam;
 
@@ -78,8 +80,8 @@ $(function() {
 
     state.frameCount += 1;
 
-    // every 4 frames lets update our state to the server
-    if (state.frameCount % 4 == 0 && globals.playerAvatar) {
+    // every few frames lets update our state to the server
+    if (state.frameCount % 10 === 0 && globals.playerAvatar) {
       socket.emit('avatar-update', globals.playerAvatar.serialize());
     }
 
@@ -131,8 +133,12 @@ $(function() {
     };
   }
 
-  function startInsideDoorState() {
+  function startInsideDoorState(door) {
+    state.currentInnerDoorComponent = new InnerDoorComponent();
+    state.currentInnerDoorComponent.init(scene, socket, cam, {door: door});
+    state.currentInnerDoorComponent.finishedCallback = function() {
 
+    };
   }
 
   // utility
@@ -142,7 +148,7 @@ $(function() {
 
     for (var i = meshes.length - 1; i >= 0; i--) {
       var obj = meshes[ i ];
-      if (obj !== camera && obj !== mainLight) {
+      if (obj !== camera && obj !== ambientLight) {
         scene.remove(obj);
       }
     }

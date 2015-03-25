@@ -19,9 +19,11 @@ var doorSchema = Schema({
   }
 });
 
-var letterSchema = Schema({
+var noteSchema = Schema({
   text: {type: String, trim: true},
   when: {type: Date, default: Date.now},
+  skyboxTexture: String,
+  door: {type: Schema.Types.ObjectId, ref: 'Door'},
   creator: {type: Schema.Types.ObjectId, ref: 'Avatar'},
   position: {
     x: Number,
@@ -38,5 +40,5 @@ var avatarSchema = Schema({
 // models
 
 var Door = module.exports.Door = mongoose.model('Door', doorSchema);
-var Letter = module.exports.Letter = mongoose.model('Letter', letterSchema);
+var Note = module.exports.Note = mongoose.model('Note', noteSchema);
 var Avatar = module.exports.Avatar = mongoose.model('Avatar', avatarSchema);

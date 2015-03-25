@@ -5,13 +5,12 @@ var loader = require('./model-loader');
 module.exports = Avatar;
 
 function Avatar(options) {
+  if (!options) options = {};
+
   this._id = options._id || '_';
   this.name = options.name || 'nameless_fuck';
 
-  if (!options.position) options.position = {};
-  this.initX = options.position.x || 0;
-  this.initY = options.position.y || 0;
-  this.initZ = options.position.z || 0;
+  this.initialPosition = options.position || {x: 0, y: 0, z: 0};
 
   this.postLoadBehaviors = [];
 
@@ -43,7 +42,7 @@ Avatar.prototype.addTo = function(scene, callback) {
 
     self.updateSkinColor(self.color);
 
-    self.move(self.initX, self.initY, self.initZ);
+    self.move(self.initialPosition.x, self.initialPosition.y, self.initialPosition.z);
 
     scene.add(self.skinnedMesh);
     scene.add(self.faceMesh);
@@ -178,6 +177,7 @@ Avatar.prototype.updateFaceImage = function(image) {
 
 Avatar.prototype.serialize = function() {
   return {
+    _id: this._id,
     name: this.name,
     color: this.color,
     faceImageUrl: this.faceImageUrl

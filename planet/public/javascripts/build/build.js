@@ -16284,13 +16284,12 @@ var loader = require('./model-loader');
 module.exports = Avatar;
 
 function Avatar(options) {
+  if (!options) options = {};
+
   this._id = options._id || '_';
   this.name = options.name || 'nameless_fuck';
 
-  if (!options.position) options.position = {};
-  this.initX = options.position.x || 0;
-  this.initY = options.position.y || 0;
-  this.initZ = options.position.z || 0;
+  this.initialPosition = options.position || {x: 0, y: 0, z: 0};
 
   this.postLoadBehaviors = [];
 
@@ -16322,7 +16321,7 @@ Avatar.prototype.addTo = function(scene, callback) {
 
     self.updateSkinColor(self.color);
 
-    self.move(self.initX, self.initY, self.initZ);
+    self.move(self.initialPosition.x, self.initialPosition.y, self.initialPosition.z);
 
     scene.add(self.skinnedMesh);
     scene.add(self.faceMesh);
@@ -16457,6 +16456,7 @@ Avatar.prototype.updateFaceImage = function(image) {
 
 Avatar.prototype.serialize = function() {
   return {
+    _id: this._id,
     name: this.name,
     color: this.color,
     faceImageUrl: this.faceImageUrl
@@ -16476,7 +16476,7 @@ Avatar.prototype.uploadableFaceImageData = function() {
   return this.faceImageCanvas.toDataURL('image/jpeg', 0.7);
 };
 
-},{"./model-loader":63}],54:[function(require,module,exports){
+},{"./model-loader":64}],54:[function(require,module,exports){
 
 var $ = require('jquery');
 var SceneComponent = require('./scene-component');
@@ -16644,7 +16644,7 @@ function setWidthEqualToHeight($el) {
   $el.css('width', height + 'px');
 }
 
-},{"./api-tools":52,"./avatar":53,"./global-state":59,"./image-dropper":60,"./scene-component":66,"jquery":1}],55:[function(require,module,exports){
+},{"./api-tools":52,"./avatar":53,"./global-state":59,"./image-dropper":60,"./scene-component":67,"jquery":1}],55:[function(require,module,exports){
 /**
  * BELOW CODE INSPIRED FROM
  * http://threejs.org/examples/misc_controls_pointerlock.html
@@ -16839,27 +16839,16 @@ Camera.prototype.addPointerlockListeners = function() {
 
 var debug = true;
 
-var mongo_url, door_texture, io_url, static_path;
+// Paths and such
+module.exports.mongo_url = debug? 'mongodb://localhost/test' : '';
+module.exports.io_url = debug? 'http://localhost:3000' : '';
+module.exports.static_path = __dirname + '/..';
 
-if (debug) {
-  mongo_url = 'mongodb://localhost/test';
-
-  door_texture = '/images/wooden_door.jpg';
-
-  io_url = 'http://localhost:3000';
-
-  static_path = __dirname + '/..';
-} else {
-
-}
-
-module.exports.mongo_url = mongo_url;
-module.exports.door_texture = door_texture;
-module.exports.io_url = io_url;
-module.exports.static_path = static_path;
-
+// Testing
 module.exports.testing = true;
 
+// Door config
+module.exports.door_texture = '/images/wooden_door.jpg';
 module.exports.addTestDoor = false;
 
 }).call(this,"/public/javascripts")
@@ -16872,16 +16861,14 @@ module.exports = Door;
 
 function Door(options) {
   if (!options) options = {};
-  if (!options.position) options.position = {};
 
-  this.initX = options.position.x || 0;
-  this.initY = options.position.y || 0;
-  this.initZ = options.position.z || 0;
-
-  this.scale = options.scale || 2;
-
+  this._id = options._id || '_';
   this.subject = options.subject || '';
   this.texture = options.texture || config.door_texture;
+
+  this.initialPosition = options.position || {x: 0, y: 0, z: 0};
+
+  this.scale = options.scale || 2;
 
   this.material = new THREE.MeshPhongMaterial({
       map: THREE.ImageUtils.loadTexture(this.texture),
@@ -16893,7 +16880,7 @@ function Door(options) {
 
   this.createTextMesh();
 
-  this.moveTo(this.initX, this.initY, this.initZ);
+  this.moveTo(this.initialPosition.x, this.initialPosition.y, this.initialPosition.z);
 }
 
 Door.prototype.createTextMesh = function() {
@@ -16974,6 +16961,7 @@ Door.prototype.toString = function() {
 
 Door.prototype.serialize = function() {
   return {
+    _id: this._id,
     subject: this.subject,
     texture: this.texture,
     position: {
@@ -17296,7 +17284,7 @@ GeneralPlanetComponent.prototype.controlsActive = function() {
   return !this.creatingDoor;
 };
 
-},{"./api-tools":52,"./avatar":53,"./door":57,"./global-state":59,"./keymaster":61,"./mousemaster":64,"./object-controls":65,"./scene-component":66,"jquery":1}],59:[function(require,module,exports){
+},{"./api-tools":52,"./avatar":53,"./door":57,"./global-state":59,"./keymaster":62,"./mousemaster":65,"./object-controls":66,"./scene-component":67,"jquery":1}],59:[function(require,module,exports){
 
 // Store anything you think should be accessible everywhere here
 
@@ -17436,6 +17424,31 @@ function readfiles(files) {
 },{}],61:[function(require,module,exports){
 
 var $ = require('jquery');
+var globals = require('./global-state');
+var SceneComponent = require('./scene-component');
+var keymaster = require('./keymaster');
+var mousemaster = require('./mousemaster');
+var Avatar = require('./avatar');
+var Door = require('./door');
+var ObjectControls = require('./object-controls');
+var apiTools = require('./api-tools');
+
+module.exports = InnerDoorComponent;
+
+// Inherited methods
+
+function InnerDoorComponent() {};
+
+// TODO: general avatar-control-component subclass
+InnerDoorComponent.prototype.__proto__ = SceneComponent.prototype;
+
+InnerDoorComponent.prototype.postInit = function(options) {
+  this.door = options.door;
+};
+
+},{"./api-tools":52,"./avatar":53,"./door":57,"./global-state":59,"./keymaster":62,"./mousemaster":65,"./object-controls":66,"./scene-component":67,"jquery":1}],62:[function(require,module,exports){
+
+var $ = require('jquery');
 
 var keydownMap = {};
 var keyupMap = {};
@@ -17527,7 +17540,7 @@ module.exports.setPreventDefaults = function(preventDefaults) {
   shouldPreventDefaults = preventDefaults;
 };
 
-},{"jquery":1}],62:[function(require,module,exports){
+},{"jquery":1}],63:[function(require,module,exports){
 
 var $ = require('jquery');
 var io = require('socket.io-client');
@@ -17538,6 +17551,7 @@ var config = require('./config');
 var globals = require('./global-state');
 var BecomeAvatarComponent = require('./become-avatar-component');
 var GeneralPlanetComponent = require('./general-planet-component');
+var InnerDoorComponent = require('./inner-door-component');
 
 // modes
 var BECOME_AVATAR_MODE = 0;
@@ -17585,6 +17599,7 @@ $(function() {
 
   // set up globals
   globals.io = socket;
+  globals.renderer = renderer;
   globals.scene = scene;
   globals.camera = cam;
 
@@ -17608,8 +17623,8 @@ $(function() {
 
     state.frameCount += 1;
 
-    // every 4 frames lets update our state to the server
-    if (state.frameCount % 4 == 0 && globals.playerAvatar) {
+    // every few frames lets update our state to the server
+    if (state.frameCount % 10 === 0 && globals.playerAvatar) {
       socket.emit('avatar-update', globals.playerAvatar.serialize());
     }
 
@@ -17661,8 +17676,12 @@ $(function() {
     };
   }
 
-  function startInsideDoorState() {
+  function startInsideDoorState(door) {
+    state.currentInnerDoorComponent = new InnerDoorComponent();
+    state.currentInnerDoorComponent.init(scene, socket, cam, {door: door});
+    state.currentInnerDoorComponent.finishedCallback = function() {
 
+    };
   }
 
   // utility
@@ -17672,7 +17691,7 @@ $(function() {
 
     for (var i = meshes.length - 1; i >= 0; i--) {
       var obj = meshes[ i ];
-      if (obj !== camera && obj !== mainLight) {
+      if (obj !== camera && obj !== ambientLight) {
         scene.remove(obj);
       }
     }
@@ -17680,7 +17699,7 @@ $(function() {
 
 });
 
-},{"./become-avatar-component":54,"./camera":55,"./config":56,"./door":57,"./general-planet-component":58,"./global-state":59,"jquery":1,"socket.io-client":2}],63:[function(require,module,exports){
+},{"./become-avatar-component":54,"./camera":55,"./config":56,"./door":57,"./general-planet-component":58,"./global-state":59,"./inner-door-component":61,"jquery":1,"socket.io-client":2}],64:[function(require,module,exports){
 
 var cache = {};
 
@@ -17714,7 +17733,7 @@ function fetch(name, clone, callback) {
   callback(cache[name].geometry.clone(), cache[name].materials.clone());
 }
 
-},{}],64:[function(require,module,exports){
+},{}],65:[function(require,module,exports){
 
 var $ = require('jquery');
 
@@ -17743,7 +17762,7 @@ module.exports.clearMove = function(key) {
   delete moveListeners[key];
 }
 
-},{"jquery":1}],65:[function(require,module,exports){
+},{"jquery":1}],66:[function(require,module,exports){
 
 /**
  * Originally written by squarefeet (github.com/squarefeet).
@@ -17947,7 +17966,7 @@ module.exports = function ObjectControls( opts ) {
     };
 };
 
-},{}],66:[function(require,module,exports){
+},{}],67:[function(require,module,exports){
 
 var $ = require('jquery');
 
@@ -18008,4 +18027,4 @@ SceneComponent.prototype.clean = function() {};
 
 SceneComponent.prototype.layout = function() {};
 
-},{"jquery":1}]},{},[62]);
+},{"jquery":1}]},{},[63]);
