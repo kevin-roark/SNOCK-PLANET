@@ -17220,21 +17220,6 @@ GeneralPlanetComponent.prototype.mousemove = function(x, y, ev) {
   var movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
   var movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
   this.controls.mouseUpdate(movementX, movementY);
-
-  return;
-
-  x -= (window.innerWidth / 2);
-  y -= (window.innerHeight / 2);
-  var threshold = 15;
-
-  if ((x > 0 && x < threshold) || (x < 0 && x > -threshold)) {
-      x = 0;
-  }
-  if ((y > 0 && y < threshold) || (y < 0 && y > -threshold)) {
-      y = 0;
-  }
-
-  //this.controls.mousePos.set(x, y);
 };
 
 /** IO Response */
