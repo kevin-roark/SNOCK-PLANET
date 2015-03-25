@@ -15,6 +15,7 @@ module.exports = GeneralPlanetComponent;
 
 var THIRD_PERSON_CAM_NAME = 'avatar-third';
 var FIRST_PERSON_CAM_NAME = 'avatar-first';
+var MINIMUM_REQUIRED_DOOR_ENTRY_DISTANCE = 30;
 
 /** Inherited methods */
 
@@ -36,6 +37,8 @@ GeneralPlanetComponent.prototype.postInit = function(options) {
   this.creationDoor = new Door();
   this.creationDoor.setVisible(false);
   this.addObject3d(this.creationDoor);
+
+  this.doors = []; // TODO: not sustainable to hold all doors in a freakin' array
 
   this.controls = new ObjectControls({
     target: this.avatar
@@ -90,6 +93,7 @@ GeneralPlanetComponent.prototype.addInteractionGlue = function() {
 
   keymaster.keypress(113, function(){ self.toggleCameraPerspective(); });
   keymaster.keypress(110, function(){ self.enterDoorCreation(); });
+  keymaster.keypress(32, function() { self.attemptToEnterNearestDoor(); });
 
   keymaster.keydown([38, 87], function(){ self.forwardKeydown(); });
   keymaster.keydown([37, 65], function(){ self.leftwardKeydown(); });
@@ -128,6 +132,28 @@ GeneralPlanetComponent.prototype.toggleCameraPerspective = function() {
 
   var camName = this.firstPerson? FIRST_PERSON_CAM_NAME : THIRD_PERSON_CAM_NAME;
   this.camera.setTarget(camName);
+};
+
+GeneralPlanetComponent.prototype.attemptToEnterNearestDoor = function() {
+  if (!this.controlsActive()) return;
+
+  var requiredDistanceSquared = MINIMUM_REQUIRED_DOOR_ENTRY_DISTANCE * MINIMUM_REQUIRED_DOOR_ENTRY_DISTANCE;
+  var avatarPosition = this.avatar.trackingMesh().position;
+
+  var minDistanceSquared = 100000000000;
+  var nearestDoor = null;
+  for (var i = 0; i < this.doors.length; i++) {
+    var door = this.doors[i];
+    var distSquared = door.mesh.position.distanceToSquared(avatarPosition);
+    if (distSquared < minDistanceSquared) {
+      minDistanceSquared = distSquared;
+      nearestDoor = door;
+    }
+  }
+
+  if (nearestDoor && minDistanceSquared <= requiredDistanceSquared) {
+    console.log('should enter: ' + nearestDoor);
+  }
 };
 
 GeneralPlanetComponent.prototype.enterDoorCreation = function() {
@@ -270,6 +296,7 @@ GeneralPlanetComponent.prototype.avatarSlept = function(name) {
 GeneralPlanetComponent.prototype.addDoor = function(doorData) {
   var door = new Door(doorData);
   this.addObject3d(door);
+  this.doors.push(door);
 };
 
 /** Utility */

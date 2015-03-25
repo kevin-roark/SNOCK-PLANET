@@ -102,6 +102,10 @@ Door.prototype.setTexture = function(texture) {
   this.material.needsUpdate = true;
 };
 
+Door.prototype.toString = function() {
+  return JSON.stringify(this.serialize());
+};
+
 Door.prototype.serialize = function() {
   return {
     subject: this.subject,
