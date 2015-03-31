@@ -16276,7 +16276,182 @@ function fetchSocket() {
   return socket;
 }
 
-},{"./global-state":59,"jquery":1}],53:[function(require,module,exports){
+},{"./global-state":60,"jquery":1}],53:[function(require,module,exports){
+
+var globals = require('./global-state');
+var SceneComponent = require('./scene-component');
+var keymaster = require('./keymaster');
+var mousemaster = require('./mousemaster');
+var Avatar = require('./avatar');
+var ObjectControls = require('./object-controls');
+
+module.exports = AvatarControlComponent;
+
+/** Constants */
+
+var THIRD_PERSON_CAM_NAME = 'avatar-third';
+var FIRST_PERSON_CAM_NAME = 'avatar-first';
+
+/** Inherited methods */
+
+function AvatarControlComponent() {}
+
+AvatarControlComponent.prototype.__proto__ = SceneComponent.prototype;
+
+AvatarControlComponent.prototype.postInit = function(options) {
+  this.avatarsByName = {};
+
+  this.avatar = globals.playerAvatar;
+  this.renderObjects.push(this.avatar);
+
+  this.firstPerson = false;
+
+  this.controls = new ObjectControls({
+    target: this.avatar
+  });
+
+  this.camera.addTarget({
+    name: THIRD_PERSON_CAM_NAME,
+    targetObject: this.avatar.trackingMesh(),
+    cameraPosition: new THREE.Vector3(0, 4, 40),
+    cameraRotation: new THREE.Euler(0, Math.PI, 0),
+    stiffness: 0.2,
+    fixed: false
+  });
+
+  this.camera.addTarget({
+    name: FIRST_PERSON_CAM_NAME,
+    targetObject: this.avatar.trackingMesh(),
+    cameraPosition: new THREE.Vector3(0, 0, -1),
+    cameraRotation: new THREE.Euler(0, Math.PI, 0),
+    stiffness: 0.5,
+    fixed: false
+  });
+
+  this.camera.setTarget(THIRD_PERSON_CAM_NAME);
+
+  keymaster.setPreventDefaults(true);
+  this.cam.requestPointerlock();
+  this.addInteractionGlue();
+
+  if (this.socket) {
+    this.socket.on('avatar-entry', this.avatarEntered.bind(this));
+    this.socket.on('avatar-moved', this.avatarMoved.bind(this));
+    this.socket.on('avatar-sleep', this.avatarSlept.bind(this));
+  }
+};
+
+AvatarControlComponent.prototype.preRender = function() {
+  this.controls.update(this.nowDelta);
+};
+
+/** User Interaction */
+
+AvatarControlComponent.prototype.addInteractionGlue = function() {
+  keymaster.keypress(113, this.toggleCameraPerspective.bind(this));
+
+  keymaster.keydown([38, 87], this.forwardKeydown.bind(this));
+  keymaster.keydown([37, 65], this.leftwardKeydown.bind(this));
+  keymaster.keydown([40, 83], this.downwardKeydown.bind(this));
+  keymaster.keydown([39, 68], this.rightwardKeydown.bind(this));
+
+  keymaster.keyup([38, 87], this.forwardKeyup.bind(this));
+  keymaster.keyup([37, 65], this.leftwardKeyup.bind(this));
+  keymaster.keyup([40, 83], this.downwardKeyup.bind(this));
+  keymaster.keyup([39, 68], this.rightwardKeyup.bind(this));
+
+  mousemaster.move(this.mousemove.bind(this), 'controls');
+};
+
+AvatarControlComponent.prototype.toggleCameraPerspective = function() {
+  if (!this.controlsActive()) return;
+
+  this.firstPerson = !this.firstPerson;
+
+  this.avatar.setVisible(!this.firstPerson);
+
+  var camName = this.firstPerson? FIRST_PERSON_CAM_NAME : THIRD_PERSON_CAM_NAME;
+  this.camera.setTarget(camName);
+};
+
+AvatarControlComponent.prototype.forwardKeydown = function() {
+  if (!this.controlsActive()) return;
+  this.controls.setForward(true);
+};
+AvatarControlComponent.prototype.leftwardKeydown = function() {
+  if (!this.controlsActive()) return;
+  this.controls.setLeft(true);
+};
+AvatarControlComponent.prototype.downwardKeydown = function() {
+  if (!this.controlsActive()) return;
+  this.controls.setBackward(true);
+};
+AvatarControlComponent.prototype.rightwardKeydown = function() {
+  if (!this.controlsActive()) return;
+  this.controls.setRight(true);
+};
+
+AvatarControlComponent.prototype.forwardKeyup = function() {
+  this.controls.setForward(false);
+};
+AvatarControlComponent.prototype.leftwardKeyup = function() {
+  this.controls.setLeft(false);
+};
+AvatarControlComponent.prototype.downwardKeyup = function() {
+  this.controls.setBackward(false);
+};
+AvatarControlComponent.prototype.rightwardKeyup = function() {
+  this.controls.setRight(false);
+};
+
+AvatarControlComponent.prototype.mousemove = function(x, y, ev) {
+  if (!this.controlsActive()) return;
+
+  var event = ev.originalEvent || ev;
+  var movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
+  var movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
+  this.controls.mouseUpdate(movementX, movementY);
+};
+
+/** IO Response */
+
+AvatarControlComponent.prototype.avatarEntered = function(avatarData) {
+  var avatar = this.avatarWithName(avatarData.name);
+  if (!avatar) {
+    avatar = new Avatar(avatarData);
+    this.addObject3d(avatar);
+    this.avatarsByName[avatar.name] = avatar;
+  }
+
+  avatar.wakeUp();
+};
+
+AvatarControlComponent.prototype.avatarMoved = function(avatarData) {
+  var avatar = this.avatarWithName(avatarData.name);
+  if (avatar) {
+    var pos = avatarData.position;
+    avatar.moveTo(pos.x, pos.y, pos.z);
+  }
+};
+
+AvatarControlComponent.prototype.avatarSlept = function(name) {
+  var avatar = this.avatarWithName(name);
+  if (avatar) {
+    avatar.goSleep();
+  }
+};
+
+/** Utility */
+
+AvatarControlComponent.prototype.avatarWithName = function(name) {
+  return this.avatarsByName[name];
+};
+
+AvatarControlComponent.prototype.controlsActive = function() {
+  return !this.creatingDoor;
+};
+
+},{"./avatar":54,"./global-state":60,"./keymaster":63,"./mousemaster":66,"./object-controls":67,"./scene-component":68}],54:[function(require,module,exports){
 
 // requirements
 var loader = require('./model-loader');
@@ -16290,6 +16465,7 @@ function Avatar(options) {
   this.name = options.name || 'nameless_fuck';
 
   this.initialPosition = options.position || {x: 0, y: 0, z: 0};
+  if (!this.initialPosition.y) this.initialPosition.y = 0;
 
   this.postLoadBehaviors = [];
 
@@ -16476,7 +16652,7 @@ Avatar.prototype.uploadableFaceImageData = function() {
   return this.faceImageCanvas.toDataURL('image/jpeg', 0.7);
 };
 
-},{"./model-loader":64}],54:[function(require,module,exports){
+},{"./model-loader":65}],55:[function(require,module,exports){
 
 var $ = require('jquery');
 var SceneComponent = require('./scene-component');
@@ -16644,7 +16820,7 @@ function setWidthEqualToHeight($el) {
   $el.css('width', height + 'px');
 }
 
-},{"./api-tools":52,"./avatar":53,"./global-state":59,"./image-dropper":60,"./scene-component":67,"jquery":1}],55:[function(require,module,exports){
+},{"./api-tools":52,"./avatar":54,"./global-state":60,"./image-dropper":61,"./scene-component":68,"jquery":1}],56:[function(require,module,exports){
 /**
  * BELOW CODE INSPIRED FROM
  * http://threejs.org/examples/misc_controls_pointerlock.html
@@ -16834,7 +17010,7 @@ Camera.prototype.addPointerlockListeners = function() {
   }
 };
 
-},{"jquery":1}],56:[function(require,module,exports){
+},{"jquery":1}],57:[function(require,module,exports){
 (function (__dirname){
 
 var debug = true;
@@ -16852,7 +17028,7 @@ module.exports.door_texture = '/images/wooden_door.jpg';
 module.exports.addTestDoor = false;
 
 }).call(this,"/public/javascripts")
-},{}],57:[function(require,module,exports){
+},{}],58:[function(require,module,exports){
 
 // requirements
 var config = require('./config');
@@ -16867,6 +17043,7 @@ function Door(options) {
   this.texture = options.texture || config.door_texture;
 
   this.initialPosition = options.position || {x: 0, y: 0, z: 0};
+  if (!this.initialPosition.y) this.initialPosition.y = 0;
 
   this.scale = options.scale || 2;
 
@@ -16972,41 +17149,30 @@ Door.prototype.serialize = function() {
   };
 };
 
-},{"./config":56}],58:[function(require,module,exports){
+},{"./config":57}],59:[function(require,module,exports){
 
 var $ = require('jquery');
-var globals = require('./global-state');
-var SceneComponent = require('./scene-component');
+var AvatarControlComponent = require('./avatar-control-component');
 var keymaster = require('./keymaster');
-var mousemaster = require('./mousemaster');
-var Avatar = require('./avatar');
 var Door = require('./door');
-var ObjectControls = require('./object-controls');
 var apiTools = require('./api-tools');
 
 module.exports = GeneralPlanetComponent;
 
 /** Constants */
 
-var THIRD_PERSON_CAM_NAME = 'avatar-third';
-var FIRST_PERSON_CAM_NAME = 'avatar-first';
 var MINIMUM_REQUIRED_DOOR_ENTRY_DISTANCE = 30;
 
 /** Inherited methods */
 
-function GeneralPlanetComponent() {};
+function GeneralPlanetComponent() {}
 
-GeneralPlanetComponent.prototype.__proto__ = SceneComponent.prototype;
+GeneralPlanetComponent.prototype.__proto__ = AvatarControlComponent.prototype;
 
 GeneralPlanetComponent.prototype.postInit = function(options) {
+  AvatarControlComponent.prototype.postInit.call(this, options);
+
   var self = this;
-
-  this.avatarsByName = {};
-
-  this.avatar = globals.playerAvatar;
-  this.renderObjects.push(this.avatar);
-
-  this.firstPerson = false;
 
   this.creatingDoor = false;
   this.creationDoor = new Door();
@@ -17015,38 +17181,7 @@ GeneralPlanetComponent.prototype.postInit = function(options) {
 
   this.doors = []; // TODO: not sustainable to hold all doors in a freakin' array
 
-  this.controls = new ObjectControls({
-    target: this.avatar
-  });
-
-  this.camera.addTarget({
-    name: THIRD_PERSON_CAM_NAME,
-    targetObject: this.avatar.trackingMesh(),
-    cameraPosition: new THREE.Vector3(0, 4, 40),
-    cameraRotation: new THREE.Euler(0, Math.PI, 0),
-    stiffness: 0.2,
-    fixed: false
-  });
-
-  this.camera.addTarget({
-    name: FIRST_PERSON_CAM_NAME,
-    targetObject: this.avatar.trackingMesh(),
-    cameraPosition: new THREE.Vector3(0, 0, -1),
-    cameraRotation: new THREE.Euler(0, Math.PI, 0),
-    stiffness: 0.5,
-    fixed: false
-  });
-
-  this.camera.setTarget(THIRD_PERSON_CAM_NAME);
-
-  keymaster.setPreventDefaults(true);
-  this.cam.requestPointerlock();
-  this.addInteractionGlue();
-
   if (this.socket) {
-    this.socket.on('avatar-entry', this.avatarEntered.bind(this));
-    this.socket.on('avatar-moved', this.avatarMoved.bind(this));
-    this.socket.on('avatar-sleep', this.avatarSlept.bind(this));
     this.socket.on('door-creation', this.addDoor.bind(this));
 
     this.socket.emit('get-doors', {position: {x: 0, y: 0, z: 0}}, function(doors) {
@@ -17057,32 +17192,17 @@ GeneralPlanetComponent.prototype.postInit = function(options) {
   }
 };
 
-GeneralPlanetComponent.prototype.preRender = function() {
-  this.controls.update(this.nowDelta);
-};
-
 /** User Interaction */
 
 GeneralPlanetComponent.prototype.addInteractionGlue = function() {
+  AvatarControlComponent.prototype.addInteractionGlue.call(this);
+
   var self = this;
 
-  keymaster.keypress(113, function(){ self.toggleCameraPerspective(); });
-  keymaster.keypress(110, function(){ self.enterDoorCreation(); });
-  keymaster.keypress(32, function() { self.attemptToEnterNearestDoor(); });
+  keymaster.keypress(110, this.enterDoorCreation.bind(this));
+  keymaster.keypress(32, this.attemptToEnterNearestDoor.bind(this));
 
-  keymaster.keydown([38, 87], function(){ self.forwardKeydown(); });
-  keymaster.keydown([37, 65], function(){ self.leftwardKeydown(); });
-  keymaster.keydown([40, 83], function(){ self.downwardKeydown(); });
-  keymaster.keydown([39, 68], function(){ self.rightwardKeydown(); });
-
-  keymaster.keyup([38, 87], function(){ self.forwardKeyup(); });
-  keymaster.keyup([37, 65], function(){ self.leftwardKeyup(); });
-  keymaster.keyup([40, 83], function(){ self.downwardKeyup(); });
-  keymaster.keyup([39, 68], function(){ self.rightwardKeyup(); });
-
-  keymaster.keydown(27, function(){ self.exitDoorCreation(); });
-
-  mousemaster.move(function(x, y, ev) { self.mousemove(x, y, ev); }, 'controls');
+  keymaster.keydown(27, this.exitDoorCreation.bind(this));
 
   $('.door-texture-option').click(function() {
     self.doorTextureSelected($(this));
@@ -17093,20 +17213,7 @@ GeneralPlanetComponent.prototype.addInteractionGlue = function() {
     self.attemptDoorCreation();
   });
 
-  $('.door-submit-button').click(function() {
-    self.attemptDoorCreation();
-  });
-};
-
-GeneralPlanetComponent.prototype.toggleCameraPerspective = function() {
-  if (!this.controlsActive()) return;
-
-  this.firstPerson = !this.firstPerson;
-
-  this.avatar.setVisible(!this.firstPerson);
-
-  var camName = this.firstPerson? FIRST_PERSON_CAM_NAME : THIRD_PERSON_CAM_NAME;
-  this.camera.setTarget(camName);
+  $('.door-submit-button').click(this.attemptDoorCreation.bind(this));
 };
 
 GeneralPlanetComponent.prototype.attemptToEnterNearestDoor = function() {
@@ -17201,72 +17308,7 @@ GeneralPlanetComponent.prototype.doorTextureSelected = function(elem) {
   this.creationDoor.setTexture(texture);
 };
 
-GeneralPlanetComponent.prototype.forwardKeydown = function() {
-  if (!this.controlsActive()) return;
-  this.controls.setForward(true);
-};
-GeneralPlanetComponent.prototype.leftwardKeydown = function() {
-  if (!this.controlsActive()) return;
-  this.controls.setLeft(true);
-};
-GeneralPlanetComponent.prototype.downwardKeydown = function() {
-  if (!this.controlsActive()) return;
-  this.controls.setBackward(true);
-};
-GeneralPlanetComponent.prototype.rightwardKeydown = function() {
-  if (!this.controlsActive()) return;
-  this.controls.setRight(true);
-};
-
-GeneralPlanetComponent.prototype.forwardKeyup = function() {
-  this.controls.setForward(false);
-};
-GeneralPlanetComponent.prototype.leftwardKeyup = function() {
-  this.controls.setLeft(false);
-};
-GeneralPlanetComponent.prototype.downwardKeyup = function() {
-  this.controls.setBackward(false);
-};
-GeneralPlanetComponent.prototype.rightwardKeyup = function() {
-  this.controls.setRight(false);
-};
-
-GeneralPlanetComponent.prototype.mousemove = function(x, y, ev) {
-  if (!this.controlsActive()) return;
-
-  var event = ev.originalEvent || ev;
-  var movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
-  var movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
-  this.controls.mouseUpdate(movementX, movementY);
-};
-
 /** IO Response */
-
-GeneralPlanetComponent.prototype.avatarEntered = function(avatarData) {
-  var avatar = this.avatarWithName(avatarData.name);
-  if (!avatar) {
-    avatar = new Avatar(avatarData);
-    this.addObject3d(avatar);
-    this.avatarsByName[avatar.name] = avatar;
-  }
-
-  avatar.wakeUp();
-};
-
-GeneralPlanetComponent.prototype.avatarMoved = function(avatarData) {
-  var avatar = this.avatarWithName(avatarData.name);
-  if (avatar) {
-    var pos = avatarData.position;
-    avatar.moveTo(pos.x, pos.y, pos.z);
-  }
-};
-
-GeneralPlanetComponent.prototype.avatarSlept = function(name) {
-  var avatar = this.avatarWithName(name);
-  if (avatar) {
-    avatar.goSleep();
-  }
-};
 
 GeneralPlanetComponent.prototype.addDoor = function(doorData) {
   var door = new Door(doorData);
@@ -17274,23 +17316,13 @@ GeneralPlanetComponent.prototype.addDoor = function(doorData) {
   this.doors.push(door);
 };
 
-/** Utility */
-
-GeneralPlanetComponent.prototype.avatarWithName = function(name) {
-  return this.avatarsByName[name];
-};
-
-GeneralPlanetComponent.prototype.controlsActive = function() {
-  return !this.creatingDoor;
-};
-
-},{"./api-tools":52,"./avatar":53,"./door":57,"./global-state":59,"./keymaster":62,"./mousemaster":65,"./object-controls":66,"./scene-component":67,"jquery":1}],59:[function(require,module,exports){
+},{"./api-tools":52,"./avatar-control-component":53,"./door":58,"./keymaster":63,"jquery":1}],60:[function(require,module,exports){
 
 // Store anything you think should be accessible everywhere here
 
 module.exports = {};
 
-},{}],60:[function(require,module,exports){
+},{}],61:[function(require,module,exports){
 
 var options = module.exports.options = {
   dragAreaSelector: '#avatar-image-drop-zone',
@@ -17421,32 +17453,28 @@ function readfiles(files) {
   module.exports.fileCallback(trimmedFiles);
 }
 
-},{}],61:[function(require,module,exports){
+},{}],62:[function(require,module,exports){
 
 var $ = require('jquery');
-var globals = require('./global-state');
-var SceneComponent = require('./scene-component');
+var AvatarControlComponent = require('./avatar-control-component');
 var keymaster = require('./keymaster');
-var mousemaster = require('./mousemaster');
-var Avatar = require('./avatar');
-var Door = require('./door');
-var ObjectControls = require('./object-controls');
 var apiTools = require('./api-tools');
 
 module.exports = InnerDoorComponent;
 
 // Inherited methods
 
-function InnerDoorComponent() {};
+function InnerDoorComponent() {}
 
-// TODO: general avatar-control-component subclass
-InnerDoorComponent.prototype.__proto__ = SceneComponent.prototype;
+InnerDoorComponent.prototype.__proto__ = AvatarControlComponent.prototype;
 
 InnerDoorComponent.prototype.postInit = function(options) {
+  AvatarControlComponent.prototype.postInit.call(this, options);
+
   this.door = options.door;
 };
 
-},{"./api-tools":52,"./avatar":53,"./door":57,"./global-state":59,"./keymaster":62,"./mousemaster":65,"./object-controls":66,"./scene-component":67,"jquery":1}],62:[function(require,module,exports){
+},{"./api-tools":52,"./avatar-control-component":53,"./keymaster":63,"jquery":1}],63:[function(require,module,exports){
 
 var $ = require('jquery');
 
@@ -17540,7 +17568,7 @@ module.exports.setPreventDefaults = function(preventDefaults) {
   shouldPreventDefaults = preventDefaults;
 };
 
-},{"jquery":1}],63:[function(require,module,exports){
+},{"jquery":1}],64:[function(require,module,exports){
 
 var $ = require('jquery');
 var io = require('socket.io-client');
@@ -17699,7 +17727,7 @@ $(function() {
 
 });
 
-},{"./become-avatar-component":54,"./camera":55,"./config":56,"./door":57,"./general-planet-component":58,"./global-state":59,"./inner-door-component":61,"jquery":1,"socket.io-client":2}],64:[function(require,module,exports){
+},{"./become-avatar-component":55,"./camera":56,"./config":57,"./door":58,"./general-planet-component":59,"./global-state":60,"./inner-door-component":62,"jquery":1,"socket.io-client":2}],65:[function(require,module,exports){
 
 var cache = {};
 
@@ -17733,7 +17761,7 @@ function fetch(name, clone, callback) {
   callback(cache[name].geometry.clone(), cache[name].materials.clone());
 }
 
-},{}],65:[function(require,module,exports){
+},{}],66:[function(require,module,exports){
 
 var $ = require('jquery');
 
@@ -17762,7 +17790,7 @@ module.exports.clearMove = function(key) {
   delete moveListeners[key];
 }
 
-},{"jquery":1}],66:[function(require,module,exports){
+},{"jquery":1}],67:[function(require,module,exports){
 
 /**
  * Originally written by squarefeet (github.com/squarefeet).
@@ -17966,7 +17994,7 @@ module.exports = function ObjectControls( opts ) {
     };
 };
 
-},{}],67:[function(require,module,exports){
+},{}],68:[function(require,module,exports){
 
 var $ = require('jquery');
 
@@ -18027,4 +18055,4 @@ SceneComponent.prototype.clean = function() {};
 
 SceneComponent.prototype.layout = function() {};
 
-},{"jquery":1}]},{},[63]);
+},{"jquery":1}]},{},[64]);

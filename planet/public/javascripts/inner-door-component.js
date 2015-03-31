@@ -1,23 +1,19 @@
 
 var $ = require('jquery');
-var globals = require('./global-state');
-var SceneComponent = require('./scene-component');
+var AvatarControlComponent = require('./avatar-control-component');
 var keymaster = require('./keymaster');
-var mousemaster = require('./mousemaster');
-var Avatar = require('./avatar');
-var Door = require('./door');
-var ObjectControls = require('./object-controls');
 var apiTools = require('./api-tools');
 
 module.exports = InnerDoorComponent;
 
 // Inherited methods
 
-function InnerDoorComponent() {};
+function InnerDoorComponent() {}
 
-// TODO: general avatar-control-component subclass
-InnerDoorComponent.prototype.__proto__ = SceneComponent.prototype;
+InnerDoorComponent.prototype.__proto__ = AvatarControlComponent.prototype;
 
 InnerDoorComponent.prototype.postInit = function(options) {
+  AvatarControlComponent.prototype.postInit.call(this, options);
+
   this.door = options.door;
 };

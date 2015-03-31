@@ -12,6 +12,7 @@ function Door(options) {
   this.texture = options.texture || config.door_texture;
 
   this.initialPosition = options.position || {x: 0, y: 0, z: 0};
+  if (!this.initialPosition.y) this.initialPosition.y = 0;
 
   this.scale = options.scale || 2;
 

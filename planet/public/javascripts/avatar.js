@@ -11,6 +11,7 @@ function Avatar(options) {
   this.name = options.name || 'nameless_fuck';
 
   this.initialPosition = options.position || {x: 0, y: 0, z: 0};
+  if (!this.initialPosition.y) this.initialPosition.y = 0;
 
   this.postLoadBehaviors = [];
 
