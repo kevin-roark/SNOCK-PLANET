@@ -12,3 +12,6 @@ module.exports.testing = true;
 // Door config
 module.exports.door_texture = '/images/wooden_door.jpg';
 module.exports.addTestDoor = false;
+
+// Skybox config
+module.exports.girl_room_texture = '/images/girl_room.jpg';
