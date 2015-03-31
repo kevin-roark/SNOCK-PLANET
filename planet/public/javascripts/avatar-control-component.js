@@ -17,7 +17,7 @@ var FIRST_PERSON_CAM_NAME = 'avatar-first';
 
 function AvatarControlComponent() {}
 
-AvatarControlComponent.prototype.__proto__ = SceneComponent.prototype;
+AvatarControlComponent.prototype = Object.create(SceneComponent.prototype);
 
 AvatarControlComponent.prototype.postInit = function(options) {
   this.avatarsByName = {};

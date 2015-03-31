@@ -16296,7 +16296,7 @@ var FIRST_PERSON_CAM_NAME = 'avatar-first';
 
 function AvatarControlComponent() {}
 
-AvatarControlComponent.prototype.__proto__ = SceneComponent.prototype;
+AvatarControlComponent.prototype = Object.create(SceneComponent.prototype);
 
 AvatarControlComponent.prototype.postInit = function(options) {
   this.avatarsByName = {};
@@ -16665,9 +16665,9 @@ module.exports = BecomeAvatarComponent;
 
 /** Inherited methods */
 
-function BecomeAvatarComponent() {};
+function BecomeAvatarComponent() {}
 
-BecomeAvatarComponent.prototype.__proto__ = SceneComponent.prototype;
+BecomeAvatarComponent.prototype = Object.create(SceneComponent.prototype);
 
 BecomeAvatarComponent.prototype.postInit = function(options) {
   var self = this;
@@ -17167,7 +17167,7 @@ var MINIMUM_REQUIRED_DOOR_ENTRY_DISTANCE = 30;
 
 function GeneralPlanetComponent() {}
 
-GeneralPlanetComponent.prototype.__proto__ = AvatarControlComponent.prototype;
+GeneralPlanetComponent.prototype = Object.create(AvatarControlComponent.prototype);
 
 GeneralPlanetComponent.prototype.postInit = function(options) {
   AvatarControlComponent.prototype.postInit.call(this, options);
@@ -17466,7 +17466,7 @@ module.exports = InnerDoorComponent;
 
 function InnerDoorComponent() {}
 
-InnerDoorComponent.prototype.__proto__ = AvatarControlComponent.prototype;
+InnerDoorComponent.prototype = Object.create(AvatarControlComponent.prototype);
 
 InnerDoorComponent.prototype.postInit = function(options) {
   AvatarControlComponent.prototype.postInit.call(this, options);

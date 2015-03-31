@@ -10,7 +10,7 @@ module.exports = InnerDoorComponent;
 
 function InnerDoorComponent() {}
 
-InnerDoorComponent.prototype.__proto__ = AvatarControlComponent.prototype;
+InnerDoorComponent.prototype = Object.create(AvatarControlComponent.prototype);
 
 InnerDoorComponent.prototype.postInit = function(options) {
   AvatarControlComponent.prototype.postInit.call(this, options);

@@ -15,7 +15,7 @@ var MINIMUM_REQUIRED_DOOR_ENTRY_DISTANCE = 30;
 
 function GeneralPlanetComponent() {}
 
-GeneralPlanetComponent.prototype.__proto__ = AvatarControlComponent.prototype;
+GeneralPlanetComponent.prototype = Object.create(AvatarControlComponent.prototype);
 
 GeneralPlanetComponent.prototype.postInit = function(options) {
   AvatarControlComponent.prototype.postInit.call(this, options);

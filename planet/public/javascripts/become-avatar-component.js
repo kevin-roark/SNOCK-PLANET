@@ -10,9 +10,9 @@ module.exports = BecomeAvatarComponent;
 
 /** Inherited methods */
 
-function BecomeAvatarComponent() {};
+function BecomeAvatarComponent() {}
 
-BecomeAvatarComponent.prototype.__proto__ = SceneComponent.prototype;
+BecomeAvatarComponent.prototype = Object.create(SceneComponent.prototype);
 
 BecomeAvatarComponent.prototype.postInit = function(options) {
   var self = this;
