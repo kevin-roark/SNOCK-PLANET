@@ -120,10 +120,10 @@ module.exports = function ObjectControls( opts ) {
             roll = rollRotation * dt;
 
         var targetMeshes;
-        if (options.target.meshes) {
-          targetMeshes = options.target.meshes();
+        if (options.target && options.target.meshes) {
+          targetMeshes = options.target.meshes;
         } else if (options.target) {
-          targetMeshes = options.target;
+          targetMeshes = [options.target];
         } else {
           targetMeshes = [];
         }

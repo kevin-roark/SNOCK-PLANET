@@ -1,111 +1,62 @@
 
-// requirements
+var SheenModel = require('./sheen-model.js');
 var loader = require('./model-loader');
 
 module.exports = Avatar;
 
+Avatar.prototype = Object.create(SheenModel.prototype);
+var Super = SheenModel.prototype;
+
 function Avatar(options) {
   if (!options) options = {};
 
-  this._id = options._id || '_';
-  this.name = options.name || 'nameless_fuck';
-
-  this.initialPosition = options.position || {x: 0, y: 0, z: 0};
-  if (!this.initialPosition.y) this.initialPosition.y = 0;
-
-  this.postLoadBehaviors = [];
-
-  this.scale = options.scale || 2;
-
-  this.color = options.color || '#000000';
+  SheenModel.call(this, options);
 
   this.twitching = false;
+}
+
+Avatar.prototype.loadMesh = function(callback) {
+  var self = this;
 
   this.faceGeometry = new THREE.BoxGeometry(2, 2, 2);
   this.faceMaterial = new THREE.MeshBasicMaterial({color: 0x000000});
   this.faceMesh = new THREE.Mesh(this.faceGeometry, this.faceMaterial);
 
-  this.faceImageUrl = options.faceImageUrl;
-  this.updateFaceImage();
-}
-
-Avatar.prototype.addTo = function(scene, callback) {
-  var self = this;
-
   loader('/javascripts/3d_models/body.js', function (geometry, materials) {
     self.geometry = geometry;
     self.materials = materials;
 
-    self.skinnedMesh = new THREE.SkinnedMesh(geometry, new THREE.MeshFaceMaterial(materials));
+    self.mesh = new THREE.SkinnedMesh(geometry, new THREE.MeshFaceMaterial(materials));
 
-    self.skinnedMesh.scale.set(self.scale, self.scale, self.scale);
+    self.mesh.scale.set(self.scale, self.scale, self.scale);
     self.faceMesh.scale.set(self.scale / 2, self.scale / 2, self.scale / 2);
-
-    self.updateSkinColor(self.color);
-
-    self.move(self.initialPosition.x, self.initialPosition.y, self.initialPosition.z);
-
-    scene.add(self.skinnedMesh);
-    scene.add(self.faceMesh);
-
-    for (var i = 0; i < self.postLoadBehaviors.length; i++) {
-      self.postLoadBehaviors[i]();
-    }
+    self.meshes = [self.mesh, self.faceMesh];
 
     if (callback) callback();
   });
 };
 
+Avatar.prototype.meshDidLoad = function() {
+  Super.meshDidLoad.call(this);
+
+  this.updateSkinColor(this.color);
+
+  this.updateFaceImage(this.faceImageUrl);
+};
+
 Avatar.prototype.move = function(x, y, z) {
-  if (!this.skinnedMesh) return;
+  Super.move.call(this, x, y, z);
 
-  this.skinnedMesh.position.x += x;
-  this.skinnedMesh.position.y += y;
-  this.skinnedMesh.position.z += z;
+  if (!this.hasLoadedMesh) return;
 
-  this.faceMesh.position.x = this.skinnedMesh.position.x;
-  this.faceMesh.position.z = this.skinnedMesh.position.z;
-  this.faceMesh.position.y = this.skinnedMesh.position.y + 2.5 * this.scale;
-};
-
-Avatar.prototype.rotate = function(rx, ry, rz) {
-  if (!this.skinnedMesh) return;
-
-  this.skinnedMesh.rotation.x += rx;
-  this.skinnedMesh.rotation.y += ry;
-  this.skinnedMesh.rotation.z += rz;
-
-  this.faceMesh.rotation.copy(this.skinnedMesh.rotation);
-};
-
-Avatar.prototype.rotateTo = function(x, y, z) {
-  if (!this.skinnedMesh) {
-    var self = this;
-    this.postLoadBehaviors.push(function() {
-      self.rotateTo(x, y, z);
-    });
-    return;
-  }
-
-  this.skinnedMesh.rotation.set(x, y, z);
-  this.rotate(0, 0, 0);
-};
-
-Avatar.prototype.moveTo = function(x, y, z) {
-  if (!this.skinnedMesh) return;
-
-  this.skinnedMesh.position.set(x, y, z);
-  this.move(0, 0, 0);
+  this.faceMesh.position.x = this.mesh.position.x;
+  this.faceMesh.position.z = this.mesh.position.z;
+  this.faceMesh.position.y = this.mesh.position.y + 2.5 * this.scale;
 };
 
 Avatar.prototype.setScale = function(s) {
-  this.skinnedMesh.scale.set(s, s, s);
+  this.mesh.scale.set(s, s, s);
   this.faceMesh.scale.set(s / 2, s / 2, s / 2);
-};
-
-Avatar.prototype.setVisible = function(visible) {
-  this.skinnedMesh.visible = visible;
-  this.faceMesh.visible = visible;
 };
 
 Avatar.prototype.render = function() {
@@ -126,14 +77,6 @@ Avatar.prototype.trackingMesh = function() {
   return this.faceMesh;
 };
 
-Avatar.prototype.meshes = function() {
-  var m = [this.faceMesh];
-  if (this.skinnedMesh) {
-    m.push(this.skinnedMesh);
-  }
-  return m;
-};
-
 Avatar.prototype.wakeUp = function() {
 
 };
@@ -145,9 +88,9 @@ Avatar.prototype.goSleep = function() {
 Avatar.prototype.updateSkinColor = function(hex) {
   this.color = hex;
 
-  if (!this.skinnedMesh) return;
+  if (!this.hasLoadedMesh) return;
 
-  var materials = this.skinnedMesh.material.materials;
+  var materials = this.mesh.material.materials;
   for (var i = 0; i < materials.length; i++) {
     var material = materials[i];
     material.color = new THREE.Color(hex);
@@ -169,7 +112,7 @@ Avatar.prototype.updateFaceImage = function(image) {
     texture = new THREE.Texture(image);
   }
 
-  if (texture) {
+  if (texture && this.hasLoadedMesh) {
     texture.needsUpdate = true;
     this.faceMaterial.map = texture;
     this.faceMaterial.needsUpdate = true;
@@ -177,18 +120,20 @@ Avatar.prototype.updateFaceImage = function(image) {
 };
 
 Avatar.prototype.serialize = function() {
-  return {
-    _id: this._id,
-    name: this.name,
-    color: this.color,
-    faceImageUrl: this.faceImageUrl
-  };
+  var data = Super.serialize.call(this);
+  data.name = this.name;
+  data.color = this.color;
+  data.faceImageUrl = this.faceImageUrl;
+  return data;
 };
 
 Avatar.prototype.updateFromModel = function(avatarData) {
-  this.name = avatarData.name;
-  this._id = avatarData._id;
-  this.updateSkinColor(avatarData.color);
+  Super.updateFromModel.call(this, avatarData);
+
+  if (!avatarData) avatarData = {};
+
+  this.name = avatarData.name || 'nameless_fuck';
+  this.updateSkinColor(avatarData.color || '#000000');
   this.updateFaceImage(avatarData.faceImageUrl);
 };
 
