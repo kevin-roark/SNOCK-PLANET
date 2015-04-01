@@ -119,9 +119,11 @@ Avatar.prototype.updateFaceImage = function(image) {
 
 Avatar.prototype.serialize = function() {
   var data = Super.serialize.call(this);
+
   data.name = this.name;
   data.color = this.color;
   data.faceImageUrl = this.faceImageUrl;
+  
   return data;
 };
 

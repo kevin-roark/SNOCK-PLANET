@@ -16599,9 +16599,11 @@ Avatar.prototype.updateFaceImage = function(image) {
 
 Avatar.prototype.serialize = function() {
   var data = Super.serialize.call(this);
+
   data.name = this.name;
   data.color = this.color;
   data.faceImageUrl = this.faceImageUrl;
+  
   return data;
 };
 
@@ -17020,6 +17022,7 @@ Door.prototype.updateFromModel = function(doorData) {
   Super.updateFromModel.call(this, doorData);
 
   this.subject = doorData.subject || '';
+  this.when = doorData.when || new Date();
   this.texture = doorData.texture || config.door_texture;
 };
 
@@ -17082,17 +17085,11 @@ Door.prototype.setTexture = function(texture) {
 
 Door.prototype.serialize = function() {
   var data = Super.serialize.call(this);
+
   data.subject = this.subject;
   data.texture = this.texture;
-  data.when = new Date();
+  data.when = this.when;
 
-  if (this.hasLoadedMesh) {
-    data.position = {
-      x: this.mesh.position.x,
-      z: this.mesh.position.z
-    };
-  }
-  
   return data;
 };
 
@@ -18165,6 +18162,9 @@ SheenModel.prototype.serialize = function() {
   var data = {};
   if (this._id) {
     data._id = this._id;
+  }
+  if (this.mesh) {
+    data.position = {x: this.mesh.position.x, z: this.mesh.position.z};
   }
   return data;
 };

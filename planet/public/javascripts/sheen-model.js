@@ -121,6 +121,9 @@ SheenModel.prototype.serialize = function() {
   if (this._id) {
     data._id = this._id;
   }
+  if (this.mesh) {
+    data.position = {x: this.mesh.position.x, z: this.mesh.position.z};
+  }
   return data;
 };
 

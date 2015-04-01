@@ -8,32 +8,32 @@ mongoose.connect(config.mongo_url);
 
 // schemas
 
+var Position = {
+  x: Number,
+  z: Number
+};
+
 var doorSchema = Schema({
   subject: {type: String, trim: true},
   when: {type: Date, default: Date.now},
   texture: String,
+  skyboxTexture: String,
   creator: {type: Schema.Types.ObjectId, ref: 'Avatar'},
-  position: {
-    x: Number,
-    z: Number
-  }
+  position: Position
 });
 
 var noteSchema = Schema({
   text: {type: String, trim: true},
   when: {type: Date, default: Date.now},
-  skyboxTexture: String,
   door: {type: Schema.Types.ObjectId, ref: 'Door'},
   creator: {type: Schema.Types.ObjectId, ref: 'Avatar'},
-  position: {
-    x: Number,
-    z: Number
-  }
+  position: Position
 });
 
 var avatarSchema = Schema({
   name: String,
   color: String,
+  position: Position,
   faceImageUrl: String
 });
 
