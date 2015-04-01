@@ -131,11 +131,13 @@ module.exports = function ObjectControls( opts ) {
         for (var i = 0; i < targetMeshes.length; i++) {
           var obj = targetMeshes[i];
 
-          obj.rotation.set(pitchObject.getWorldQuaternion().x, yawObject.rotation.y, 0);
+          if (obj) {
+            obj.rotation.set(pitchObject.getWorldQuaternion().x, yawObject.rotation.y, 0);
 
-          obj.translateX( velX );
-          obj.translateY( velY );
-          obj.translateZ( velZ );
+            obj.translateX( velX );
+            obj.translateY( velY );
+            obj.translateZ( velZ );
+          }
         }
     };
 

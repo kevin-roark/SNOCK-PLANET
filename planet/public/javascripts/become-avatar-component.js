@@ -22,7 +22,10 @@ BecomeAvatarComponent.prototype.postInit = function(options) {
   });
 
   globals.playerAvatar = this.avatar;
-  this.renderObjects.push(this.avatar);
+  this.addObject3d(this.avatar, function() {
+    self.avatar.setVisible(false);
+    self.setAvatarCameraTarget();
+  });
 
   this.setupFiledropper();
 
@@ -68,6 +71,7 @@ BecomeAvatarComponent.prototype.layout = function() {
 };
 
 BecomeAvatarComponent.prototype.clean = function() {
+  SceneComponent.prototype.clean.call(this);
   $('.avatar-ui-wrapper').fadeOut();
 };
 
@@ -112,9 +116,7 @@ BecomeAvatarComponent.prototype.enterAvatarCreationState = function() {
     top: 60
   }, function() {
     $('#avatar-name-input').val(name);
-    self.avatar.addTo(self.scene, function() {
-      self.setAvatarCameraTarget();
-    });
+    self.avatar.setVisible(true);
   });
 };
 
@@ -129,7 +131,7 @@ BecomeAvatarComponent.prototype.setAvatarCameraTarget = function() {
 };
 
 BecomeAvatarComponent.prototype.finishAfterFetchingAvatar = function(avatarData) {
-  this.avatar.addTo(this.scene);
+  this.avatar.setVisible(true);
   this.avatar.updateFromModel(avatarData);
   this.markFinished();
 };

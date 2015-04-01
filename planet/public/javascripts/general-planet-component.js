@@ -84,6 +84,9 @@ GeneralPlanetComponent.prototype.attemptToEnterNearestDoor = function() {
 
   if (nearestDoor && minDistanceSquared <= requiredDistanceSquared) {
     console.log('should enter: ' + nearestDoor);
+    if (this.enterDoorCallback) {
+      this.enterDoorCallback(nearestDoor);
+    }
   }
 };
 

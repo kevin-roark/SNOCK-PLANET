@@ -71,7 +71,7 @@ $(function() {
 
   // start rendering
   cam.active = true;
-  transitionToMode(BECOME_AVATAR_MODE);
+  startBecomeAvatarState();
   render();
 
   // render every frame
@@ -94,6 +94,9 @@ $(function() {
       case GENERAL_PLANET_MODE:
         state.generalPlanetComponent.render();
         break;
+      case INSIDE_DOOR_MODE:
+        state.currentInnerDoorComponent.render();
+        break;
     }
 
     renderer.render(scene, camera);
@@ -101,57 +104,43 @@ $(function() {
 
   // state transitions
 
-  function transitionToMode(mode) {
-    state.mode = mode;
-
-    switch (mode) {
-      case BECOME_AVATAR_MODE:
-        startBecomeAvatarState();
-        break;
-      case GENERAL_PLANET_MODE:
-        startGeneralPlanetState();
-        break;
-      case INSIDE_DOOR_MODE:
-        startInsideDoorState();
-        break;
-    }
-  }
-
   function startBecomeAvatarState() {
     state.becomeAvatarComponent = new BecomeAvatarComponent();
     state.becomeAvatarComponent.init(scene, socket, cam);
     state.becomeAvatarComponent.finishedCallback = function() {
-      transitionToMode(GENERAL_PLANET_MODE);
+      startGeneralPlanetState();
     };
   }
 
   function startGeneralPlanetState() {
+    state.mode = GENERAL_PLANET_MODE;
+
     state.generalPlanetComponent = new GeneralPlanetComponent();
     state.generalPlanetComponent.init(scene, socket, cam);
-    state.generalPlanetComponent.finishedCallback = function() {
 
+    state.generalPlanetComponent.enterDoorCallback = function(door) {
+      state.generalPlanetComponent.removeObjects();
+
+      startInsideDoorState(door);
     };
+  }
+
+  function restoreGeneralPlanetState() {
+    state.mode = GENERAL_PLANET_MODE;
+    state.generalPlanetComponent.restore();
   }
 
   function startInsideDoorState(door) {
+    state.mode = INSIDE_DOOR_MODE;
+
     state.currentInnerDoorComponent = new InnerDoorComponent();
     state.currentInnerDoorComponent.init(scene, socket, cam, {door: door});
     state.currentInnerDoorComponent.finishedCallback = function() {
+      restoreGeneralPlanetState();
 
+      state.currentInnerDoorComponent.removeObjects();
+      state.currentInnerDoorComponent = null;
     };
-  }
-
-  // utility
-
-  function clearScene(meshes) {
-    if (!meshes) meshes = scene.children;
-
-    for (var i = meshes.length - 1; i >= 0; i--) {
-      var obj = meshes[ i ];
-      if (obj !== camera && obj !== ambientLight) {
-        scene.remove(obj);
-      }
-    }
   }
 
 });

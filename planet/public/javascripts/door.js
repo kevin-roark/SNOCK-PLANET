@@ -79,10 +79,14 @@ Door.prototype.serialize = function() {
   var data = Super.serialize.call(this);
   data.subject = this.subject;
   data.texture = this.texture;
-  data.position = {
-    x: this.mesh.position.x,
-    z: this.mesh.position.z
-  };
   data.when = new Date();
+
+  if (this.hasLoadedMesh) {
+    data.position = {
+      x: this.mesh.position.x,
+      z: this.mesh.position.z
+    };
+  }
+  
   return data;
 };

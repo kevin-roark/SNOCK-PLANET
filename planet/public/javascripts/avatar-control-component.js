@@ -23,7 +23,7 @@ AvatarControlComponent.prototype.postInit = function(options) {
   this.avatarsByName = {};
 
   this.avatar = globals.playerAvatar;
-  this.renderObjects.push(this.avatar);
+  this.addObject3d(this.avatar);
 
   this.firstPerson = false;
 

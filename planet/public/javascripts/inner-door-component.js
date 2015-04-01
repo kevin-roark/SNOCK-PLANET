@@ -19,5 +19,5 @@ InnerDoorComponent.prototype.postInit = function(options) {
   this.door = options.door;
 
   this.room = skybox.create();
-  this.scene.add(this.room);
+  this.addMesh(this.room);
 };

@@ -16302,7 +16302,7 @@ AvatarControlComponent.prototype.postInit = function(options) {
   this.avatarsByName = {};
 
   this.avatar = globals.playerAvatar;
-  this.renderObjects.push(this.avatar);
+  this.addObject3d(this.avatar);
 
   this.firstPerson = false;
 
@@ -16620,7 +16620,10 @@ BecomeAvatarComponent.prototype.postInit = function(options) {
   });
 
   globals.playerAvatar = this.avatar;
-  this.renderObjects.push(this.avatar);
+  this.addObject3d(this.avatar, function() {
+    self.avatar.setVisible(false);
+    self.setAvatarCameraTarget();
+  });
 
   this.setupFiledropper();
 
@@ -16666,6 +16669,7 @@ BecomeAvatarComponent.prototype.layout = function() {
 };
 
 BecomeAvatarComponent.prototype.clean = function() {
+  SceneComponent.prototype.clean.call(this);
   $('.avatar-ui-wrapper').fadeOut();
 };
 
@@ -16710,9 +16714,7 @@ BecomeAvatarComponent.prototype.enterAvatarCreationState = function() {
     top: 60
   }, function() {
     $('#avatar-name-input').val(name);
-    self.avatar.addTo(self.scene, function() {
-      self.setAvatarCameraTarget();
-    });
+    self.avatar.setVisible(true);
   });
 };
 
@@ -16727,7 +16729,7 @@ BecomeAvatarComponent.prototype.setAvatarCameraTarget = function() {
 };
 
 BecomeAvatarComponent.prototype.finishAfterFetchingAvatar = function(avatarData) {
-  this.avatar.addTo(this.scene);
+  this.avatar.setVisible(true);
   this.avatar.updateFromModel(avatarData);
   this.markFinished();
 };
@@ -17056,11 +17058,15 @@ Door.prototype.serialize = function() {
   var data = Super.serialize.call(this);
   data.subject = this.subject;
   data.texture = this.texture;
-  data.position = {
-    x: this.mesh.position.x,
-    z: this.mesh.position.z
-  };
   data.when = new Date();
+
+  if (this.hasLoadedMesh) {
+    data.position = {
+      x: this.mesh.position.x,
+      z: this.mesh.position.z
+    };
+  }
+  
   return data;
 };
 
@@ -17151,6 +17157,9 @@ GeneralPlanetComponent.prototype.attemptToEnterNearestDoor = function() {
 
   if (nearestDoor && minDistanceSquared <= requiredDistanceSquared) {
     console.log('should enter: ' + nearestDoor);
+    if (this.enterDoorCallback) {
+      this.enterDoorCallback(nearestDoor);
+    }
   }
 };
 
@@ -17391,7 +17400,7 @@ InnerDoorComponent.prototype.postInit = function(options) {
   this.door = options.door;
 
   this.room = skybox.create();
-  this.scene.add(this.room);
+  this.addMesh(this.room);
 };
 
 },{"./api-tools":52,"./avatar-control-component":53,"./keymaster":63,"./skybox":70,"jquery":1}],63:[function(require,module,exports){
@@ -17562,7 +17571,7 @@ $(function() {
 
   // start rendering
   cam.active = true;
-  transitionToMode(BECOME_AVATAR_MODE);
+  startBecomeAvatarState();
   render();
 
   // render every frame
@@ -17585,6 +17594,9 @@ $(function() {
       case GENERAL_PLANET_MODE:
         state.generalPlanetComponent.render();
         break;
+      case INSIDE_DOOR_MODE:
+        state.currentInnerDoorComponent.render();
+        break;
     }
 
     renderer.render(scene, camera);
@@ -17592,57 +17604,43 @@ $(function() {
 
   // state transitions
 
-  function transitionToMode(mode) {
-    state.mode = mode;
-
-    switch (mode) {
-      case BECOME_AVATAR_MODE:
-        startBecomeAvatarState();
-        break;
-      case GENERAL_PLANET_MODE:
-        startGeneralPlanetState();
-        break;
-      case INSIDE_DOOR_MODE:
-        startInsideDoorState();
-        break;
-    }
-  }
-
   function startBecomeAvatarState() {
     state.becomeAvatarComponent = new BecomeAvatarComponent();
     state.becomeAvatarComponent.init(scene, socket, cam);
     state.becomeAvatarComponent.finishedCallback = function() {
-      transitionToMode(GENERAL_PLANET_MODE);
+      startGeneralPlanetState();
     };
   }
 
   function startGeneralPlanetState() {
+    state.mode = GENERAL_PLANET_MODE;
+
     state.generalPlanetComponent = new GeneralPlanetComponent();
     state.generalPlanetComponent.init(scene, socket, cam);
-    state.generalPlanetComponent.finishedCallback = function() {
 
+    state.generalPlanetComponent.enterDoorCallback = function(door) {
+      state.generalPlanetComponent.removeObjects();
+
+      startInsideDoorState(door);
     };
+  }
+
+  function restoreGeneralPlanetState() {
+    state.mode = GENERAL_PLANET_MODE;
+    state.generalPlanetComponent.restore();
   }
 
   function startInsideDoorState(door) {
+    state.mode = INSIDE_DOOR_MODE;
+
     state.currentInnerDoorComponent = new InnerDoorComponent();
     state.currentInnerDoorComponent.init(scene, socket, cam, {door: door});
     state.currentInnerDoorComponent.finishedCallback = function() {
+      restoreGeneralPlanetState();
 
+      state.currentInnerDoorComponent.removeObjects();
+      state.currentInnerDoorComponent = null;
     };
-  }
-
-  // utility
-
-  function clearScene(meshes) {
-    if (!meshes) meshes = scene.children;
-
-    for (var i = meshes.length - 1; i >= 0; i--) {
-      var obj = meshes[ i ];
-      if (obj !== camera && obj !== ambientLight) {
-        scene.remove(obj);
-      }
-    }
   }
 
 });
@@ -17844,11 +17842,13 @@ module.exports = function ObjectControls( opts ) {
         for (var i = 0; i < targetMeshes.length; i++) {
           var obj = targetMeshes[i];
 
-          obj.rotation.set(pitchObject.getWorldQuaternion().x, yawObject.rotation.y, 0);
+          if (obj) {
+            obj.rotation.set(pitchObject.getWorldQuaternion().x, yawObject.rotation.y, 0);
 
-          obj.translateX( velX );
-          obj.translateY( velY );
-          obj.translateZ( velZ );
+            obj.translateX( velX );
+            obj.translateY( velY );
+            obj.translateZ( velZ );
+          }
         }
     };
 
@@ -17930,6 +17930,7 @@ SceneComponent.prototype.init = function(scene, socket, cam, options) {
   this.prevTime = performance.now();
 
   this.renderObjects = [];
+  this.additionalMeshes = [];
 
   this.layout();
   $(window).resize(this.layout);
@@ -17954,20 +17955,48 @@ SceneComponent.prototype.render = function() {
   this.prevTime = performance.now();
 };
 
+SceneComponent.prototype.restore = function() {
+  for (var i = 0; i < this.renderObjects.length; i++) {
+    this.renderObjects[i].addTo(this.scene);
+  }
+
+  for (var i = 0; i < this.additionalMeshes.length; i++) {
+    scene.add(this.additionalMeshes[i]);
+  }
+};
+
+SceneComponent.prototype.removeObjects = function() {
+  for (var i = 0; i < this.renderObjects.length; i++) {
+    this.renderObjects[i].removeFrom(this.scene);
+  }
+
+  for (var i = 0; i < this.additionalMeshes.length; i++) {
+    scene.remove(this.additionalMeshes[i]);
+  }
+};
+
 SceneComponent.prototype.markFinished = function() {
   this.finished = true;
   this.clean();
+  this.removeObjects();
+
   if (this.finishedCallback) {
     this.finishedCallback();
   }
 };
 
 SceneComponent.prototype.addObject3d = function(object3d, callback) {
+  console.log('adding! ' + object3d);
   var self = this;
   object3d.addTo(this.scene, function() {
     self.renderObjects.push(object3d);
     if (callback) callback();
   });
+};
+
+SceneComponent.prototype.addMesh = function(mesh) {
+  this.scene.add(mesh);
+  this.additionalMeshes.push(mesh);
 };
 
 
@@ -18029,6 +18058,14 @@ SheenModel.prototype.addTo = function(scene, callback) {
     });
   } else {
     performAdd();
+  }
+};
+
+SheenModel.prototype.removeFrom = function(scene) {
+  if (!this.hasLoadedMesh) return;
+
+  for (var i = 0; i < this.meshes.length; i++) {
+    scene.remove(this.meshes[i]);
   }
 };
 
