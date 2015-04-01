@@ -43,9 +43,9 @@ function skyboxMaterial(textureURL) {
 
 module.exports.create = function(size, textureURL) {
   if (!textureURL) textureURL = config.girl_room_texture;
-  if (!size) size = {x: 20000, y: 20000, z: 20000};
+  if (!size) size = 20000;
 
-  var geometry = new THREE.BoxGeometry(size.x, size.y, size.z);
+  var geometry = new THREE.BoxGeometry(size, size, size);
   var material = skyboxMaterial(textureURL);
   return new THREE.Mesh(geometry, material);
 }

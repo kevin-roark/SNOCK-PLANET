@@ -44,7 +44,7 @@ SceneComponent.prototype.restore = function() {
   }
 
   for (var i = 0; i < this.additionalMeshes.length; i++) {
-    scene.add(this.additionalMeshes[i]);
+    this.scene.add(this.additionalMeshes[i]);
   }
 };
 
@@ -54,7 +54,7 @@ SceneComponent.prototype.removeObjects = function() {
   }
 
   for (var i = 0; i < this.additionalMeshes.length; i++) {
-    scene.remove(this.additionalMeshes[i]);
+    this.scene.remove(this.additionalMeshes[i]);
   }
 };
 
@@ -69,7 +69,6 @@ SceneComponent.prototype.markFinished = function() {
 };
 
 SceneComponent.prototype.addObject3d = function(object3d, callback) {
-  console.log('adding! ' + object3d);
   var self = this;
   object3d.addTo(this.scene, function() {
     self.renderObjects.push(object3d);

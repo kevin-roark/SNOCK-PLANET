@@ -18,6 +18,16 @@ InnerDoorComponent.prototype.postInit = function(options) {
 
   this.door = options.door;
 
-  this.room = skybox.create();
+  this.room = skybox.create(2000);
   this.addMesh(this.room);
+};
+
+InnerDoorComponent.prototype.addInteractionGlue = function() {
+  AvatarControlComponent.prototype.addInteractionGlue.call(this);
+
+  keymaster.keydown(27, this.exit.bind(this));
+};
+
+InnerDoorComponent.prototype.exit = function() {
+  this.markFinished();
 };

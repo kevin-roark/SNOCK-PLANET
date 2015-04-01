@@ -16310,6 +16310,46 @@ AvatarControlComponent.prototype.postInit = function(options) {
     target: this.avatar
   });
 
+  this.addCameraTargets();
+
+  this.cam.requestPointerlock();
+  this.addInteractionGlue();
+
+  if (this.socket) {
+    this.socket.on('avatar-entry', this.avatarEntered.bind(this));
+    this.socket.on('avatar-moved', this.avatarMoved.bind(this));
+    this.socket.on('avatar-sleep', this.avatarSlept.bind(this));
+  }
+};
+
+AvatarControlComponent.prototype.preRender = function() {
+  this.controls.update(this.nowDelta);
+};
+
+AvatarControlComponent.prototype.restore = function() {
+  SceneComponent.prototype.restore.call(this);
+
+  this.addCameraTargets();
+  this.addInteractionGlue();
+};
+
+AvatarControlComponent.prototype.clean = function() {
+  SceneComponent.prototype.clean.call(this);
+
+  keymaster.clearKeydownListener();
+  keymaster.clearKeyupListener();
+  keymaster.clearKeypressListener();
+  keymaster.setPreventDefaults(false);
+
+  mousemaster.clearMove('controls');
+
+  this.camera.removeTarget(THIRD_PERSON_CAM_NAME);
+  this.camera.removeTarget(FIRST_PERSON_CAM_NAME);
+};
+
+/** User Interaction */
+
+AvatarControlComponent.prototype.addCameraTargets = function() {
   this.camera.addTarget({
     name: THIRD_PERSON_CAM_NAME,
     targetObject: this.avatar.trackingMesh(),
@@ -16329,25 +16369,11 @@ AvatarControlComponent.prototype.postInit = function(options) {
   });
 
   this.camera.setTarget(THIRD_PERSON_CAM_NAME);
-
-  keymaster.setPreventDefaults(true);
-  this.cam.requestPointerlock();
-  this.addInteractionGlue();
-
-  if (this.socket) {
-    this.socket.on('avatar-entry', this.avatarEntered.bind(this));
-    this.socket.on('avatar-moved', this.avatarMoved.bind(this));
-    this.socket.on('avatar-sleep', this.avatarSlept.bind(this));
-  }
 };
-
-AvatarControlComponent.prototype.preRender = function() {
-  this.controls.update(this.nowDelta);
-};
-
-/** User Interaction */
 
 AvatarControlComponent.prototype.addInteractionGlue = function() {
+  keymaster.setPreventDefaults(true);
+
   keymaster.keypress(113, this.toggleCameraPerspective.bind(this));
 
   keymaster.keydown([38, 87], this.forwardKeydown.bind(this));
@@ -17156,7 +17182,6 @@ GeneralPlanetComponent.prototype.attemptToEnterNearestDoor = function() {
   }
 
   if (nearestDoor && minDistanceSquared <= requiredDistanceSquared) {
-    console.log('should enter: ' + nearestDoor);
     if (this.enterDoorCallback) {
       this.enterDoorCallback(nearestDoor);
     }
@@ -17399,8 +17424,18 @@ InnerDoorComponent.prototype.postInit = function(options) {
 
   this.door = options.door;
 
-  this.room = skybox.create();
+  this.room = skybox.create(2000);
   this.addMesh(this.room);
+};
+
+InnerDoorComponent.prototype.addInteractionGlue = function() {
+  AvatarControlComponent.prototype.addInteractionGlue.call(this);
+
+  keymaster.keydown(27, this.exit.bind(this));
+};
+
+InnerDoorComponent.prototype.exit = function() {
+  this.markFinished();
 };
 
 },{"./api-tools":52,"./avatar-control-component":53,"./keymaster":63,"./skybox":70,"jquery":1}],63:[function(require,module,exports){
@@ -17620,6 +17655,7 @@ $(function() {
 
     state.generalPlanetComponent.enterDoorCallback = function(door) {
       state.generalPlanetComponent.removeObjects();
+      state.generalPlanetComponent.clean();
 
       startInsideDoorState(door);
     };
@@ -17636,10 +17672,10 @@ $(function() {
     state.currentInnerDoorComponent = new InnerDoorComponent();
     state.currentInnerDoorComponent.init(scene, socket, cam, {door: door});
     state.currentInnerDoorComponent.finishedCallback = function() {
-      restoreGeneralPlanetState();
-
       state.currentInnerDoorComponent.removeObjects();
       state.currentInnerDoorComponent = null;
+
+      restoreGeneralPlanetState();
     };
   }
 
@@ -17961,7 +17997,7 @@ SceneComponent.prototype.restore = function() {
   }
 
   for (var i = 0; i < this.additionalMeshes.length; i++) {
-    scene.add(this.additionalMeshes[i]);
+    this.scene.add(this.additionalMeshes[i]);
   }
 };
 
@@ -17971,7 +18007,7 @@ SceneComponent.prototype.removeObjects = function() {
   }
 
   for (var i = 0; i < this.additionalMeshes.length; i++) {
-    scene.remove(this.additionalMeshes[i]);
+    this.scene.remove(this.additionalMeshes[i]);
   }
 };
 
@@ -17986,7 +18022,6 @@ SceneComponent.prototype.markFinished = function() {
 };
 
 SceneComponent.prototype.addObject3d = function(object3d, callback) {
-  console.log('adding! ' + object3d);
   var self = this;
   object3d.addTo(this.scene, function() {
     self.renderObjects.push(object3d);
@@ -18185,9 +18220,9 @@ function skyboxMaterial(textureURL) {
 
 module.exports.create = function(size, textureURL) {
   if (!textureURL) textureURL = config.girl_room_texture;
-  if (!size) size = {x: 20000, y: 20000, z: 20000};
+  if (!size) size = 20000;
 
-  var geometry = new THREE.BoxGeometry(size.x, size.y, size.z);
+  var geometry = new THREE.BoxGeometry(size, size, size);
   var material = skyboxMaterial(textureURL);
   return new THREE.Mesh(geometry, material);
 }

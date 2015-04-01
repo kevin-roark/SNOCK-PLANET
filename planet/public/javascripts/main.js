@@ -120,6 +120,7 @@ $(function() {
 
     state.generalPlanetComponent.enterDoorCallback = function(door) {
       state.generalPlanetComponent.removeObjects();
+      state.generalPlanetComponent.clean();
 
       startInsideDoorState(door);
     };
@@ -136,10 +137,10 @@ $(function() {
     state.currentInnerDoorComponent = new InnerDoorComponent();
     state.currentInnerDoorComponent.init(scene, socket, cam, {door: door});
     state.currentInnerDoorComponent.finishedCallback = function() {
-      restoreGeneralPlanetState();
-
       state.currentInnerDoorComponent.removeObjects();
       state.currentInnerDoorComponent = null;
+
+      restoreGeneralPlanetState();
     };
   }
 

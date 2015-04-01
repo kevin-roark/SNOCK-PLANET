@@ -31,6 +31,46 @@ AvatarControlComponent.prototype.postInit = function(options) {
     target: this.avatar
   });
 
+  this.addCameraTargets();
+
+  this.cam.requestPointerlock();
+  this.addInteractionGlue();
+
+  if (this.socket) {
+    this.socket.on('avatar-entry', this.avatarEntered.bind(this));
+    this.socket.on('avatar-moved', this.avatarMoved.bind(this));
+    this.socket.on('avatar-sleep', this.avatarSlept.bind(this));
+  }
+};
+
+AvatarControlComponent.prototype.preRender = function() {
+  this.controls.update(this.nowDelta);
+};
+
+AvatarControlComponent.prototype.restore = function() {
+  SceneComponent.prototype.restore.call(this);
+
+  this.addCameraTargets();
+  this.addInteractionGlue();
+};
+
+AvatarControlComponent.prototype.clean = function() {
+  SceneComponent.prototype.clean.call(this);
+
+  keymaster.clearKeydownListener();
+  keymaster.clearKeyupListener();
+  keymaster.clearKeypressListener();
+  keymaster.setPreventDefaults(false);
+
+  mousemaster.clearMove('controls');
+
+  this.camera.removeTarget(THIRD_PERSON_CAM_NAME);
+  this.camera.removeTarget(FIRST_PERSON_CAM_NAME);
+};
+
+/** User Interaction */
+
+AvatarControlComponent.prototype.addCameraTargets = function() {
   this.camera.addTarget({
     name: THIRD_PERSON_CAM_NAME,
     targetObject: this.avatar.trackingMesh(),
@@ -50,25 +90,11 @@ AvatarControlComponent.prototype.postInit = function(options) {
   });
 
   this.camera.setTarget(THIRD_PERSON_CAM_NAME);
-
-  keymaster.setPreventDefaults(true);
-  this.cam.requestPointerlock();
-  this.addInteractionGlue();
-
-  if (this.socket) {
-    this.socket.on('avatar-entry', this.avatarEntered.bind(this));
-    this.socket.on('avatar-moved', this.avatarMoved.bind(this));
-    this.socket.on('avatar-sleep', this.avatarSlept.bind(this));
-  }
 };
-
-AvatarControlComponent.prototype.preRender = function() {
-  this.controls.update(this.nowDelta);
-};
-
-/** User Interaction */
 
 AvatarControlComponent.prototype.addInteractionGlue = function() {
+  keymaster.setPreventDefaults(true);
+
   keymaster.keypress(113, this.toggleCameraPerspective.bind(this));
 
   keymaster.keydown([38, 87], this.forwardKeydown.bind(this));

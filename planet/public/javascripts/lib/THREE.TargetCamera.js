@@ -99,6 +99,16 @@ THREE.TargetCamera.prototype.addTarget = function( settings ) {
     this.targets[ settings.name ] = target;
 };
 
+THREE.TargetCamera.prototype.removeTarget = function(name) {
+  if (name && this.targets[name]) {
+      delete this.targets[name];
+  }
+
+  if (this.currentTargetName == name) {
+    this.currentTargetName = null;
+  }
+};
+
 THREE.TargetCamera.prototype.setTarget = function( name ) {
     if( this.targets.hasOwnProperty( name ) ) {
         this.currentTargetName = name;
