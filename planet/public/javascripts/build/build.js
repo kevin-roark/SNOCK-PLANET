@@ -16458,12 +16458,10 @@ var loader = require('./model-loader');
 
 module.exports = Avatar;
 
-Avatar.prototype = Object.create(SheenModel.prototype);
 var Super = SheenModel.prototype;
+Avatar.prototype = Object.create(Super);
 
 function Avatar(options) {
-  if (!options) options = {};
-
   SheenModel.call(this, options);
 
   this.twitching = false;
@@ -16978,23 +16976,26 @@ module.exports.girl_room_texture = '/images/girl_room.jpg';
 }).call(this,"/public/javascripts")
 },{}],58:[function(require,module,exports){
 
-// requirements
+var SheenModel = require('./sheen-model');
 var config = require('./config');
 
 module.exports = Door;
 
+var Super = SheenModel.prototype;
+Door.prototype = Object.create(Super);
+
 function Door(options) {
-  if (!options) options = {};
+  SheenModel.call(this, options);
+}
 
-  this._id = options._id || '_';
-  this.subject = options.subject || '';
-  this.texture = options.texture || config.door_texture;
+Door.prototype.updateFromModel = function(doorData) {
+  Super.updateFromModel.call(this, doorData);
 
-  this.initialPosition = options.position || {x: 0, y: 0, z: 0};
-  if (!this.initialPosition.y) this.initialPosition.y = 0;
+  this.subject = doorData.subject || '';
+  this.texture = doorData.texture || config.door_texture;
+};
 
-  this.scale = options.scale || 2;
-
+Door.prototype.loadMesh = function(callback) {
   this.material = new THREE.MeshPhongMaterial({
       map: THREE.ImageUtils.loadTexture(this.texture),
       reflectivity: 0.15
@@ -17005,8 +17006,10 @@ function Door(options) {
 
   this.createTextMesh();
 
-  this.moveTo(this.initialPosition.x, this.initialPosition.y, this.initialPosition.z);
-}
+  this.meshes = [this.mesh];
+
+  if (callback) callback();
+};
 
 Door.prototype.createTextMesh = function() {
   this.textMaterial = new THREE.MeshBasicMaterial({
@@ -17034,70 +17037,34 @@ Door.prototype.createTextMesh = function() {
   this.textMesh.position.set(0, 13, 0);
 };
 
-Door.prototype.addTo = function(scene) {
-  scene.add(this.mesh);
-};
-
-Door.prototype.move = function(x, y, z) {
-  if (!this.mesh) return;
-
-  this.mesh.translateX(x);
-  this.mesh.translateY(y);
-  this.mesh.translateZ(z);
-};
-
-Door.prototype.rotate = function(rx, ry, rz) {
-  if (!this.mesh) return;
-
-  this.mesh.rotation.x += rx;
-  this.mesh.rotation.y += ry;
-  this.mesh.rotation.z += rz;
-};
-
-Door.prototype.moveTo = function(x, y, z) {
-  if (!this.mesh) return;
-
-  this.mesh.position.set(x, y + 4, z);
-  this.move(0, 0, 0);
-};
-
 Door.prototype.render = function() {
+  if (!this.hasLoadedMesh) return;
+
   this.textMesh.rotation.y += 0.015;
-};
-
-Door.prototype.meshes = function() {
-  return [this.mesh, this.textMesh];
-};
-
-Door.prototype.setVisible = function(visible) {
-  this.mesh.visible = visible;
 };
 
 Door.prototype.setTexture = function(texture) {
   this.texture = texture;
 
+  if (!this.hasLoadedMesh) return;
+
   this.material.map = THREE.ImageUtils.loadTexture(this.texture);
   this.material.needsUpdate = true;
 };
 
-Door.prototype.toString = function() {
-  return JSON.stringify(this.serialize());
-};
-
 Door.prototype.serialize = function() {
-  return {
-    _id: this._id,
-    subject: this.subject,
-    texture: this.texture,
-    position: {
-      x: this.mesh.position.x,
-      z: this.mesh.position.z
-    },
-    when: new Date()
+  var data = Super.serialize.call(this);
+  data.subject = this.subject;
+  data.texture = this.texture;
+  data.position = {
+    x: this.mesh.position.x,
+    z: this.mesh.position.z
   };
+  data.when = new Date();
+  return data;
 };
 
-},{"./config":57}],59:[function(require,module,exports){
+},{"./config":57,"./sheen-model":69}],59:[function(require,module,exports){
 
 var $ = require('jquery');
 var AvatarControlComponent = require('./avatar-control-component');
@@ -17124,8 +17091,9 @@ GeneralPlanetComponent.prototype.postInit = function(options) {
 
   this.creatingDoor = false;
   this.creationDoor = new Door();
-  this.creationDoor.setVisible(false);
-  this.addObject3d(this.creationDoor);
+  this.addObject3d(this.creationDoor, function() {
+    self.creationDoor.setVisible(false);
+  });
 
   this.doors = []; // TODO: not sustainable to hold all doors in a freakin' array
 
@@ -17994,9 +17962,12 @@ SceneComponent.prototype.markFinished = function() {
   }
 };
 
-SceneComponent.prototype.addObject3d = function(object3d) {
-  object3d.addTo(this.scene);
-  this.renderObjects.push(object3d);
+SceneComponent.prototype.addObject3d = function(object3d, callback) {
+  var self = this;
+  object3d.addTo(this.scene, function() {
+    self.renderObjects.push(object3d);
+    if (callback) callback();
+  });
 };
 
 
@@ -18064,9 +18035,9 @@ SheenModel.prototype.addTo = function(scene, callback) {
 SheenModel.prototype.move = function(x, y, z) {
   if (!this.hasLoadedMesh) return;
 
-  this.mesh.position.x += x;
-  this.mesh.position.y += y;
-  this.mesh.position.z += z;
+  this.mesh.translateX(x);
+  this.mesh.translateY(y);
+  this.mesh.translateZ(z);
 };
 
 SheenModel.prototype.rotate = function(rx, ry, rz) {
@@ -18114,15 +18085,21 @@ SheenModel.prototype.setVisible = function(visible) {
 
 SheenModel.prototype.render = function() {};
 
+SheenModel.prototype.toString = function() {
+  return JSON.stringify(this.serialize());
+};
+
 SheenModel.prototype.serialize = function() {
-  return {
-    _id: this._id
-  };
+  var data = {};
+  if (this._id) {
+    data._id = this._id;
+  }
+  return data;
 };
 
 SheenModel.prototype.updateFromModel = function(modelData) {
   if (!modelData) modelData = {};
-  this._id = modelData._id || '_';
+  this._id = modelData._id || null;
 };
 
 },{}],70:[function(require,module,exports){

@@ -24,8 +24,9 @@ GeneralPlanetComponent.prototype.postInit = function(options) {
 
   this.creatingDoor = false;
   this.creationDoor = new Door();
-  this.creationDoor.setVisible(false);
-  this.addObject3d(this.creationDoor);
+  this.addObject3d(this.creationDoor, function() {
+    self.creationDoor.setVisible(false);
+  });
 
   this.doors = []; // TODO: not sustainable to hold all doors in a freakin' array
 

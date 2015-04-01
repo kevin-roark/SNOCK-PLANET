@@ -54,9 +54,9 @@ SheenModel.prototype.addTo = function(scene, callback) {
 SheenModel.prototype.move = function(x, y, z) {
   if (!this.hasLoadedMesh) return;
 
-  this.mesh.position.x += x;
-  this.mesh.position.y += y;
-  this.mesh.position.z += z;
+  this.mesh.translateX(x);
+  this.mesh.translateY(y);
+  this.mesh.translateZ(z);
 };
 
 SheenModel.prototype.rotate = function(rx, ry, rz) {
@@ -104,13 +104,19 @@ SheenModel.prototype.setVisible = function(visible) {
 
 SheenModel.prototype.render = function() {};
 
+SheenModel.prototype.toString = function() {
+  return JSON.stringify(this.serialize());
+};
+
 SheenModel.prototype.serialize = function() {
-  return {
-    _id: this._id
-  };
+  var data = {};
+  if (this._id) {
+    data._id = this._id;
+  }
+  return data;
 };
 
 SheenModel.prototype.updateFromModel = function(modelData) {
   if (!modelData) modelData = {};
-  this._id = modelData._id || '_';
+  this._id = modelData._id || null;
 };

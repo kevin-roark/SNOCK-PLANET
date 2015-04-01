@@ -4,12 +4,10 @@ var loader = require('./model-loader');
 
 module.exports = Avatar;
 
-Avatar.prototype = Object.create(SheenModel.prototype);
 var Super = SheenModel.prototype;
+Avatar.prototype = Object.create(Super);
 
 function Avatar(options) {
-  if (!options) options = {};
-
   SheenModel.call(this, options);
 
   this.twitching = false;

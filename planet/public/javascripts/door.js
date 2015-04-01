@@ -1,21 +1,24 @@
 
-// requirements
+var SheenModel = require('./sheen-model');
 var config = require('./config');
 
 module.exports = Door;
 
+var Super = SheenModel.prototype;
+Door.prototype = Object.create(Super);
+
 function Door(options) {
-  if (!options) options = {};
+  SheenModel.call(this, options);
+}
 
-  this._id = options._id || '_';
-  this.subject = options.subject || '';
-  this.texture = options.texture || config.door_texture;
+Door.prototype.updateFromModel = function(doorData) {
+  Super.updateFromModel.call(this, doorData);
 
-  this.initialPosition = options.position || {x: 0, y: 0, z: 0};
-  if (!this.initialPosition.y) this.initialPosition.y = 0;
+  this.subject = doorData.subject || '';
+  this.texture = doorData.texture || config.door_texture;
+};
 
-  this.scale = options.scale || 2;
-
+Door.prototype.loadMesh = function(callback) {
   this.material = new THREE.MeshPhongMaterial({
       map: THREE.ImageUtils.loadTexture(this.texture),
       reflectivity: 0.15
@@ -26,8 +29,10 @@ function Door(options) {
 
   this.createTextMesh();
 
-  this.moveTo(this.initialPosition.x, this.initialPosition.y, this.initialPosition.z);
-}
+  this.meshes = [this.mesh];
+
+  if (callback) callback();
+};
 
 Door.prototype.createTextMesh = function() {
   this.textMaterial = new THREE.MeshBasicMaterial({
@@ -55,65 +60,29 @@ Door.prototype.createTextMesh = function() {
   this.textMesh.position.set(0, 13, 0);
 };
 
-Door.prototype.addTo = function(scene) {
-  scene.add(this.mesh);
-};
-
-Door.prototype.move = function(x, y, z) {
-  if (!this.mesh) return;
-
-  this.mesh.translateX(x);
-  this.mesh.translateY(y);
-  this.mesh.translateZ(z);
-};
-
-Door.prototype.rotate = function(rx, ry, rz) {
-  if (!this.mesh) return;
-
-  this.mesh.rotation.x += rx;
-  this.mesh.rotation.y += ry;
-  this.mesh.rotation.z += rz;
-};
-
-Door.prototype.moveTo = function(x, y, z) {
-  if (!this.mesh) return;
-
-  this.mesh.position.set(x, y + 4, z);
-  this.move(0, 0, 0);
-};
-
 Door.prototype.render = function() {
+  if (!this.hasLoadedMesh) return;
+
   this.textMesh.rotation.y += 0.015;
-};
-
-Door.prototype.meshes = function() {
-  return [this.mesh, this.textMesh];
-};
-
-Door.prototype.setVisible = function(visible) {
-  this.mesh.visible = visible;
 };
 
 Door.prototype.setTexture = function(texture) {
   this.texture = texture;
 
+  if (!this.hasLoadedMesh) return;
+
   this.material.map = THREE.ImageUtils.loadTexture(this.texture);
   this.material.needsUpdate = true;
 };
 
-Door.prototype.toString = function() {
-  return JSON.stringify(this.serialize());
-};
-
 Door.prototype.serialize = function() {
-  return {
-    _id: this._id,
-    subject: this.subject,
-    texture: this.texture,
-    position: {
-      x: this.mesh.position.x,
-      z: this.mesh.position.z
-    },
-    when: new Date()
+  var data = Super.serialize.call(this);
+  data.subject = this.subject;
+  data.texture = this.texture;
+  data.position = {
+    x: this.mesh.position.x,
+    z: this.mesh.position.z
   };
+  data.when = new Date();
+  return data;
 };

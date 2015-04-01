@@ -45,9 +45,12 @@ SceneComponent.prototype.markFinished = function() {
   }
 };
 
-SceneComponent.prototype.addObject3d = function(object3d) {
-  object3d.addTo(this.scene);
-  this.renderObjects.push(object3d);
+SceneComponent.prototype.addObject3d = function(object3d, callback) {
+  var self = this;
+  object3d.addTo(this.scene, function() {
+    self.renderObjects.push(object3d);
+    if (callback) callback();
+  });
 };
 
 
