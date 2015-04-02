@@ -16477,7 +16477,7 @@ AvatarControlComponent.prototype.controlsActive = function() {
   return !this.creatingDoor;
 };
 
-},{"./avatar":54,"./global-state":60,"./keymaster":63,"./mousemaster":66,"./object-controls":67,"./scene-component":68}],54:[function(require,module,exports){
+},{"./avatar":54,"./global-state":60,"./keymaster":63,"./mousemaster":67,"./object-controls":69,"./scene-component":70}],54:[function(require,module,exports){
 
 var SheenModel = require('./sheen-model.js');
 var loader = require('./model-loader');
@@ -16623,7 +16623,7 @@ Avatar.prototype.uploadableFaceImageData = function() {
   return this.faceImageCanvas.toDataURL('image/jpeg', 0.7);
 };
 
-},{"./model-loader":65,"./sheen-model.js":69}],55:[function(require,module,exports){
+},{"./model-loader":66,"./sheen-model.js":71}],55:[function(require,module,exports){
 
 var $ = require('jquery');
 var SceneComponent = require('./scene-component');
@@ -16793,7 +16793,7 @@ function setWidthEqualToHeight($el) {
   $el.css('width', height + 'px');
 }
 
-},{"./api-tools":52,"./avatar":54,"./global-state":60,"./image-dropper":61,"./scene-component":68,"jquery":1}],56:[function(require,module,exports){
+},{"./api-tools":52,"./avatar":54,"./global-state":60,"./image-dropper":61,"./scene-component":70,"jquery":1}],56:[function(require,module,exports){
 /**
  * BELOW CODE INSPIRED FROM
  * http://threejs.org/examples/misc_controls_pointerlock.html
@@ -17003,6 +17003,11 @@ module.exports.addTestDoor = false;
 // Skybox config
 module.exports.girl_room_texture = '/images/girl_room.jpg';
 
+// Note config
+module.exports.note_textures = {
+  paper: '/images/paper_texture.jpg'
+};
+
 }).call(this,"/public/javascripts")
 },{}],58:[function(require,module,exports){
 
@@ -17093,7 +17098,7 @@ Door.prototype.serialize = function() {
   return data;
 };
 
-},{"./config":57,"./sheen-model":69}],59:[function(require,module,exports){
+},{"./config":57,"./sheen-model":71}],59:[function(require,module,exports){
 
 var $ = require('jquery');
 var AvatarControlComponent = require('./avatar-control-component');
@@ -17407,6 +17412,7 @@ var AvatarControlComponent = require('./avatar-control-component');
 var keymaster = require('./keymaster');
 var apiTools = require('./api-tools');
 var skybox = require('./skybox');
+var Note = require('./note');
 
 module.exports = InnerDoorComponent;
 
@@ -17423,6 +17429,12 @@ InnerDoorComponent.prototype.postInit = function(options) {
 
   this.room = skybox.create(2000);
   this.addMesh(this.room);
+
+  var testNote = new Note({
+    text: 'JOIN MY PLANET',
+    position: {x: 0, z: 40}
+  });
+  this.addObject3d(testNote);
 };
 
 InnerDoorComponent.prototype.addInteractionGlue = function() {
@@ -17435,7 +17447,7 @@ InnerDoorComponent.prototype.exit = function() {
   this.markFinished();
 };
 
-},{"./api-tools":52,"./avatar-control-component":53,"./keymaster":63,"./skybox":70,"jquery":1}],63:[function(require,module,exports){
+},{"./api-tools":52,"./avatar-control-component":53,"./keymaster":63,"./note":68,"./skybox":72,"jquery":1}],63:[function(require,module,exports){
 
 var $ = require('jquery');
 
@@ -17530,6 +17542,44 @@ module.exports.setPreventDefaults = function(preventDefaults) {
 };
 
 },{"jquery":1}],64:[function(require,module,exports){
+// Return an array to iterate over. For my uses this is
+// more efficient, because I only need to calculate the line text
+// and positions once, instead of each iteration during animations.
+module.exports.wrap = function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+  var words = text.split(' ')
+    , line = ''
+    , lines = [];
+
+  for(var n = 0, len = words.length; n < len; n++) {
+    var testLine = line + words[n] + ' '
+      , metrics = ctx.measureText(testLine)
+      , testWidth = metrics.width;
+
+    if (testWidth > maxWidth) {
+      lines.push({ text: line, x: x, y: y });
+      line = words[n] + ' ';
+      y += lineHeight;
+    } else {
+      line = testLine;
+    }
+  }
+
+  lines.push({ text: line, x: x, y: y });
+  return lines;
+};
+
+module.exports.draw = function drawMultiline(context, text, linespacing, x, y, width) {
+  var txt = module.exports.wrap(context, text, x, y, width, linespacing);
+
+  for (var i = 0; i < txt.length; i++){
+    var item = txt[i];
+    context.fillText(item.text, item.x, item.y);
+  }
+
+  return txt[txt.length - 1].y + linespacing;
+}
+
+},{}],65:[function(require,module,exports){
 
 var $ = require('jquery');
 var io = require('socket.io-client');
@@ -17678,7 +17728,7 @@ $(function() {
 
 });
 
-},{"./become-avatar-component":55,"./camera":56,"./config":57,"./door":58,"./general-planet-component":59,"./global-state":60,"./inner-door-component":62,"jquery":1,"socket.io-client":2}],65:[function(require,module,exports){
+},{"./become-avatar-component":55,"./camera":56,"./config":57,"./door":58,"./general-planet-component":59,"./global-state":60,"./inner-door-component":62,"jquery":1,"socket.io-client":2}],66:[function(require,module,exports){
 
 var cache = {};
 
@@ -17712,7 +17762,7 @@ function fetch(name, clone, callback) {
   callback(cache[name].geometry.clone(), cache[name].materials.clone());
 }
 
-},{}],66:[function(require,module,exports){
+},{}],67:[function(require,module,exports){
 
 var $ = require('jquery');
 
@@ -17741,7 +17791,172 @@ module.exports.clearMove = function(key) {
   delete moveListeners[key];
 }
 
-},{"jquery":1}],67:[function(require,module,exports){
+},{"jquery":1}],68:[function(require,module,exports){
+
+var SheenModel = require('./sheen-model');
+var config = require('./config');
+var multiline = require('./lib/multiline');
+
+module.exports = Note;
+
+var Super = SheenModel.prototype;
+Note.prototype = Object.create(Super);
+
+function Note(options) {
+  SheenModel.call(this, options);
+
+  if (this.initialPosition.y == 0) {
+    this.initialPosition.y = (Math.random() + 0.05) * 16 + 5;
+  }
+}
+
+Note.prototype.updateFromModel = function(noteData) {
+  Super.updateFromModel.call(this, noteData);
+
+  this.text = noteData.text || '';
+  this.when = noteData.when || new Date();
+  this.depth = noteData.depth || (Math.random() + 0.05) * 25;
+  this.accentTexture = noteData.accentTexture || config.note_textures.paper;
+  this.door = noteData.door || null;
+  this.creator = noteData.creator || null;
+};
+
+Note.prototype.serialize = function() {
+  var data = Super.serialize.call(this);
+
+  data.text = this.text;
+  data.when = this.when;
+  data.accentTexture = this.accentTexture;
+  data.door = this.door;
+  data.creator = this.creator;
+
+  return data;
+};
+
+Note.prototype.loadMesh = function(callback) {
+  this.canvas = makeTextCanvas({
+    text: this.text
+  });
+
+  this.texture = new THREE.Texture(this.canvas);
+  this.texture.needsUpdate = true;
+
+  // this.material === material wit tha words on it
+  this.material = new THREE.MeshBasicMaterial({
+    map: this.texture
+  });
+
+  var accentTexture = new THREE.ImageUtils.loadTexture(this.accentTexture);
+  accentTexture.wrapS = THREE.RepeatWrapping;
+  accentTexture.wrapT = THREE.RepeatWrapping;
+
+  this.accentMaterial = new THREE.MeshBasicMaterial({
+    map: accentTexture
+  });
+
+  var materials = [
+    this.accentMaterial, this.accentMaterial.clone(), this.accentMaterial.clone(), this.accentMaterial.clone(),
+    this.material, this.material.clone()
+  ];
+
+  this.meshFaceMaterial = new THREE.MeshFaceMaterial(materials);
+
+  var scalar = 0.025;
+  this.width = this.canvas.width * this.scale * scalar;
+  this.height = this.canvas.height * this.scale * scalar;
+  this.geometry = new THREE.BoxGeometry(this.width, this.height, this.depth * this.scale);
+
+  this.mesh = new THREE.Mesh(this.geometry, this.meshFaceMaterial);
+  this.mesh.doubleSided = true;
+
+  this.meshes = [this.mesh];
+
+  if (callback) callback();
+};
+
+function makeTextCanvas(options) {
+  var text = options.text || '';
+
+  var fontSize = options.fontSize || 24;
+  var fontName = options.fontName || 'Georgia';
+  var font = fontSize + 'pt "' + fontName + '"';
+
+  var backgroundColor = options.backgroundColor || 'rgb(245, 245, 245)';
+  var textColor = options.textColor || 'black';
+
+  var minWidth = options.minWidth || 100;
+  var maxWidth = options.maxWidth || 300;
+  var horPadding = options.horPadding || 20;
+  var verPadding = options.verPadding || 20;
+
+  var imageHeight = options.imageHeight || 150;
+
+  var canvas = document.createElement("canvas");
+  var context = canvas.getContext("2d");
+
+  if (options.mediaURL) {
+    loadImage(options.mediaURL, function(img) {
+      var mediaWidth = img.width / img.height * imageHeight;
+      var mediaX = Math.max(horPadding, canvas.width / 2 - mediaWidth / 2);
+      var mediaY = canvas.height - imageHeight - verPadding;
+
+      context.drawImage(img, mediaX, mediaY, mediaWidth, imageHeight);
+    });
+  }
+
+  // measure the width of the text in one line
+  context.font = font;
+  var textWidth = context.measureText(text).width;
+
+  // set canvas width within prescribed range
+  canvas.width = Math.max(minWidth, Math.min(maxWidth, textWidth) + horPadding * 2);
+
+  // split the text into multiple lines
+  context.font = font;
+  var wrappedText = multiline.wrap(context, text, horPadding, verPadding, canvas.width, fontSize + 10);
+
+  // base height on number of lines
+  canvas.height = Math.max(wrappedText[wrappedText.length - 1].y + fontSize + verPadding + 5, fontSize + verPadding);
+  if (options.mediaURL) {
+    canvas.height += imageHeight;
+  }
+
+  // background color
+  context.fillStyle = backgroundColor;
+  context.fillRect(0, 0, canvas.width, canvas.height);
+
+  // text details
+  context.font = font;
+  context.fillStyle = textColor;
+  context.textBaseline = 'top';
+
+  // draw the text right in there
+  for (var i = 0; i < wrappedText.length; i++){
+    var item = wrappedText[i];
+    context.fillText(item.text, item.x, item.y);
+  }
+
+  return canvas;
+}
+
+function loadImage(path, callback) {
+  if (!callback) return;
+
+  if (!path) {
+    callback();
+    return;
+  }
+
+  var img = new Image();
+
+  img.onload = function() {
+      callback(img);
+  };
+
+  img.src = path;
+}
+
+},{"./config":57,"./lib/multiline":64,"./sheen-model":71}],69:[function(require,module,exports){
 
 /**
  * Originally written by squarefeet (github.com/squarefeet).
@@ -17947,7 +18162,7 @@ module.exports = function ObjectControls( opts ) {
     };
 };
 
-},{}],68:[function(require,module,exports){
+},{}],70:[function(require,module,exports){
 
 var $ = require('jquery');
 
@@ -18039,7 +18254,7 @@ SceneComponent.prototype.clean = function() {};
 
 SceneComponent.prototype.layout = function() {};
 
-},{"jquery":1}],69:[function(require,module,exports){
+},{"jquery":1}],71:[function(require,module,exports){
 
 module.exports = SheenModel;
 
@@ -18174,7 +18389,7 @@ SheenModel.prototype.updateFromModel = function(modelData) {
   this._id = modelData._id || null;
 };
 
-},{}],70:[function(require,module,exports){
+},{}],72:[function(require,module,exports){
 
 var config = require('./config.js');
 
@@ -18240,4 +18455,4 @@ module.exports.blocker = function(size) {
   return new THREE.Mesh(geometry, material);
 }
 
-},{"./config.js":57}]},{},[64]);
+},{"./config.js":57}]},{},[65]);

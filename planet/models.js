@@ -25,6 +25,8 @@ var doorSchema = Schema({
 var noteSchema = Schema({
   text: {type: String, trim: true},
   when: {type: Date, default: Date.now},
+  accentTexture: String,
+  depth: Number,
   door: {type: Schema.Types.ObjectId, ref: 'Door'},
   creator: {type: Schema.Types.ObjectId, ref: 'Avatar'},
   position: Position

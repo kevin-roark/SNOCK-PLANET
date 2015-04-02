@@ -15,3 +15,8 @@ module.exports.addTestDoor = false;
 
 // Skybox config
 module.exports.girl_room_texture = '/images/girl_room.jpg';
+
+// Note config
+module.exports.note_textures = {
+  paper: '/images/paper_texture.jpg'
+};

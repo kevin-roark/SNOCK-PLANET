@@ -4,6 +4,7 @@ var AvatarControlComponent = require('./avatar-control-component');
 var keymaster = require('./keymaster');
 var apiTools = require('./api-tools');
 var skybox = require('./skybox');
+var Note = require('./note');
 
 module.exports = InnerDoorComponent;
 
@@ -20,6 +21,12 @@ InnerDoorComponent.prototype.postInit = function(options) {
 
   this.room = skybox.create(2000);
   this.addMesh(this.room);
+
+  var testNote = new Note({
+    text: 'JOIN MY PLANET',
+    position: {x: 0, z: 40}
+  });
+  this.addObject3d(testNote);
 };
 
 InnerDoorComponent.prototype.addInteractionGlue = function() {
