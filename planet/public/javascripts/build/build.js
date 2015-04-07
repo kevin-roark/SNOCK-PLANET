@@ -16375,6 +16375,8 @@ AvatarControlComponent.prototype.addInteractionGlue = function() {
   keymaster.setPreventDefaults(true);
 
   keymaster.keypress(113, this.toggleCameraPerspective.bind(this));
+  keymaster.keypress(110, this.enterFormCreation.bind(this));
+
 
   keymaster.keydown([38, 87], this.forwardKeydown.bind(this));
   keymaster.keydown([37, 65], this.leftwardKeydown.bind(this));
@@ -16398,6 +16400,10 @@ AvatarControlComponent.prototype.toggleCameraPerspective = function() {
 
   var camName = this.firstPerson? FIRST_PERSON_CAM_NAME : THIRD_PERSON_CAM_NAME;
   this.camera.setTarget(camName);
+};
+
+AvatarControlComponent.prototype.enterFormCreation = function() {
+
 };
 
 AvatarControlComponent.prototype.forwardKeydown = function() {
@@ -17149,7 +17155,6 @@ GeneralPlanetComponent.prototype.addInteractionGlue = function() {
 
   var self = this;
 
-  keymaster.keypress(110, this.enterDoorCreation.bind(this));
   keymaster.keypress(32, this.attemptToEnterNearestDoor.bind(this));
 
   keymaster.keydown(27, this.exitDoorCreation.bind(this));
@@ -17190,7 +17195,7 @@ GeneralPlanetComponent.prototype.attemptToEnterNearestDoor = function() {
   }
 };
 
-GeneralPlanetComponent.prototype.enterDoorCreation = function() {
+GeneralPlanetComponent.prototype.enterFormCreation = function() {
   if (this.creatingDoor) return;
 
   this.creatingDoor = true;
@@ -17427,6 +17432,8 @@ InnerDoorComponent.prototype.postInit = function(options) {
 
   this.door = options.door;
 
+  this.writingNote = false;
+
   this.room = skybox.create(2000);
   this.addMesh(this.room);
 
@@ -17441,6 +17448,20 @@ InnerDoorComponent.prototype.addInteractionGlue = function() {
   AvatarControlComponent.prototype.addInteractionGlue.call(this);
 
   keymaster.keydown(27, this.exit.bind(this));
+};
+
+InnerDoorComponent.prototype.enterFormCreation = function() {
+  if (this.writingNote) return;
+
+  this.writingNote = true;
+  keymaster.setPreventDefaults(false);
+  this.cam.exitPointerlock();
+
+  var avatarPos = this.avatar.trackingMesh().position;
+  this.creationDoor.moveTo(avatarPos.x - 10, 4, avatarPos.z - 5);
+
+  $('.message-ui-wrapper').fadeIn();
+  $('#message-content-input').focus();
 };
 
 InnerDoorComponent.prototype.exit = function() {

@@ -61,6 +61,17 @@ module.exports.createDoor = function(doorData, callback) {
   });
 };
 
+module.exports.createNote = function(noteData, callback) {
+  if (!fetchSocket() || !noteData || !noteData.text) {
+    callback({erorr: 'bad call braaaaaa'});
+    return;
+  }
+
+  socket.emit('create-note', noteData, function(note) {
+    callback({note: note});
+  });
+};
+
 // Utility
 
 function fetchSocket() {

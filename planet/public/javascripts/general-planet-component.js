@@ -48,7 +48,6 @@ GeneralPlanetComponent.prototype.addInteractionGlue = function() {
 
   var self = this;
 
-  keymaster.keypress(110, this.enterDoorCreation.bind(this));
   keymaster.keypress(32, this.attemptToEnterNearestDoor.bind(this));
 
   keymaster.keydown(27, this.exitDoorCreation.bind(this));
@@ -89,7 +88,7 @@ GeneralPlanetComponent.prototype.attemptToEnterNearestDoor = function() {
   }
 };
 
-GeneralPlanetComponent.prototype.enterDoorCreation = function() {
+GeneralPlanetComponent.prototype.enterFormCreation = function() {
   if (this.creatingDoor) return;
 
   this.creatingDoor = true;
@@ -116,7 +115,7 @@ GeneralPlanetComponent.prototype.attemptDoorCreation = function() {
 
   apiTools.createDoor(doorData, function(result) {
     if (result.error) {
-      self.showDoorError(result.error);
+      self.showError('.door-error', result.error);
     } else {
       self.addDoor(result.door);
       self.exitDoorCreation();
@@ -133,16 +132,6 @@ GeneralPlanetComponent.prototype.exitDoorCreation = function() {
   this.creationDoor.setVisible(false);
 
   $('.door-ui-wrapper').fadeOut();
-};
-
-GeneralPlanetComponent.prototype.showDoorError = function(message) {
-  var div = $('.door-error');
-  div.text(message);
-  div.fadeIn(function() {
-    setTimeout(function() {
-      div.fadeOut();
-    }, 3333);
-  });
 };
 
 GeneralPlanetComponent.prototype.doorTextureSelected = function(elem) {

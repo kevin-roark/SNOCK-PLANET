@@ -96,6 +96,8 @@ AvatarControlComponent.prototype.addInteractionGlue = function() {
   keymaster.setPreventDefaults(true);
 
   keymaster.keypress(113, this.toggleCameraPerspective.bind(this));
+  keymaster.keypress(110, this.enterFormCreation.bind(this));
+
 
   keymaster.keydown([38, 87], this.forwardKeydown.bind(this));
   keymaster.keydown([37, 65], this.leftwardKeydown.bind(this));
@@ -119,6 +121,20 @@ AvatarControlComponent.prototype.toggleCameraPerspective = function() {
 
   var camName = this.firstPerson? FIRST_PERSON_CAM_NAME : THIRD_PERSON_CAM_NAME;
   this.camera.setTarget(camName);
+};
+
+AvatarControlComponent.prototype.enterFormCreation = function() {
+
+};
+
+AvatarControlComponent.prototype.showError = function(divSelector, message) {
+  var div = $(divSelector);
+  div.text(message);
+  div.fadeIn(function() {
+    setTimeout(function() {
+      div.fadeOut();
+    }, 3333);
+  });
 };
 
 AvatarControlComponent.prototype.forwardKeydown = function() {
