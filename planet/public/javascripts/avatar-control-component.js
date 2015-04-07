@@ -26,6 +26,7 @@ AvatarControlComponent.prototype.postInit = function(options) {
   this.addObject3d(this.avatar);
 
   this.firstPerson = false;
+  this.inCreationMode = false;
 
   this.controls = new ObjectControls({
     target: this.avatar
@@ -96,8 +97,9 @@ AvatarControlComponent.prototype.addInteractionGlue = function() {
   keymaster.setPreventDefaults(true);
 
   keymaster.keypress(113, this.toggleCameraPerspective.bind(this));
-  keymaster.keypress(110, this.enterFormCreation.bind(this));
 
+  keymaster.keypress(110, this.enterFormCreation.bind(this));
+  keymaster.keydown(27, this.exitFormCreation.bind(this));
 
   keymaster.keydown([38, 87], this.forwardKeydown.bind(this));
   keymaster.keydown([37, 65], this.leftwardKeydown.bind(this));
@@ -124,7 +126,19 @@ AvatarControlComponent.prototype.toggleCameraPerspective = function() {
 };
 
 AvatarControlComponent.prototype.enterFormCreation = function() {
+  if (this.inCreationMode) return;
 
+  this.inCreationMode = true;
+  keymaster.setPreventDefaults(false);
+  this.cam.exitPointerlock();
+};
+
+AvatarControlComponent.prototype.exitFormCreation = function() {
+  if (!this.inCreationMode) return;
+
+  this.inCreationMode = false;
+  keymaster.setPreventDefaults(true);
+  this.cam.requestPointerlock();
 };
 
 AvatarControlComponent.prototype.showError = function(divSelector, message) {
@@ -211,5 +225,5 @@ AvatarControlComponent.prototype.avatarWithName = function(name) {
 };
 
 AvatarControlComponent.prototype.controlsActive = function() {
-  return !this.creatingDoor;
+  return !this.inCreationMode;
 };

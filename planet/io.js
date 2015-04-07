@@ -24,6 +24,7 @@ module.exports.init = function(app) {
     socket.on('create-door', createDoor);
     socket.on('get-doors', getDoors);
 
+    socket.on('create-note', createNote);
     socket.on('get-notes', getNotes);
 
   });
@@ -52,6 +53,10 @@ var createDoor = function(doorData, callback) {
 var getDoors = function(queryData, callback) {
   // TODO: incorporate query data. Obviously cannot return all doors forever ...
   getModels(Door, {}, callback);
+};
+
+var createNote = function(noteData, callback) {
+  createModel(Note, noteData, callback);
 };
 
 var getNotes = function(doorID, callback) {

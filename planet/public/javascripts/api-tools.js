@@ -61,14 +61,36 @@ module.exports.createDoor = function(doorData, callback) {
   });
 };
 
+module.exports.getDoors = function(position, callback) {
+  if (!fetchSocket() || !position) {
+    callback({error: 'do better parameters'});
+    return;
+  }
+
+  socket.emit('get-doors', {position: position}, function(doors) {
+    callback(doors);
+  });
+};
+
 module.exports.createNote = function(noteData, callback) {
   if (!fetchSocket() || !noteData || !noteData.text) {
-    callback({erorr: 'bad call braaaaaa'});
+    callback({error: 'bad call braaaaaa'});
     return;
   }
 
   socket.emit('create-note', noteData, function(note) {
     callback({note: note});
+  });
+};
+
+module.exports.getNotes = function(doorID, callback) {
+  if (!fetchSocket() || !doorID) {
+    callback({error: 'i aint gonna do it'});
+    return;
+  }
+
+  socket.emit('get-notes', doorID, function(notes) {
+    callback(notes);
   });
 };
 

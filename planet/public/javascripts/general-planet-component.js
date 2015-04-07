@@ -22,7 +22,6 @@ GeneralPlanetComponent.prototype.postInit = function(options) {
 
   var self = this;
 
-  this.creatingDoor = false;
   this.creationDoor = new Door();
   this.addObject3d(this.creationDoor, function() {
     self.creationDoor.setVisible(false);
@@ -33,7 +32,7 @@ GeneralPlanetComponent.prototype.postInit = function(options) {
   if (this.socket) {
     this.socket.on('door-creation', this.addDoor.bind(this));
 
-    this.socket.emit('get-doors', {position: {x: 0, y: 0, z: 0}}, function(doors) {
+    apiTools.getDoors({x: 0, y: 0, z: 0}, function(doors) {
       for (var i = 0; i < doors.length; i++) {
         self.addDoor(doors[i]);
       }
@@ -49,8 +48,6 @@ GeneralPlanetComponent.prototype.addInteractionGlue = function() {
   var self = this;
 
   keymaster.keypress(32, this.attemptToEnterNearestDoor.bind(this));
-
-  keymaster.keydown(27, this.exitDoorCreation.bind(this));
 
   $('.door-texture-option').click(function() {
     self.doorTextureSelected($(this));
@@ -89,11 +86,7 @@ GeneralPlanetComponent.prototype.attemptToEnterNearestDoor = function() {
 };
 
 GeneralPlanetComponent.prototype.enterFormCreation = function() {
-  if (this.creatingDoor) return;
-
-  this.creatingDoor = true;
-  keymaster.setPreventDefaults(false);
-  this.cam.exitPointerlock();
+  AvatarControlComponent.prototype.enterFormCreation.call(this);
 
   this.creationDoor.setVisible(true);
   var avatarPos = this.avatar.trackingMesh().position;
@@ -118,19 +111,15 @@ GeneralPlanetComponent.prototype.attemptDoorCreation = function() {
       self.showError('.door-error', result.error);
     } else {
       self.addDoor(result.door);
-      self.exitDoorCreation();
+      self.exitFormCreation();
     }
   });
 };
 
-GeneralPlanetComponent.prototype.exitDoorCreation = function() {
-  if (!this.creatingDoor) return;
+GeneralPlanetComponent.prototype.exitFormCreation = function() {
+  AvatarControlComponent.prototype.exitFormCreation.call(this);
 
-  this.creatingDoor = false;
-  keymaster.setPreventDefaults(true);
-  this.cam.requestPointerlock();
   this.creationDoor.setVisible(false);
-
   $('.door-ui-wrapper').fadeOut();
 };
 

@@ -16266,6 +16266,39 @@ module.exports.createDoor = function(doorData, callback) {
   });
 };
 
+module.exports.getDoors = function(position, callback) {
+  if (!fetchSocket() || !position) {
+    callback({error: 'do better parameters'});
+    return;
+  }
+
+  socket.emit('get-doors', {position: position}, function(doors) {
+    callback(doors);
+  });
+};
+
+module.exports.createNote = function(noteData, callback) {
+  if (!fetchSocket() || !noteData || !noteData.text) {
+    callback({error: 'bad call braaaaaa'});
+    return;
+  }
+
+  socket.emit('create-note', noteData, function(note) {
+    callback({note: note});
+  });
+};
+
+module.exports.getNotes = function(doorID, callback) {
+  if (!fetchSocket() || !doorID) {
+    callback({error: 'i aint gonna do it'});
+    return;
+  }
+
+  socket.emit('get-notes', doorID, function(notes) {
+    callback(notes);
+  });
+};
+
 // Utility
 
 function fetchSocket() {
@@ -16305,6 +16338,7 @@ AvatarControlComponent.prototype.postInit = function(options) {
   this.addObject3d(this.avatar);
 
   this.firstPerson = false;
+  this.inCreationMode = false;
 
   this.controls = new ObjectControls({
     target: this.avatar
@@ -16375,8 +16409,9 @@ AvatarControlComponent.prototype.addInteractionGlue = function() {
   keymaster.setPreventDefaults(true);
 
   keymaster.keypress(113, this.toggleCameraPerspective.bind(this));
-  keymaster.keypress(110, this.enterFormCreation.bind(this));
 
+  keymaster.keypress(110, this.enterFormCreation.bind(this));
+  keymaster.keydown(27, this.exitFormCreation.bind(this));
 
   keymaster.keydown([38, 87], this.forwardKeydown.bind(this));
   keymaster.keydown([37, 65], this.leftwardKeydown.bind(this));
@@ -16403,7 +16438,29 @@ AvatarControlComponent.prototype.toggleCameraPerspective = function() {
 };
 
 AvatarControlComponent.prototype.enterFormCreation = function() {
+  if (this.inCreationMode) return;
 
+  this.inCreationMode = true;
+  keymaster.setPreventDefaults(false);
+  this.cam.exitPointerlock();
+};
+
+AvatarControlComponent.prototype.exitFormCreation = function() {
+  if (!this.inCreationMode) return;
+
+  this.inCreationMode = false;
+  keymaster.setPreventDefaults(true);
+  this.cam.requestPointerlock();
+};
+
+AvatarControlComponent.prototype.showError = function(divSelector, message) {
+  var div = $(divSelector);
+  div.text(message);
+  div.fadeIn(function() {
+    setTimeout(function() {
+      div.fadeOut();
+    }, 3333);
+  });
 };
 
 AvatarControlComponent.prototype.forwardKeydown = function() {
@@ -16480,7 +16537,7 @@ AvatarControlComponent.prototype.avatarWithName = function(name) {
 };
 
 AvatarControlComponent.prototype.controlsActive = function() {
-  return !this.creatingDoor;
+  return !this.inCreationMode;
 };
 
 },{"./avatar":54,"./global-state":60,"./keymaster":63,"./mousemaster":67,"./object-controls":69,"./scene-component":70}],54:[function(require,module,exports){
@@ -17129,7 +17186,6 @@ GeneralPlanetComponent.prototype.postInit = function(options) {
 
   var self = this;
 
-  this.creatingDoor = false;
   this.creationDoor = new Door();
   this.addObject3d(this.creationDoor, function() {
     self.creationDoor.setVisible(false);
@@ -17140,7 +17196,7 @@ GeneralPlanetComponent.prototype.postInit = function(options) {
   if (this.socket) {
     this.socket.on('door-creation', this.addDoor.bind(this));
 
-    this.socket.emit('get-doors', {position: {x: 0, y: 0, z: 0}}, function(doors) {
+    apiTools.getDoors({x: 0, y: 0, z: 0}, function(doors) {
       for (var i = 0; i < doors.length; i++) {
         self.addDoor(doors[i]);
       }
@@ -17156,8 +17212,6 @@ GeneralPlanetComponent.prototype.addInteractionGlue = function() {
   var self = this;
 
   keymaster.keypress(32, this.attemptToEnterNearestDoor.bind(this));
-
-  keymaster.keydown(27, this.exitDoorCreation.bind(this));
 
   $('.door-texture-option').click(function() {
     self.doorTextureSelected($(this));
@@ -17196,11 +17250,7 @@ GeneralPlanetComponent.prototype.attemptToEnterNearestDoor = function() {
 };
 
 GeneralPlanetComponent.prototype.enterFormCreation = function() {
-  if (this.creatingDoor) return;
-
-  this.creatingDoor = true;
-  keymaster.setPreventDefaults(false);
-  this.cam.exitPointerlock();
+  AvatarControlComponent.prototype.enterFormCreation.call(this);
 
   this.creationDoor.setVisible(true);
   var avatarPos = this.avatar.trackingMesh().position;
@@ -17222,33 +17272,19 @@ GeneralPlanetComponent.prototype.attemptDoorCreation = function() {
 
   apiTools.createDoor(doorData, function(result) {
     if (result.error) {
-      self.showDoorError(result.error);
+      self.showError('.door-error', result.error);
     } else {
       self.addDoor(result.door);
-      self.exitDoorCreation();
+      self.exitFormCreation();
     }
   });
 };
 
-GeneralPlanetComponent.prototype.exitDoorCreation = function() {
-  if (!this.creatingDoor) return;
+GeneralPlanetComponent.prototype.exitFormCreation = function() {
+  AvatarControlComponent.prototype.exitFormCreation.call(this);
 
-  this.creatingDoor = false;
-  keymaster.setPreventDefaults(true);
-  this.cam.requestPointerlock();
   this.creationDoor.setVisible(false);
-
   $('.door-ui-wrapper').fadeOut();
-};
-
-GeneralPlanetComponent.prototype.showDoorError = function(message) {
-  var div = $('.door-error');
-  div.text(message);
-  div.fadeIn(function() {
-    setTimeout(function() {
-      div.fadeOut();
-    }, 3333);
-  });
 };
 
 GeneralPlanetComponent.prototype.doorTextureSelected = function(elem) {
@@ -17430,12 +17466,22 @@ InnerDoorComponent.prototype = Object.create(AvatarControlComponent.prototype);
 InnerDoorComponent.prototype.postInit = function(options) {
   AvatarControlComponent.prototype.postInit.call(this, options);
 
-  this.door = options.door;
+  var self = this;
 
-  this.writingNote = false;
+  this.door = options.door;
 
   this.room = skybox.create(2000);
   this.addMesh(this.room);
+
+  if (this.socket) {
+    this.socket.on('note-creation', this.addNote.bind(this));
+
+    apiTools.getNotes(this.door._id, function(notes) {
+      for (var i = 0; i < notes.length; i++) {
+        self.addNote(notes[i]);
+      }
+    });
+  }
 
   var testNote = new Note({
     text: 'JOIN MY PLANET',
@@ -17448,20 +17494,61 @@ InnerDoorComponent.prototype.addInteractionGlue = function() {
   AvatarControlComponent.prototype.addInteractionGlue.call(this);
 
   keymaster.keydown(27, this.exit.bind(this));
+
+  var self = this;
+  $('#message-content-form').submit(function(e) {
+    e.preventDefault();
+    self.attemptNoteCreation();
+  });
+  $('.message-submit-button').click(this.attemptNoteCreation.bind(this));
 };
 
 InnerDoorComponent.prototype.enterFormCreation = function() {
-  if (this.writingNote) return;
-
-  this.writingNote = true;
-  keymaster.setPreventDefaults(false);
-  this.cam.exitPointerlock();
-
-  var avatarPos = this.avatar.trackingMesh().position;
-  this.creationDoor.moveTo(avatarPos.x - 10, 4, avatarPos.z - 5);
+  AvatarControlComponent.prototype.enterFormCreation.call(this);
 
   $('.message-ui-wrapper').fadeIn();
   $('#message-content-input').focus();
+};
+
+InnerDoorComponent.prototype.exitFormCreation = function() {
+  if (!this.inCreationMode) {
+    this.exit();
+    return;
+  }
+
+  AvatarControlComponent.prototype.exitFormCreation.call(this);
+
+  $('.message-ui-wrapper').fadeOut();
+};
+
+InnerDoorComponent.prototype.attemptNoteCreation = function() {
+  var self = this;
+
+  var avatarPosition = this.avatar.trackingMesh().position;
+
+  var noteData = {
+    text: $('#message-content-input').val(),
+    position: {x: avatarPosition.x, y: 0, z: avatarPosition.z},
+    creator: this.avatar._id,
+    door: this.door._id
+  };
+
+  apiTools.createNote(noteData, function(result) {
+    if (result.error) {
+      self.showError('.message-error', result.error);
+      console.log('i choose to show error');
+    } else {
+      console.log('i choose to add note');
+      self.addNote(result.note);
+      console.log('why not exit form creation??');
+      self.exitFormCreation();
+    }
+  });
+};
+
+InnerDoorComponent.prototype.addNote = function(noteData) {
+  var note = new Note(noteData);
+  this.addObject3d(note);
 };
 
 InnerDoorComponent.prototype.exit = function() {
