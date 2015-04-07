@@ -43,19 +43,23 @@ canvas {
 #avatar-name-input {
   position: absolute;
   top: 200px;
-  left: 30%;
+  left: 25%;
   margin: 15px;
   height: 60px;
-  width: 40%;
+  width: 50%;
   border-radius: 10px;
   border: none;
   text-align: center;
 
-  background-color: rgb(245, 245, 245);
+  background-color: rgb(230, 230, 230);
   font-size: 32px;
   font-family: monospace;
   letter-spacing: 2px;
 }
+  #avatar-name-input:focus {
+    outline: none;
+    box-shadow: 0px 0px 20px 10px #ffbc96;
+  }
 
 .avatar-color-picker {
   position: absolute;
@@ -132,7 +136,7 @@ progress {
   width: 100%;
   height: 100%;
   text-align: center;
-  background-color: rgba(255, 0, 255, 0.5);
+  background-color: rgba(213, 0, 255, 0.5);
   display: none;
 }
 
@@ -140,9 +144,9 @@ progress {
   position: absolute;
   left: 50%;
   top: 33%;
-  height: 40px;
-  width: 450px;
-  margin: -40px -225px;
+  height: 60px;
+  width: 500px;
+  margin: -40px -250px;
 
   border-radius: 10px;
   border: none;
@@ -154,6 +158,10 @@ progress {
   font-family: monospace;
   letter-spacing: 2px;
 }
+  #door-name-input:focus {
+    outline: none;
+    box-shadow: 0px 0px 20px 10px #7571ee;
+  }
 
 .door-texture-picker {
   text-align: center;
@@ -199,6 +207,70 @@ progress {
   }
 
 .door-error {
+  display: none;
+  background-color: white;
+  padding: 40px;
+  color: red;
+  font-size: 18px;
+}
+
+/* Message creation */
+
+.message-ui-wrapper {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  background-color: rgba(255, 0, 32, 0.5);
+  display: none;
+}
+
+#message-content-input {
+  position: absolute;
+  left: 50%;
+  top: 33%;
+  height: 100px;
+  width: 600px;
+  margin: -50px -300px;
+
+  padding: 20px;
+
+  border-radius: 10px;
+  border: 4px solid transparent;
+
+  background-color: rgba(30, 30, 30, 0.95);
+  color: white;
+  font-size: 18px;
+  line-height: 20px;
+  font-family: monospace;
+  letter-spacing: 2px;
+}
+  #message-content-input:focus {
+    outline: none;
+    box-shadow: 0px 0px 20px 10px #60b563;
+  }
+
+.message-submit-button {
+  position: relative;
+  top: 65%;
+  left: 50%;
+  height: 60px;
+  width: 200px;
+  margin: -60px -100px;
+
+  line-height: 60px;
+  background-color: white;
+  border: 2px solid black;
+  cursor: pointer;
+}
+  .message-submit-button:hover {
+    background-color: #3461ec;
+    color: #f8ee22;
+    font-style: italic;
+    text-decoration: underline;
+  }
+
+.message-error {
   display: none;
   background-color: white;
   padding: 40px;
