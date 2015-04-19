@@ -43,7 +43,7 @@ SceneComponent.prototype.restore = function() {
     this.renderObjects[i].addTo(this.scene);
   }
 
-  for (var i = 0; i < this.additionalMeshes.length; i++) {
+  for (i = 0; i < this.additionalMeshes.length; i++) {
     this.scene.add(this.additionalMeshes[i]);
   }
 };

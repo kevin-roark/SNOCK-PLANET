@@ -28,6 +28,17 @@ module.exports.createAvatar = function(avatarData, callback) {
   });
 };
 
+module.exports.getAvatarsInDoor = function(doorID, callback) {
+  if (!fetchSocket() || !doorID) {
+    callback({error: 'i aint gonna do it'});
+    return;
+  }
+
+  socket.emit('get-avatars-in-door', doorID, function(notes) {
+    callback(notes);
+  });
+};
+
 module.exports.createFaceURL = function(faceData, callback) {
   if (!faceData) {
     callback(null);

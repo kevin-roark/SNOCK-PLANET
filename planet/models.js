@@ -36,7 +36,8 @@ var avatarSchema = Schema({
   name: String,
   color: String,
   position: Position,
-  faceImageUrl: String
+  faceImageUrl: String,
+  currentDoor: {type: Schema.Types.ObjectId, ref: 'Door'}
 });
 
 // models

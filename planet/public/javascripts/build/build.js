@@ -16233,6 +16233,17 @@ module.exports.createAvatar = function(avatarData, callback) {
   });
 };
 
+module.exports.getAvatarsInDoor = function(doorID, callback) {
+  if (!fetchSocket() || !doorID) {
+    callback({error: 'i aint gonna do it'});
+    return;
+  }
+
+  socket.emit('get-avatars-in-door', doorID, function(notes) {
+    callback(notes);
+  });
+};
+
 module.exports.createFaceURL = function(faceData, callback) {
   if (!faceData) {
     callback(null);
@@ -16666,7 +16677,8 @@ Avatar.prototype.serialize = function() {
   data.name = this.name;
   data.color = this.color;
   data.faceImageUrl = this.faceImageUrl;
-  
+  data.currentDoor = this.currentDoor? this.currentDoor._id : null;
+
   return data;
 };
 
@@ -17204,6 +17216,12 @@ GeneralPlanetComponent.prototype.postInit = function(options) {
   }
 };
 
+GeneralPlanetComponent.prototype.restore = function() {
+  AvatarControlComponent.prototype.restore.call(this);
+
+  this.avatar.currentDoor = null;
+};
+
 /** User Interaction */
 
 GeneralPlanetComponent.prototype.addInteractionGlue = function() {
@@ -17470,10 +17488,12 @@ InnerDoorComponent.prototype.postInit = function(options) {
 
   this.door = options.door;
 
+  this.avatar.currentDoor = this.door._id;
+
   this.room = skybox.create(2000);
   this.addMesh(this.room);
 
-  if (this.socket) {
+  if (this.socket) {    
     this.socket.on('note-creation', this.addNote.bind(this));
 
     apiTools.getNotes(this.door._id, function(notes) {
@@ -17481,13 +17501,13 @@ InnerDoorComponent.prototype.postInit = function(options) {
         self.addNote(notes[i]);
       }
     });
-  }
 
-  var testNote = new Note({
-    text: 'JOIN MY PLANET',
-    position: {x: 0, z: 40}
-  });
-  this.addObject3d(testNote);
+    apiTools.getAvatarsInDoor(this.door._id, function(avatars) {
+      for (var i = 0; i < avatars.length; i++) {
+        self.avatarEntered(avatars[i]);
+      }
+    });
+  }
 };
 
 InnerDoorComponent.prototype.addInteractionGlue = function() {
@@ -17771,7 +17791,7 @@ $(function() {
     state.frameCount += 1;
 
     // every few frames lets update our state to the server
-    if (state.frameCount % 10 === 0 && globals.playerAvatar) {
+    if (state.frameCount % 100 === 0 && globals.playerAvatar) {
       socket.emit('avatar-update', globals.playerAvatar.serialize());
     }
 
@@ -18316,7 +18336,7 @@ SceneComponent.prototype.restore = function() {
     this.renderObjects[i].addTo(this.scene);
   }
 
-  for (var i = 0; i < this.additionalMeshes.length; i++) {
+  for (i = 0; i < this.additionalMeshes.length; i++) {
     this.scene.add(this.additionalMeshes[i]);
   }
 };

@@ -4,6 +4,7 @@ var models = require('./models');
 var Avatar = models.Avatar;
 var Door = models.Door;
 var Note = models.Note;
+var planetState = require('./planet-state');
 
 // constants
 var IO_PORT = 3000;
@@ -17,8 +18,11 @@ module.exports.init = function(app) {
 
   io.on('connection', function(socket) {
 
+    socket.on('avatar-update', avatarUpdate);
+
     socket.on('get-avatar', getAvatar);
     socket.on('create-avatar', createAvatar);
+    socket.on('get-avatars-in-door', getAvatarsInDoor);
 
     socket.on('get-door', getDoor);
     socket.on('create-door', createDoor);
@@ -27,6 +31,12 @@ module.exports.init = function(app) {
     socket.on('create-note', createNote);
     socket.on('get-notes', getNotes);
 
+    var stateInterval = setInterval(function() {
+      planetState.getState(function(state) {
+        // TODO: act on planet state
+      });
+    }, 5000);
+
   });
 
   app.server_ = server;
@@ -34,12 +44,20 @@ module.exports.init = function(app) {
 
 // API Method Implementations
 
+var avatarUpdate = function(avatarData) {
+  planetState.avatarUpdate(avatarData);
+};
+
 var getAvatar = function(name, callback) {
   getModel(Avatar, {'name': name}, callback);
 };
 
 var createAvatar = function(avatarData, callback) {
   createModel(Avatar, avatarData, callback);
+};
+
+var getAvatarsInDoor = function(doorID, callback) {
+  getModels(Avatar, {'currentDoor': doorID}, callback);
 };
 
 var getDoor = function(subject, callback) {

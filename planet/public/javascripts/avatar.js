@@ -123,7 +123,8 @@ Avatar.prototype.serialize = function() {
   data.name = this.name;
   data.color = this.color;
   data.faceImageUrl = this.faceImageUrl;
-  
+  data.currentDoor = this.currentDoor? this.currentDoor._id : null;
+
   return data;
 };
 

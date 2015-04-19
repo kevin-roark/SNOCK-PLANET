@@ -40,6 +40,12 @@ GeneralPlanetComponent.prototype.postInit = function(options) {
   }
 };
 
+GeneralPlanetComponent.prototype.restore = function() {
+  AvatarControlComponent.prototype.restore.call(this);
+
+  this.avatar.currentDoor = null;
+};
+
 /** User Interaction */
 
 GeneralPlanetComponent.prototype.addInteractionGlue = function() {

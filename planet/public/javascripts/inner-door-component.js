@@ -21,10 +21,12 @@ InnerDoorComponent.prototype.postInit = function(options) {
 
   this.door = options.door;
 
+  this.avatar.currentDoor = this.door._id;
+
   this.room = skybox.create(2000);
   this.addMesh(this.room);
 
-  if (this.socket) {
+  if (this.socket) {    
     this.socket.on('note-creation', this.addNote.bind(this));
 
     apiTools.getNotes(this.door._id, function(notes) {
@@ -32,13 +34,13 @@ InnerDoorComponent.prototype.postInit = function(options) {
         self.addNote(notes[i]);
       }
     });
-  }
 
-  var testNote = new Note({
-    text: 'JOIN MY PLANET',
-    position: {x: 0, z: 40}
-  });
-  this.addObject3d(testNote);
+    apiTools.getAvatarsInDoor(this.door._id, function(avatars) {
+      for (var i = 0; i < avatars.length; i++) {
+        self.avatarEntered(avatars[i]);
+      }
+    });
+  }
 };
 
 InnerDoorComponent.prototype.addInteractionGlue = function() {
