@@ -16618,11 +16618,11 @@ Avatar.prototype.trackingMesh = function() {
 };
 
 Avatar.prototype.wakeUp = function() {
-  this.sleeping = false;
+  this.updateSleepState(false);
 };
 
 Avatar.prototype.goSleep = function() {
-  this.sleeping = true;
+  this.updateSleepState(true);
 };
 
 Avatar.prototype.updateSkinColor = function(hex) {
@@ -16659,6 +16659,10 @@ Avatar.prototype.updateFaceImage = function(image) {
   }
 };
 
+Avatar.prototype.updateSleepState = function(sleeping) {
+  this.sleeping = sleeping;
+};
+
 Avatar.prototype.serialize = function() {
   var data = Super.serialize.call(this);
 
@@ -16679,7 +16683,7 @@ Avatar.prototype.updateFromModel = function(avatarData) {
   this.name = avatarData.name || 'nameless_fuck';
   this.updateSkinColor(avatarData.color || '#000000');
   this.updateFaceImage(avatarData.faceImageUrl);
-  this.sleeping = avatarData.sleeping || false;
+  this.updateSleepState(avatarData.sleeping || false);
 
   if (avatarData.position) {
     this.moveTo(avatarData.position);
@@ -17817,7 +17821,7 @@ $(function() {
 
     // every few frames lets update our state to the server
     if (state.frameCount % 120 === 0 && globals.playerAvatar) {
-      socket.emit('avatar-update', globals.playerAvatar.serialize());
+      updateMyAvatar();
     }
 
     cam.render();
@@ -17836,6 +17840,19 @@ $(function() {
 
     renderer.render(scene, camera);
   }
+
+  function updateMyAvatar() {
+    socket.emit('avatar-update', globals.playerAvatar.serialize());
+  }
+
+  // cleanup
+  window.onbeforeunload = function() {
+    var avatar = globals.playerAvatar;
+    if (avatar) {
+      avatar.goSleep();
+      updateMyAvatar();
+    }
+  };
 
   // state transitions
 

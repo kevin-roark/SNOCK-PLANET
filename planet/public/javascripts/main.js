@@ -82,7 +82,7 @@ $(function() {
 
     // every few frames lets update our state to the server
     if (state.frameCount % 120 === 0 && globals.playerAvatar) {
-      socket.emit('avatar-update', globals.playerAvatar.serialize());
+      updateMyAvatar();
     }
 
     cam.render();
@@ -101,6 +101,19 @@ $(function() {
 
     renderer.render(scene, camera);
   }
+
+  function updateMyAvatar() {
+    socket.emit('avatar-update', globals.playerAvatar.serialize());
+  }
+
+  // cleanup
+  window.onbeforeunload = function() {
+    var avatar = globals.playerAvatar;
+    if (avatar) {
+      avatar.goSleep();
+      updateMyAvatar();
+    }
+  };
 
   // state transitions
 
