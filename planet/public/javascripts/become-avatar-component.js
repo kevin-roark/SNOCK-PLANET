@@ -133,11 +133,13 @@ BecomeAvatarComponent.prototype.setAvatarCameraTarget = function() {
 BecomeAvatarComponent.prototype.finishAfterFetchingAvatar = function(avatarData) {
   this.avatar.setVisible(true);
   this.avatar.updateFromModel(avatarData);
+  this.avatar.wakeUp();
   this.markFinished();
 };
 
 BecomeAvatarComponent.prototype.finishAfterCreatingAvatar = function(avatarData) {
   this.avatar.updateFromModel(avatarData);
+  this.avatar.wakeUp();
   this.markFinished();
 };
 

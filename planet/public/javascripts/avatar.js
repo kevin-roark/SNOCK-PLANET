@@ -8,10 +8,10 @@ var Super = SheenModel.prototype;
 Avatar.prototype = Object.create(Super);
 
 function Avatar(options) {
-  SheenModel.call(this, options);
-
   this.twitching = false;
   this.sleeping = false;
+
+  SheenModel.call(this, options);
 }
 
 Avatar.prototype.loadMesh = function(callback) {
@@ -41,6 +41,10 @@ Avatar.prototype.meshDidLoad = function() {
   this.updateSkinColor(this.color);
 
   this.updateFaceImage(this.faceImageUrl);
+
+  if (this.sleeping) {
+    this.updateMeshForSleeping();
+  }
 };
 
 Avatar.prototype.move = function(x, y, z) {
@@ -100,22 +104,22 @@ Avatar.prototype.updateSkinColor = function(hex) {
 };
 
 Avatar.prototype.updateFaceImage = function(image) {
-  var texture;
-
-  if (typeof image === 'string' && image.length > 0) {
-    this.faceImageUrl = image;
-    texture = THREE.ImageUtils.loadTexture(image);
-  } else if (image) {
-    // gotta assume its a texturable image object thing (ie canvas)
-    this.faceImageCanvas = image;
-    texture = new THREE.Texture(image);
-  }
-
-  if (texture && this.hasLoadedMesh) {
-    texture.needsUpdate = true;
-    this.faceMaterial.map = texture;
-    this.faceMaterial.needsUpdate = true;
-  }
+  // var texture;
+  //
+  // if (typeof image === 'string' && image.length > 0) {
+  //   this.faceImageUrl = image;
+  //   texture = THREE.ImageUtils.loadTexture(image);
+  // } else if (image) {
+  //   // gotta assume its a texturable image object thing (ie canvas)
+  //   this.faceImageCanvas = image;
+  //   texture = new THREE.Texture(image);
+  // }
+  //
+  // if (texture && this.hasLoadedMesh) {
+  //   texture.needsUpdate = true;
+  //   this.faceMaterial.map = texture;
+  //   this.faceMaterial.needsUpdate = true;
+  // }
 };
 
 Avatar.prototype.updateSleepState = function(sleeping) {
@@ -125,6 +129,12 @@ Avatar.prototype.updateSleepState = function(sleeping) {
 
   this.sleeping = sleeping;
 
+  if (this.hasLoadedMesh) {
+    this.updateMeshForSleeping();
+  }
+};
+
+Avatar.prototype.updateMeshForSleeping = function() {
   if (this.sleeping) {
     this.moveTo(this.mesh.position.x, -10, this.mesh.position.y);
     this.rotate(Math.PI / 2, 0, 0);

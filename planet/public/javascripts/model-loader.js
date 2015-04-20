@@ -8,10 +8,11 @@ module.exports = function loadModel(name, callback) {
     fetch(name, true, callback);
   }
 
-  var loader = new THREE.JSONLoader;
+  var loader = new THREE.JSONLoader();
   loader.load(name, function(geometry, materials) {
-    add(name, geometry, materials);
-    fetch(name, false, callback);
+    callback(geometry, materials);
+    // add(name, geometry, materials);
+    // fetch(name, false, callback);
   });
 };
 
@@ -19,7 +20,7 @@ function add(name, geometry, materials) {
   cache[name] = {
     geometry: geometry,
     materials: materials
-  }
+  };
 }
 
 function fetch(name, clone, callback) {

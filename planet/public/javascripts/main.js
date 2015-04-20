@@ -103,7 +103,9 @@ $(function() {
   }
 
   function updateMyAvatar() {
-    socket.emit('avatar-update', globals.playerAvatar.serialize());
+    if (globals.playerAvatar && globals.playerAvatar._id) {
+      socket.emit('avatar-update', globals.playerAvatar.serialize());
+    }
   }
 
   // cleanup

@@ -122,7 +122,7 @@ SheenModel.prototype.serialize = function() {
     data._id = this._id;
   }
   if (this.mesh) {
-    data.position = {x: this.mesh.position.x, z: this.mesh.position.z};
+    data.position = {x: this.mesh.position.x, y: this.mesh.position.y, z: this.mesh.position.z};
   }
   return data;
 };

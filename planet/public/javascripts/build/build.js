@@ -16518,6 +16518,7 @@ AvatarControlComponent.prototype.updatedAvatarsState = function() {
 };
 
 AvatarControlComponent.prototype.avatarUpdate = function(avatarData) {
+  console.log(avatarData);
   var avatar = this.avatarWithName(avatarData.name);
   if (!avatar) {
     avatar = new Avatar(avatarData);
@@ -16550,10 +16551,10 @@ var Super = SheenModel.prototype;
 Avatar.prototype = Object.create(Super);
 
 function Avatar(options) {
-  SheenModel.call(this, options);
-
   this.twitching = false;
   this.sleeping = false;
+
+  SheenModel.call(this, options);
 }
 
 Avatar.prototype.loadMesh = function(callback) {
@@ -16583,6 +16584,10 @@ Avatar.prototype.meshDidLoad = function() {
   this.updateSkinColor(this.color);
 
   this.updateFaceImage(this.faceImageUrl);
+
+  if (this.sleeping) {
+    this.updateMeshForSleeping();
+  }
 };
 
 Avatar.prototype.move = function(x, y, z) {
@@ -16642,22 +16647,22 @@ Avatar.prototype.updateSkinColor = function(hex) {
 };
 
 Avatar.prototype.updateFaceImage = function(image) {
-  var texture;
-
-  if (typeof image === 'string' && image.length > 0) {
-    this.faceImageUrl = image;
-    texture = THREE.ImageUtils.loadTexture(image);
-  } else if (image) {
-    // gotta assume its a texturable image object thing (ie canvas)
-    this.faceImageCanvas = image;
-    texture = new THREE.Texture(image);
-  }
-
-  if (texture && this.hasLoadedMesh) {
-    texture.needsUpdate = true;
-    this.faceMaterial.map = texture;
-    this.faceMaterial.needsUpdate = true;
-  }
+  // var texture;
+  //
+  // if (typeof image === 'string' && image.length > 0) {
+  //   this.faceImageUrl = image;
+  //   texture = THREE.ImageUtils.loadTexture(image);
+  // } else if (image) {
+  //   // gotta assume its a texturable image object thing (ie canvas)
+  //   this.faceImageCanvas = image;
+  //   texture = new THREE.Texture(image);
+  // }
+  //
+  // if (texture && this.hasLoadedMesh) {
+  //   texture.needsUpdate = true;
+  //   this.faceMaterial.map = texture;
+  //   this.faceMaterial.needsUpdate = true;
+  // }
 };
 
 Avatar.prototype.updateSleepState = function(sleeping) {
@@ -16667,6 +16672,12 @@ Avatar.prototype.updateSleepState = function(sleeping) {
 
   this.sleeping = sleeping;
 
+  if (this.hasLoadedMesh) {
+    this.updateMeshForSleeping();
+  }
+};
+
+Avatar.prototype.updateMeshForSleeping = function() {
   if (this.sleeping) {
     this.moveTo(this.mesh.position.x, -10, this.mesh.position.y);
     this.rotate(Math.PI / 2, 0, 0);
@@ -16845,11 +16856,13 @@ BecomeAvatarComponent.prototype.setAvatarCameraTarget = function() {
 BecomeAvatarComponent.prototype.finishAfterFetchingAvatar = function(avatarData) {
   this.avatar.setVisible(true);
   this.avatar.updateFromModel(avatarData);
+  this.avatar.wakeUp();
   this.markFinished();
 };
 
 BecomeAvatarComponent.prototype.finishAfterCreatingAvatar = function(avatarData) {
   this.avatar.updateFromModel(avatarData);
+  this.avatar.wakeUp();
   this.markFinished();
 };
 
@@ -17855,7 +17868,9 @@ $(function() {
   }
 
   function updateMyAvatar() {
-    socket.emit('avatar-update', globals.playerAvatar.serialize());
+    if (globals.playerAvatar && globals.playerAvatar._id) {
+      socket.emit('avatar-update', globals.playerAvatar.serialize());
+    }
   }
 
   // cleanup
@@ -17922,10 +17937,11 @@ module.exports = function loadModel(name, callback) {
     fetch(name, true, callback);
   }
 
-  var loader = new THREE.JSONLoader;
+  var loader = new THREE.JSONLoader();
   loader.load(name, function(geometry, materials) {
-    add(name, geometry, materials);
-    fetch(name, false, callback);
+    callback(geometry, materials);
+    // add(name, geometry, materials);
+    // fetch(name, false, callback);
   });
 };
 
@@ -17933,7 +17949,7 @@ function add(name, geometry, materials) {
   cache[name] = {
     geometry: geometry,
     materials: materials
-  }
+  };
 }
 
 function fetch(name, clone, callback) {
@@ -18562,7 +18578,7 @@ SheenModel.prototype.serialize = function() {
     data._id = this._id;
   }
   if (this.mesh) {
-    data.position = {x: this.mesh.position.x, z: this.mesh.position.z};
+    data.position = {x: this.mesh.position.x, y: this.mesh.position.y, z: this.mesh.position.z};
   }
   return data;
 };

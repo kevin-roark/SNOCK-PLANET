@@ -35,7 +35,7 @@ module.exports.init = function(app) {
       planetState.getState(function(state) {
         io.emit('avatars-state', state);
       });
-    }, 5000);
+    }, 7777);
 
   });
 
