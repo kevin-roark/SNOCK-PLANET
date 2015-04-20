@@ -11,6 +11,7 @@ function Avatar(options) {
   SheenModel.call(this, options);
 
   this.twitching = false;
+  this.sleeping = false;
 }
 
 Avatar.prototype.loadMesh = function(callback) {
@@ -118,7 +119,19 @@ Avatar.prototype.updateFaceImage = function(image) {
 };
 
 Avatar.prototype.updateSleepState = function(sleeping) {
+  if (sleeping === this.sleeping) {
+    return;
+  }
+
   this.sleeping = sleeping;
+
+  if (this.sleeping) {
+    this.moveTo(this.mesh.position.x, -10, this.mesh.position.y);
+    this.rotate(Math.PI / 2, 0, 0);
+  } else {
+    this.moveTo(this.mesh.position.x, 0, this.mesh.position.y);
+    this.rotate(-Math.PI / 2, 0, 0);
+  }
 };
 
 Avatar.prototype.serialize = function() {
