@@ -38,9 +38,7 @@ AvatarControlComponent.prototype.postInit = function(options) {
   this.addInteractionGlue();
 
   if (this.socket) {
-    this.socket.on('avatar-entry', this.avatarEntered.bind(this));
-    this.socket.on('avatar-moved', this.avatarMoved.bind(this));
-    this.socket.on('avatar-sleep', this.avatarSlept.bind(this));
+    this.socket.on('avatars-state', this.updatedAvatarsState.bind(this));
   }
 };
 
@@ -192,29 +190,19 @@ AvatarControlComponent.prototype.mousemove = function(x, y, ev) {
 
 /** IO Response */
 
-AvatarControlComponent.prototype.avatarEntered = function(avatarData) {
+AvatarControlComponent.prototype.updatedAvatarsState = function() {
+  // override me pzlzzzz
+};
+
+AvatarControlComponent.prototype.avatarUpdate = function(avatarData) {
   var avatar = this.avatarWithName(avatarData.name);
   if (!avatar) {
     avatar = new Avatar(avatarData);
     this.addObject3d(avatar);
     this.avatarsByName[avatar.name] = avatar;
   }
-
-  avatar.wakeUp();
-};
-
-AvatarControlComponent.prototype.avatarMoved = function(avatarData) {
-  var avatar = this.avatarWithName(avatarData.name);
-  if (avatar) {
-    var pos = avatarData.position;
-    avatar.moveTo(pos.x, pos.y, pos.z);
-  }
-};
-
-AvatarControlComponent.prototype.avatarSlept = function(name) {
-  var avatar = this.avatarWithName(name);
-  if (avatar) {
-    avatar.goSleep();
+  else {
+    avatar.updateFromModel(avatarData);
   }
 };
 

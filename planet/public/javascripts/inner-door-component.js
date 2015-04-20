@@ -21,25 +21,33 @@ InnerDoorComponent.prototype.postInit = function(options) {
 
   this.door = options.door;
 
+  this.notes = [];
+  this.noteSet = {};
+
   this.avatar.currentDoor = this.door._id;
 
   this.room = skybox.create(2000);
   this.addMesh(this.room);
 
-  if (this.socket) {    
-    this.socket.on('note-creation', this.addNote.bind(this));
+  if (this.socket) {
+    this.socket.on('note-created', this.addNote.bind(this));
 
     apiTools.getNotes(this.door._id, function(notes) {
       for (var i = 0; i < notes.length; i++) {
         self.addNote(notes[i]);
       }
     });
+  }
+};
 
-    apiTools.getAvatarsInDoor(this.door._id, function(avatars) {
-      for (var i = 0; i < avatars.length; i++) {
-        self.avatarEntered(avatars[i]);
-      }
-    });
+InnerDoorComponent.prototype.updatedAvatarsState = function(avatarsState) {
+  var avatarsWithinDoors = avatarsState.doors;
+  var avatarsInThisDoor = avatarsWithinDoors[this.door._id];
+  if (avatarsInThisDoor) {
+    for (var i = 0; i < avatarsInThisDoor.length; i++) {
+      var avatarData = avatarsInThisDoor[i];
+      this.avatarUpdate(avatarData);
+    }
   }
 };
 
@@ -89,19 +97,25 @@ InnerDoorComponent.prototype.attemptNoteCreation = function() {
   apiTools.createNote(noteData, function(result) {
     if (result.error) {
       self.showError('.message-error', result.error);
-      console.log('i choose to show error');
     } else {
-      console.log('i choose to add note');
       self.addNote(result.note);
-      console.log('why not exit form creation??');
       self.exitFormCreation();
     }
   });
 };
 
 InnerDoorComponent.prototype.addNote = function(noteData) {
+  if (noteData._id) {
+    if (this.noteSet[noteData._id]) {
+      return; // already in here....
+    }
+
+    this.noteSet[noteData._id] = true;
+  }
+
   var note = new Note(noteData);
   this.addObject3d(note);
+  this.notes.push(note);
 };
 
 InnerDoorComponent.prototype.exit = function() {

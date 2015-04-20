@@ -10,6 +10,7 @@ mongoose.connect(config.mongo_url);
 
 var Position = {
   x: Number,
+  y: Number,
   z: Number
 };
 
@@ -37,7 +38,8 @@ var avatarSchema = Schema({
   color: String,
   position: Position,
   faceImageUrl: String,
-  currentDoor: {type: Schema.Types.ObjectId, ref: 'Door'}
+  currentDoor: {type: Schema.Types.ObjectId, ref: 'Door'},
+  sleeping: Boolean
 });
 
 // models

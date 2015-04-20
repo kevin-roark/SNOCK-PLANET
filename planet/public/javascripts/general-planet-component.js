@@ -28,9 +28,10 @@ GeneralPlanetComponent.prototype.postInit = function(options) {
   });
 
   this.doors = []; // TODO: not sustainable to hold all doors in a freakin' array
+  this.doorSet = {};
 
   if (this.socket) {
-    this.socket.on('door-creation', this.addDoor.bind(this));
+    this.socket.on('door-created', this.addDoor.bind(this));
 
     apiTools.getDoors({x: 0, y: 0, z: 0}, function(doors) {
       for (var i = 0; i < doors.length; i++) {
@@ -44,6 +45,14 @@ GeneralPlanetComponent.prototype.restore = function() {
   AvatarControlComponent.prototype.restore.call(this);
 
   this.avatar.currentDoor = null;
+};
+
+GeneralPlanetComponent.prototype.updatedAvatarsState = function(avatarsState) {
+  var planetAvatars = avatarsState.planet;
+  for (var i = 0; i < planetAvatars.length; i++) {
+    var avatarData = planetAvatars[i];
+    this.avatarUpdate(avatarData);
+  }
 };
 
 /** User Interaction */
@@ -146,6 +155,14 @@ GeneralPlanetComponent.prototype.doorTextureSelected = function(elem) {
 /** IO Response */
 
 GeneralPlanetComponent.prototype.addDoor = function(doorData) {
+  if (doorData) {
+    if (this.doorSet[doorData._id]) {
+      return; // door already exists !!!
+    }
+
+    this.doorSet[doorData._id] = true;
+  }
+
   var door = new Door(doorData);
   this.addObject3d(door);
   this.doors.push(door);

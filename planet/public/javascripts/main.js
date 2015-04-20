@@ -81,7 +81,7 @@ $(function() {
     state.frameCount += 1;
 
     // every few frames lets update our state to the server
-    if (state.frameCount % 100 === 0 && globals.playerAvatar) {
+    if (state.frameCount % 120 === 0 && globals.playerAvatar) {
       socket.emit('avatar-update', globals.playerAvatar.serialize());
     }
 

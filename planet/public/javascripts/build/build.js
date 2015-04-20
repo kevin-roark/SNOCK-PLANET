@@ -16361,9 +16361,7 @@ AvatarControlComponent.prototype.postInit = function(options) {
   this.addInteractionGlue();
 
   if (this.socket) {
-    this.socket.on('avatar-entry', this.avatarEntered.bind(this));
-    this.socket.on('avatar-moved', this.avatarMoved.bind(this));
-    this.socket.on('avatar-sleep', this.avatarSlept.bind(this));
+    this.socket.on('avatars-state', this.updatedAvatarsState.bind(this));
   }
 };
 
@@ -16515,29 +16513,19 @@ AvatarControlComponent.prototype.mousemove = function(x, y, ev) {
 
 /** IO Response */
 
-AvatarControlComponent.prototype.avatarEntered = function(avatarData) {
+AvatarControlComponent.prototype.updatedAvatarsState = function() {
+  // override me pzlzzzz
+};
+
+AvatarControlComponent.prototype.avatarUpdate = function(avatarData) {
   var avatar = this.avatarWithName(avatarData.name);
   if (!avatar) {
     avatar = new Avatar(avatarData);
     this.addObject3d(avatar);
     this.avatarsByName[avatar.name] = avatar;
   }
-
-  avatar.wakeUp();
-};
-
-AvatarControlComponent.prototype.avatarMoved = function(avatarData) {
-  var avatar = this.avatarWithName(avatarData.name);
-  if (avatar) {
-    var pos = avatarData.position;
-    avatar.moveTo(pos.x, pos.y, pos.z);
-  }
-};
-
-AvatarControlComponent.prototype.avatarSlept = function(name) {
-  var avatar = this.avatarWithName(name);
-  if (avatar) {
-    avatar.goSleep();
+  else {
+    avatar.updateFromModel(avatarData);
   }
 };
 
@@ -16630,11 +16618,11 @@ Avatar.prototype.trackingMesh = function() {
 };
 
 Avatar.prototype.wakeUp = function() {
-
+  this.sleeping = false;
 };
 
 Avatar.prototype.goSleep = function() {
-
+  this.sleeping = true;
 };
 
 Avatar.prototype.updateSkinColor = function(hex) {
@@ -16678,6 +16666,7 @@ Avatar.prototype.serialize = function() {
   data.color = this.color;
   data.faceImageUrl = this.faceImageUrl;
   data.currentDoor = this.currentDoor? this.currentDoor._id : null;
+  data.sleeping = this.sleeping;
 
   return data;
 };
@@ -16690,6 +16679,11 @@ Avatar.prototype.updateFromModel = function(avatarData) {
   this.name = avatarData.name || 'nameless_fuck';
   this.updateSkinColor(avatarData.color || '#000000');
   this.updateFaceImage(avatarData.faceImageUrl);
+  this.sleeping = avatarData.sleeping || false;
+
+  if (avatarData.position) {
+    this.moveTo(avatarData.position);
+  }
 };
 
 Avatar.prototype.uploadableFaceImageData = function() {
@@ -17204,9 +17198,10 @@ GeneralPlanetComponent.prototype.postInit = function(options) {
   });
 
   this.doors = []; // TODO: not sustainable to hold all doors in a freakin' array
+  this.doorSet = {};
 
   if (this.socket) {
-    this.socket.on('door-creation', this.addDoor.bind(this));
+    this.socket.on('door-created', this.addDoor.bind(this));
 
     apiTools.getDoors({x: 0, y: 0, z: 0}, function(doors) {
       for (var i = 0; i < doors.length; i++) {
@@ -17220,6 +17215,14 @@ GeneralPlanetComponent.prototype.restore = function() {
   AvatarControlComponent.prototype.restore.call(this);
 
   this.avatar.currentDoor = null;
+};
+
+GeneralPlanetComponent.prototype.updatedAvatarsState = function(avatarsState) {
+  var planetAvatars = avatarsState.planet;
+  for (var i = 0; i < planetAvatars.length; i++) {
+    var avatarData = planetAvatars[i];
+    this.avatarUpdate(avatarData);
+  }
 };
 
 /** User Interaction */
@@ -17322,6 +17325,14 @@ GeneralPlanetComponent.prototype.doorTextureSelected = function(elem) {
 /** IO Response */
 
 GeneralPlanetComponent.prototype.addDoor = function(doorData) {
+  if (doorData) {
+    if (this.doorSet[doorData._id]) {
+      return; // door already exists !!!
+    }
+
+    this.doorSet[doorData._id] = true;
+  }
+
   var door = new Door(doorData);
   this.addObject3d(door);
   this.doors.push(door);
@@ -17488,25 +17499,33 @@ InnerDoorComponent.prototype.postInit = function(options) {
 
   this.door = options.door;
 
+  this.notes = [];
+  this.noteSet = {};
+
   this.avatar.currentDoor = this.door._id;
 
   this.room = skybox.create(2000);
   this.addMesh(this.room);
 
-  if (this.socket) {    
-    this.socket.on('note-creation', this.addNote.bind(this));
+  if (this.socket) {
+    this.socket.on('note-created', this.addNote.bind(this));
 
     apiTools.getNotes(this.door._id, function(notes) {
       for (var i = 0; i < notes.length; i++) {
         self.addNote(notes[i]);
       }
     });
+  }
+};
 
-    apiTools.getAvatarsInDoor(this.door._id, function(avatars) {
-      for (var i = 0; i < avatars.length; i++) {
-        self.avatarEntered(avatars[i]);
-      }
-    });
+InnerDoorComponent.prototype.updatedAvatarsState = function(avatarsState) {
+  var avatarsWithinDoors = avatarsState.doors;
+  var avatarsInThisDoor = avatarsWithinDoors[this.door._id];
+  if (avatarsInThisDoor) {
+    for (var i = 0; i < avatarsInThisDoor.length; i++) {
+      var avatarData = avatarsInThisDoor[i];
+      this.avatarUpdate(avatarData);
+    }
   }
 };
 
@@ -17556,19 +17575,25 @@ InnerDoorComponent.prototype.attemptNoteCreation = function() {
   apiTools.createNote(noteData, function(result) {
     if (result.error) {
       self.showError('.message-error', result.error);
-      console.log('i choose to show error');
     } else {
-      console.log('i choose to add note');
       self.addNote(result.note);
-      console.log('why not exit form creation??');
       self.exitFormCreation();
     }
   });
 };
 
 InnerDoorComponent.prototype.addNote = function(noteData) {
+  if (noteData._id) {
+    if (this.noteSet[noteData._id]) {
+      return; // already in here....
+    }
+
+    this.noteSet[noteData._id] = true;
+  }
+
   var note = new Note(noteData);
   this.addObject3d(note);
+  this.notes.push(note);
 };
 
 InnerDoorComponent.prototype.exit = function() {
@@ -17791,7 +17816,7 @@ $(function() {
     state.frameCount += 1;
 
     // every few frames lets update our state to the server
-    if (state.frameCount % 100 === 0 && globals.playerAvatar) {
+    if (state.frameCount % 120 === 0 && globals.playerAvatar) {
       socket.emit('avatar-update', globals.playerAvatar.serialize());
     }
 

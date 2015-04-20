@@ -33,7 +33,7 @@ module.exports.init = function(app) {
 
     var stateInterval = setInterval(function() {
       planetState.getState(function(state) {
-        // TODO: act on planet state
+        io.emit('avatars-state', state);
       });
     }, 5000);
 
@@ -65,7 +65,13 @@ var getDoor = function(subject, callback) {
 };
 
 var createDoor = function(doorData, callback) {
-  createModel(Door, doorData, callback);
+  createModel(Door, doorData, function(door) {
+    callback(door);
+
+    if (door) {
+      io.emit('door-created', door);
+    }
+  });
 };
 
 var getDoors = function(queryData, callback) {
@@ -74,7 +80,13 @@ var getDoors = function(queryData, callback) {
 };
 
 var createNote = function(noteData, callback) {
-  createModel(Note, noteData, callback);
+  createModel(Note, noteData, function(note) {
+    callback(note);
+
+    if (note) {
+      io.emit('note-created', note);
+    }
+  });
 };
 
 var getNotes = function(doorID, callback) {

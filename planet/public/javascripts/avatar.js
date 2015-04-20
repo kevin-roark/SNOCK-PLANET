@@ -76,11 +76,11 @@ Avatar.prototype.trackingMesh = function() {
 };
 
 Avatar.prototype.wakeUp = function() {
-
+  this.sleeping = false;
 };
 
 Avatar.prototype.goSleep = function() {
-
+  this.sleeping = true;
 };
 
 Avatar.prototype.updateSkinColor = function(hex) {
@@ -124,6 +124,7 @@ Avatar.prototype.serialize = function() {
   data.color = this.color;
   data.faceImageUrl = this.faceImageUrl;
   data.currentDoor = this.currentDoor? this.currentDoor._id : null;
+  data.sleeping = this.sleeping;
 
   return data;
 };
@@ -136,6 +137,11 @@ Avatar.prototype.updateFromModel = function(avatarData) {
   this.name = avatarData.name || 'nameless_fuck';
   this.updateSkinColor(avatarData.color || '#000000');
   this.updateFaceImage(avatarData.faceImageUrl);
+  this.sleeping = avatarData.sleeping || false;
+
+  if (avatarData.position) {
+    this.moveTo(avatarData.position);
+  }
 };
 
 Avatar.prototype.uploadableFaceImageData = function() {
