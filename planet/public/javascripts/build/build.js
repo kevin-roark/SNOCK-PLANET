@@ -16519,7 +16519,6 @@ AvatarControlComponent.prototype.updatedAvatarsState = function() {
 
 AvatarControlComponent.prototype.avatarUpdate = function(avatarData) {
   if (avatarData._id === this.avatar._id) {
-    console.log('found myself');
     return;
   }
 
@@ -17536,7 +17535,7 @@ InnerDoorComponent.prototype.postInit = function(options) {
   this.notes = [];
   this.noteSet = {};
 
-  this.avatar.currentDoor = this.door._id;
+  this.avatar.currentDoor = this.door;
 
   this.room = skybox.create(2000);
   this.addMesh(this.room);
