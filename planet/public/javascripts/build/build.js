@@ -17103,7 +17103,13 @@ module.exports.door_texture = '/images/wooden_door.jpg';
 module.exports.addTestDoor = false;
 
 // Skybox config
-module.exports.girl_room_texture = '/images/girl_room.jpg';
+module.exports.room_textures = {
+  girl: '/images/girl_room.jpg',
+  farm: '/images/farm_room.jpg',
+  factory: '/images/factory_room.jpg',
+  space: '/images/space_room.jpg',
+  underwater: '/images/underwater_room.jpg'
+};
 
 // Note config
 module.exports.note_textures = {
@@ -18640,14 +18646,22 @@ function skyboxMaterial(textureURL) {
   });
 }
 
+function randomTextureURL() {
+  var keys = Object.keys(config.room_textures);
+  console.log(keys);
+  var randomKey = keys[Math.floor(Math.random() * keys.length)];
+  var randomTexture = config.room_textures[randomKey];
+  return randomTexture;
+}
+
 module.exports.create = function(size, textureURL) {
-  if (!textureURL) textureURL = config.girl_room_texture;
+  if (!textureURL) textureURL = randomTextureURL();
   if (!size) size = 20000;
 
   var geometry = new THREE.BoxGeometry(size, size, size);
   var material = skyboxMaterial(textureURL);
   return new THREE.Mesh(geometry, material);
-}
+};
 
 module.exports.blocker = function(size) {
   if (!size) size = {x: 19500, y: 19500, z: 19500};
@@ -18660,6 +18674,6 @@ module.exports.blocker = function(size) {
     , transparent: true
   });
   return new THREE.Mesh(geometry, material);
-}
+};
 
 },{"./config.js":57}]},{},[65]);

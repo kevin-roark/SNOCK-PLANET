@@ -41,14 +41,21 @@ function skyboxMaterial(textureURL) {
   });
 }
 
+function randomTextureURL() {
+  var keys = Object.keys(config.room_textures);
+  var randomKey = keys[Math.floor(Math.random() * keys.length)];
+  var randomTexture = config.room_textures[randomKey];
+  return randomTexture;
+}
+
 module.exports.create = function(size, textureURL) {
-  if (!textureURL) textureURL = config.girl_room_texture;
+  if (!textureURL) textureURL = randomTextureURL();
   if (!size) size = 20000;
 
   var geometry = new THREE.BoxGeometry(size, size, size);
   var material = skyboxMaterial(textureURL);
   return new THREE.Mesh(geometry, material);
-}
+};
 
 module.exports.blocker = function(size) {
   if (!size) size = {x: 19500, y: 19500, z: 19500};
@@ -61,4 +68,4 @@ module.exports.blocker = function(size) {
     , transparent: true
   });
   return new THREE.Mesh(geometry, material);
-}
+};

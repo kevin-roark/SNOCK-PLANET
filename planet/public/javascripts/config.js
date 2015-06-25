@@ -14,7 +14,13 @@ module.exports.door_texture = '/images/wooden_door.jpg';
 module.exports.addTestDoor = false;
 
 // Skybox config
-module.exports.girl_room_texture = '/images/girl_room.jpg';
+module.exports.room_textures = {
+  girl: '/images/girl_room.jpg',
+  farm: '/images/farm_room.jpg',
+  factory: '/images/factory_room.jpg',
+  space: '/images/space_room.jpg',
+  underwater: '/images/underwater_room.jpg'
+};
 
 // Note config
 module.exports.note_textures = {
