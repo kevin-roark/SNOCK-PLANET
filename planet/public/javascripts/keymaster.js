@@ -15,7 +15,6 @@ $('body').keyup(function(ev) {
 });
 
 $('body').keypress(function(ev) {
-  console.log('key press eh? ' + ev.which);
   callListener(keypressMap, ev);
 });
 

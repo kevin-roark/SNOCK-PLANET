@@ -98,7 +98,13 @@ SheenModel.prototype.rotateTo = function(x, y, z) {
 SheenModel.prototype.moveTo = function(x, y, z) {
   if (!this.hasLoadedMesh) return;
 
-  this.mesh.position.set(x, y, z);
+  if (typeof x === 'object') {
+    y = x.y;
+    z = x.z;
+    x = x.x;
+  }
+
+  this.mesh.position.set(x || 0, y || 0, z || 0);
   this.move(0, 0, 0);
 };
 

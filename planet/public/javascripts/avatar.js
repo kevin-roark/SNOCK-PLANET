@@ -167,7 +167,7 @@ Avatar.prototype.updateFromModel = function(avatarData) {
   this.updateSleepState(avatarData.sleeping || false);
 
   if (avatarData.position) {
-    //this.moveTo(avatarData.position);
+    this.moveTo(avatarData.position);
   }
 };
 

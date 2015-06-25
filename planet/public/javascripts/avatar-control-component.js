@@ -195,7 +195,10 @@ AvatarControlComponent.prototype.updatedAvatarsState = function() {
 };
 
 AvatarControlComponent.prototype.avatarUpdate = function(avatarData) {
-  console.log(avatarData);
+  if (avatarData._id === this.avatar._id) {
+    return;
+  }
+
   var avatar = this.avatarWithName(avatarData.name);
   if (!avatar) {
     avatar = new Avatar(avatarData);
