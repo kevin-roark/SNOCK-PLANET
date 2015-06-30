@@ -54,7 +54,7 @@ InnerDoorComponent.prototype.updatedAvatarsState = function(avatarsState) {
 InnerDoorComponent.prototype.addInteractionGlue = function() {
   AvatarControlComponent.prototype.addInteractionGlue.call(this);
 
-  keymaster.keydown(27, this.exit.bind(this));
+  keymaster.keydown(90, this.exit.bind(this)); // z to exit
 
   var self = this;
   $('#message-content-form').submit(function(e) {
@@ -72,14 +72,11 @@ InnerDoorComponent.prototype.enterFormCreation = function() {
 };
 
 InnerDoorComponent.prototype.exitFormCreation = function() {
-  if (!this.inCreationMode) {
-    this.exit();
-    return;
+  if (this.inCreationMode) {
+    $('.message-ui-wrapper').fadeOut();
   }
 
   AvatarControlComponent.prototype.exitFormCreation.call(this);
-
-  $('.message-ui-wrapper').fadeOut();
 };
 
 InnerDoorComponent.prototype.attemptNoteCreation = function() {
@@ -119,5 +116,9 @@ InnerDoorComponent.prototype.addNote = function(noteData) {
 };
 
 InnerDoorComponent.prototype.exit = function() {
+  if (this.inCreationMode) {
+    return;
+  }
+
   this.markFinished();
 };

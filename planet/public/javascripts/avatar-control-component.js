@@ -96,8 +96,8 @@ AvatarControlComponent.prototype.addInteractionGlue = function() {
 
   keymaster.keypress(113, this.toggleCameraPerspective.bind(this));
 
-  keymaster.keypress(110, this.enterFormCreation.bind(this));
-  keymaster.keydown(27, this.exitFormCreation.bind(this));
+  keymaster.keypress(110, this.enterFormCreation.bind(this)); // n
+  keymaster.keydown(27, this.exitFormCreation.bind(this)); // esc
 
   keymaster.keydown([38, 87], this.forwardKeydown.bind(this));
   keymaster.keydown([37, 65], this.leftwardKeydown.bind(this));
