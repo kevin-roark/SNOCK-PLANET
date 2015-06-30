@@ -5,6 +5,7 @@ var options = module.exports.options = {
   dragoverClassname: 'hover',
   maxFiles: 1,
   resizeWidth: 128,
+  resizeHeight: 128,
   imagePostURL: null
 };
 
@@ -13,10 +14,10 @@ module.exports.previewCallback = function(renderedCanvas) {};
 module.exports.fileCallback = function(files) {};
 
 var tests = {
-  filereader: typeof FileReader != 'undefined',
+  filereader: typeof FileReader !== 'undefined',
   dnd: 'draggable' in document.createElement('span'),
   formdata: !!window.FormData,
-  progress: "upload" in new XMLHttpRequest
+  progress: "upload" in new XMLHttpRequest()
 };
 
 var acceptedTypes = {
@@ -43,12 +44,12 @@ module.exports.init = function() {
       this.className = '';
       e.preventDefault();
       readfiles(e.dataTransfer.files);
-    }
+    };
   }
 };
 
 function previewfile(file) {
-  if (tests.filereader === true && acceptedTypes[file.type] === true) {
+  if (tests.filereader && acceptedTypes[file.type]) {
     var reader = new FileReader();
     reader.onload = function (event) {
       var image = new Image();
@@ -58,8 +59,8 @@ function previewfile(file) {
         var ctx = canvas.getContext('2d');
         canvas.width = options.resizeWidth;
 
-        // set size proportional to image
-        canvas.height = canvas.width * (image.height / image.width);
+        // set height proportional to width as fallback
+        canvas.height = options.resizeHeight || canvas.width * (image.height / image.width);
 
         // step 1 - resize to 50%
         var oc = document.createElement('canvas');
@@ -72,8 +73,7 @@ function previewfile(file) {
         octx.drawImage(oc, 0, 0, oc.width * 0.5, oc.height * 0.5);
 
         // step 3, resize to final size
-        ctx.drawImage(oc, 0, 0, oc.width * 0.5, oc.height * 0.5,
-        0, 0, canvas.width, canvas.height);
+        ctx.drawImage(oc, 0, 0, oc.width * 0.5, oc.height * 0.5, 0, 0, canvas.width, canvas.height);
 
         if (options.previewAreaSelector) {
           $(options.previewAreaSelector).html('');
@@ -119,7 +119,7 @@ function readfiles(files) {
           var complete = (event.loaded / event.total * 100 | 0);
           module.exports.progressCallback(complete);
         }
-      }
+      };
     }
 
     xhr.send(formData);
