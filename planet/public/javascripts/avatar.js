@@ -14,11 +14,19 @@ function Avatar(options) {
   SheenModel.call(this, options);
 }
 
+Avatar.prototype.createFaceMaterial = function(texture) {
+  this.faceMaterial = new THREE.MeshBasicMaterial({
+    map: texture
+  });
+};
+
 Avatar.prototype.loadMesh = function(callback) {
   var self = this;
 
   this.faceGeometry = new THREE.BoxGeometry(2, 2, 2);
-  this.faceMaterial = new THREE.MeshBasicMaterial({color: 0x000000});
+  if (!this.faceMaterial) {
+    this.createFaceMaterial(THREE.ImageUtils.loadTexture(this.faceImageUrl || ''));
+  }
   this.faceMesh = new THREE.Mesh(this.faceGeometry, this.faceMaterial);
 
   loader('/javascripts/3d_models/body.js', function (geometry, materials) {
@@ -104,22 +112,27 @@ Avatar.prototype.updateSkinColor = function(hex) {
 };
 
 Avatar.prototype.updateFaceImage = function(image) {
-  // var texture;
-  //
-  // if (typeof image === 'string' && image.length > 0) {
-  //   this.faceImageUrl = image;
-  //   texture = THREE.ImageUtils.loadTexture(image);
-  // } else if (image) {
-  //   // gotta assume its a texturable image object thing (ie canvas)
-  //   this.faceImageCanvas = image;
-  //   texture = new THREE.Texture(image);
-  // }
-  //
-  // if (texture && this.hasLoadedMesh) {
-  //   texture.needsUpdate = true;
-  //   this.faceMaterial.map = texture;
-  //   this.faceMaterial.needsUpdate = true;
-  // }
+  var texture;
+
+  if (typeof image === 'string' && image.length > 0) {
+    this.faceImageUrl = image;
+    texture = THREE.ImageUtils.loadTexture(image);
+  } else if (image) {
+    // gotta assume its a texturable image object thing (ie canvas)
+    this.faceImageCanvas = image;
+    texture = new THREE.Texture(image);
+  }
+
+  if (texture) {
+    texture.needsUpdate = true;
+
+    if (this.faceMaterial) {
+      this.faceMaterial.map = texture;
+      this.faceMaterial.needsUpdate = true;
+    } else {
+      this.createFaceMaterial(texture);
+    }
+  }
 };
 
 Avatar.prototype.updateSleepState = function(sleeping) {

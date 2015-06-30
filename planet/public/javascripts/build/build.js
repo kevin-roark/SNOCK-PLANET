@@ -16560,11 +16560,19 @@ function Avatar(options) {
   SheenModel.call(this, options);
 }
 
+Avatar.prototype.createFaceMaterial = function(texture) {
+  this.faceMaterial = new THREE.MeshBasicMaterial({
+    map: texture
+  });
+};
+
 Avatar.prototype.loadMesh = function(callback) {
   var self = this;
 
   this.faceGeometry = new THREE.BoxGeometry(2, 2, 2);
-  this.faceMaterial = new THREE.MeshBasicMaterial({color: 0x000000});
+  if (!this.faceMaterial) {
+    this.createFaceMaterial(THREE.ImageUtils.loadTexture(this.faceImageUrl || ''));
+  }
   this.faceMesh = new THREE.Mesh(this.faceGeometry, this.faceMaterial);
 
   loader('/javascripts/3d_models/body.js', function (geometry, materials) {
@@ -16650,22 +16658,27 @@ Avatar.prototype.updateSkinColor = function(hex) {
 };
 
 Avatar.prototype.updateFaceImage = function(image) {
-  // var texture;
-  //
-  // if (typeof image === 'string' && image.length > 0) {
-  //   this.faceImageUrl = image;
-  //   texture = THREE.ImageUtils.loadTexture(image);
-  // } else if (image) {
-  //   // gotta assume its a texturable image object thing (ie canvas)
-  //   this.faceImageCanvas = image;
-  //   texture = new THREE.Texture(image);
-  // }
-  //
-  // if (texture && this.hasLoadedMesh) {
-  //   texture.needsUpdate = true;
-  //   this.faceMaterial.map = texture;
-  //   this.faceMaterial.needsUpdate = true;
-  // }
+  var texture;
+
+  if (typeof image === 'string' && image.length > 0) {
+    this.faceImageUrl = image;
+    texture = THREE.ImageUtils.loadTexture(image);
+  } else if (image) {
+    // gotta assume its a texturable image object thing (ie canvas)
+    this.faceImageCanvas = image;
+    texture = new THREE.Texture(image);
+  }
+
+  if (texture) {
+    texture.needsUpdate = true;
+
+    if (this.faceMaterial) {
+      this.faceMaterial.map = texture;
+      this.faceMaterial.needsUpdate = true;
+    } else {
+      this.createFaceMaterial(texture);
+    }
+  }
 };
 
 Avatar.prototype.updateSleepState = function(sleeping) {
@@ -17391,6 +17404,7 @@ var options = module.exports.options = {
   dragoverClassname: 'hover',
   maxFiles: 1,
   resizeWidth: 128,
+  resizeHeight: 128,
   imagePostURL: null
 };
 
@@ -17399,10 +17413,10 @@ module.exports.previewCallback = function(renderedCanvas) {};
 module.exports.fileCallback = function(files) {};
 
 var tests = {
-  filereader: typeof FileReader != 'undefined',
+  filereader: typeof FileReader !== 'undefined',
   dnd: 'draggable' in document.createElement('span'),
   formdata: !!window.FormData,
-  progress: "upload" in new XMLHttpRequest
+  progress: "upload" in new XMLHttpRequest()
 };
 
 var acceptedTypes = {
@@ -17429,12 +17443,12 @@ module.exports.init = function() {
       this.className = '';
       e.preventDefault();
       readfiles(e.dataTransfer.files);
-    }
+    };
   }
 };
 
 function previewfile(file) {
-  if (tests.filereader === true && acceptedTypes[file.type] === true) {
+  if (tests.filereader && acceptedTypes[file.type]) {
     var reader = new FileReader();
     reader.onload = function (event) {
       var image = new Image();
@@ -17444,8 +17458,8 @@ function previewfile(file) {
         var ctx = canvas.getContext('2d');
         canvas.width = options.resizeWidth;
 
-        // set size proportional to image
-        canvas.height = canvas.width * (image.height / image.width);
+        // set height proportional to width as fallback
+        canvas.height = options.resizeHeight || canvas.width * (image.height / image.width);
 
         // step 1 - resize to 50%
         var oc = document.createElement('canvas');
@@ -17458,8 +17472,7 @@ function previewfile(file) {
         octx.drawImage(oc, 0, 0, oc.width * 0.5, oc.height * 0.5);
 
         // step 3, resize to final size
-        ctx.drawImage(oc, 0, 0, oc.width * 0.5, oc.height * 0.5,
-        0, 0, canvas.width, canvas.height);
+        ctx.drawImage(oc, 0, 0, oc.width * 0.5, oc.height * 0.5, 0, 0, canvas.width, canvas.height);
 
         if (options.previewAreaSelector) {
           $(options.previewAreaSelector).html('');
@@ -17505,7 +17518,7 @@ function readfiles(files) {
           var complete = (event.loaded / event.total * 100 | 0);
           module.exports.progressCallback(complete);
         }
-      }
+      };
     }
 
     xhr.send(formData);
@@ -18648,7 +18661,6 @@ function skyboxMaterial(textureURL) {
 
 function randomTextureURL() {
   var keys = Object.keys(config.room_textures);
-  console.log(keys);
   var randomKey = keys[Math.floor(Math.random() * keys.length)];
   var randomTexture = config.room_textures[randomKey];
   return randomTexture;
