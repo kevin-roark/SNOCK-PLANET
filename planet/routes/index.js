@@ -49,7 +49,7 @@ router.post('/upload-face-image', function(req, res, next) {
       return;
     }
 
-    res.json({imageURL: filename})
+    res.json({imageURL: filename});
   });
 });
 

@@ -118,7 +118,7 @@ Avatar.prototype.updateFaceImage = function(image) {
     texture = new THREE.Texture(image);
   }
 
-  if (texture && texture.image) {
+  if (texture) {
     texture.needsUpdate = true;
     this.faceMaterial.map = texture;
     this.faceMaterial.needsUpdate = true;
