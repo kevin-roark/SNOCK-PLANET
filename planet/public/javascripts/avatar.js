@@ -11,22 +11,17 @@ function Avatar(options) {
   this.twitching = false;
   this.sleeping = false;
 
+  this.faceMaterial = new THREE.MeshBasicMaterial({
+    map: THREE.ImageUtils.loadTexture('')
+  });
+
   SheenModel.call(this, options);
 }
-
-Avatar.prototype.createFaceMaterial = function(texture) {
-  this.faceMaterial = new THREE.MeshBasicMaterial({
-    map: texture
-  });
-};
 
 Avatar.prototype.loadMesh = function(callback) {
   var self = this;
 
   this.faceGeometry = new THREE.BoxGeometry(2, 2, 2);
-  if (!this.faceMaterial) {
-    this.createFaceMaterial(THREE.ImageUtils.loadTexture(this.faceImageUrl || ''));
-  }
   this.faceMesh = new THREE.Mesh(this.faceGeometry, this.faceMaterial);
 
   loader('/javascripts/3d_models/body.js', function (geometry, materials) {
@@ -123,15 +118,10 @@ Avatar.prototype.updateFaceImage = function(image) {
     texture = new THREE.Texture(image);
   }
 
-  if (texture) {
+  if (texture && texture.image) {
     texture.needsUpdate = true;
-
-    if (this.faceMaterial) {
-      this.faceMaterial.map = texture;
-      this.faceMaterial.needsUpdate = true;
-    } else {
-      this.createFaceMaterial(texture);
-    }
+    this.faceMaterial.map = texture;
+    this.faceMaterial.needsUpdate = true;
   }
 };
 
