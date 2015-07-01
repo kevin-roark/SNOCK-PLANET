@@ -1,5 +1,6 @@
 
 var $ = require('jquery');
+var config = require('./config');
 
 var keydownMap = {};
 var keyupMap = {};
@@ -16,6 +17,10 @@ $('body').keyup(function(ev) {
 
 $('body').keypress(function(ev) {
   callListener(keypressMap, ev);
+
+  if (config.testing) {
+    console.log('keypress: ' + ev.which);
+  }
 });
 
 function callListener(listenerMap, ev) {

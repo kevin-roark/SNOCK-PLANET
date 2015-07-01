@@ -1,5 +1,6 @@
 
 var globals = require('./global-state');
+var config = require('./config');
 var SceneComponent = require('./scene-component');
 var keymaster = require('./keymaster');
 var mousemaster = require('./mousemaster');
