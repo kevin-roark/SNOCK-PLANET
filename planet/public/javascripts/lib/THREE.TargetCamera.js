@@ -124,9 +124,14 @@ THREE.TargetCamera.prototype.update = function( dt ) {
 
     if( !target ) return;
 
+    var targetPosition = new THREE.Vector3();
+    var targetQuaternion = new THREE.Quaternion();
+    var targetScale = new THREE.Vector3();
+    target.targetObject.matrixWorld.decompose( targetPosition, targetQuaternion, targetScale );
+
     if( !target.fixed ) {
-        ideal.position.copy( target.targetObject.position );
-        ideal.quaternion.copy( target.targetObject.quaternion );
+        ideal.position.copy( targetPosition );
+        ideal.quaternion.copy( targetQuaternion );
 
         if( target.cameraRotation !== undefined ) {
             ideal.quaternion.multiply( target.cameraRotation );
@@ -139,11 +144,11 @@ THREE.TargetCamera.prototype.update = function( dt ) {
             this.quaternion.slerp( ideal.quaternion, target.stiffness );
         }
         else {
-            this.lookAt( target.targetObject.position );
+            this.lookAt( targetPosition );
         }
     }
     else {
         this.position.copy( target.cameraPosition );
-        this.lookAt( target.targetObject.position );
+        this.lookAt( targetPosition);
     }
 };
