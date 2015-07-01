@@ -16322,6 +16322,8 @@ function fetchSocket() {
 
 },{"./global-state":60,"jquery":1}],53:[function(require,module,exports){
 
+var $ = require('jquery');
+
 var globals = require('./global-state');
 var config = require('./config');
 var SceneComponent = require('./scene-component');
@@ -16544,7 +16546,7 @@ AvatarControlComponent.prototype.controlsActive = function() {
   return !this.inCreationMode;
 };
 
-},{"./avatar":54,"./config":57,"./global-state":60,"./keymaster":63,"./mousemaster":67,"./object-controls":69,"./scene-component":70}],54:[function(require,module,exports){
+},{"./avatar":54,"./config":57,"./global-state":60,"./keymaster":63,"./mousemaster":67,"./object-controls":69,"./scene-component":70,"jquery":1}],54:[function(require,module,exports){
 
 var SheenModel = require('./sheen-model.js');
 var loader = require('./model-loader');
@@ -17132,6 +17134,8 @@ Door.prototype.updateFromModel = function(doorData) {
   this.subject = doorData.subject || '';
   this.when = doorData.when || new Date();
   this.texture = doorData.texture || config.door_texture;
+  this.wallTexture = doorData.wallTexture || randomTextureURL();
+  this.creator = doorData.creator;
 };
 
 Door.prototype.loadMesh = function(callback) {
@@ -17196,10 +17200,19 @@ Door.prototype.serialize = function() {
 
   data.subject = this.subject;
   data.texture = this.texture;
+  data.wallTexture = this.wallTexture || randomTextureURL();
   data.when = this.when;
+  data.creator = this.creator;
 
   return data;
 };
+
+function randomTextureURL() {
+  var keys = Object.keys(config.room_textures);
+  var randomKey = keys[Math.floor(Math.random() * keys.length)];
+  var randomTexture = config.room_textures[randomKey];
+  return randomTexture;
+}
 
 },{"./config":57,"./sheen-model":71}],59:[function(require,module,exports){
 
@@ -17272,6 +17285,10 @@ GeneralPlanetComponent.prototype.addInteractionGlue = function() {
     self.doorTextureSelected($(this));
   });
 
+  $('.door-wall-option').click(function() {
+    self.doorWallTextureSelected($(this));
+  });
+
   $('#door-name-form').submit(function(e) {
     e.preventDefault();
     self.attemptDoorCreation();
@@ -17284,7 +17301,7 @@ GeneralPlanetComponent.prototype.attemptToEnterNearestDoor = function() {
   if (!this.controlsActive()) return;
 
   var requiredDistanceSquared = MINIMUM_REQUIRED_DOOR_ENTRY_DISTANCE * MINIMUM_REQUIRED_DOOR_ENTRY_DISTANCE;
-  var avatarPosition = this.avatar.trackingMesh().position;
+  var avatarPosition = this.avatar.mesh.position;
 
   var minDistanceSquared = 100000000000;
   var nearestDoor = null;
@@ -17308,22 +17325,22 @@ GeneralPlanetComponent.prototype.enterFormCreation = function() {
   AvatarControlComponent.prototype.enterFormCreation.call(this);
 
   this.creationDoor.setVisible(true);
-  var avatarPos = this.avatar.trackingMesh().position;
+  var avatarPos = this.avatar.mesh.position;
   this.creationDoor.moveTo(avatarPos.x - 10, 4, avatarPos.z - 5);
 
   $('.door-ui-wrapper').fadeIn();
+
+  $('#door-name-input').val('');
   $('#door-name-input').focus();
 };
 
 GeneralPlanetComponent.prototype.attemptDoorCreation = function() {
   var self = this;
 
-  var doorData = {
-    subject: $('#door-name-input').val(),
-    position: this.creationDoor.mesh.position,
-    creator: this.avatar._id,
-    texture: this.creationDoor.texture
-  };
+  this.creationDoor.subject = $('#door-name-input').val();
+  this.creationDoor.creator = this.avatar._id;
+
+  var doorData = this.creationDoor.serialize();
 
   apiTools.createDoor(doorData, function(result) {
     if (result.error) {
@@ -17354,6 +17371,21 @@ GeneralPlanetComponent.prototype.doorTextureSelected = function(elem) {
 
   var texture = textureMap[id];
   this.creationDoor.setTexture(texture);
+};
+
+GeneralPlanetComponent.prototype.doorWallTextureSelected = function(elem) {
+  var id = elem.attr('id');
+
+  var textureMap = {
+    'door-wall-factory': '/images/factory_room.jpg',
+    'door-wall-farm': '/images/farm_room.jpg',
+    'door-wall-girl': '/images/girl_room.jpg',
+    'door-wall-space': '/images/space_room.jpg',
+    'door-wall-underwater': '/images/underwater_room.jpg'
+  };
+
+  var texture = textureMap[id];
+  this.creationDoor.wallTexture = texture;
 };
 
 /** IO Response */
@@ -17538,7 +17570,9 @@ InnerDoorComponent.prototype.postInit = function(options) {
 
   this.avatar.currentDoor = this.door;
 
-  this.room = skybox.create(2000);
+  console.log(this.door);
+
+  this.room = skybox.create(2000, this.door.wallTexture);
   this.addMesh(this.room);
 
   if (this.socket) {
@@ -17594,7 +17628,7 @@ InnerDoorComponent.prototype.exitFormCreation = function() {
 InnerDoorComponent.prototype.attemptNoteCreation = function() {
   var self = this;
 
-  var avatarPosition = this.avatar.trackingMesh().position;
+  var avatarPosition = this.avatar.mesh.position;
 
   var noteData = {
     text: $('#message-content-input').val(),
@@ -18628,8 +18662,8 @@ function makeCubemap(textureURL, repeatX, repeatY) {
 }
 
 function makeShader(cubemap) {
-  var shader = THREE.ShaderLib['cube']; // init cube shader from built-in lib
-  shader.uniforms['tCube'].value = cubemap; // apply textures to shader
+  var shader = THREE.ShaderLib.cube; // init cube shader from built-in lib
+  shader.uniforms.tCube.value = cubemap; // apply textures to shader
   return shader;
 }
 
@@ -18655,8 +18689,8 @@ function randomTextureURL() {
 }
 
 module.exports.create = function(size, textureURL) {
-  if (!textureURL) textureURL = randomTextureURL();
   if (!size) size = 20000;
+  if (!textureURL) textureURL = randomTextureURL();
 
   var geometry = new THREE.BoxGeometry(size, size, size);
   var material = skyboxMaterial(textureURL);
@@ -18668,10 +18702,10 @@ module.exports.blocker = function(size) {
 
   var geometry = new THREE.BoxGeometry(size.x, size.y, size.z);
   var material = new THREE.MeshBasicMaterial({
-      color: 0x000000
-    , side: THREE.DoubleSide
-    , opacity: 1.0
-    , transparent: true
+      color: 0x000000,
+      side: THREE.DoubleSide,
+      opacity: 1.0,
+      transparent: true
   });
   return new THREE.Mesh(geometry, material);
 };
