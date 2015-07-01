@@ -82,7 +82,7 @@ InnerDoorComponent.prototype.exitFormCreation = function() {
 InnerDoorComponent.prototype.attemptNoteCreation = function() {
   var self = this;
 
-  var avatarPosition = this.avatar.trackingMesh().position;
+  var avatarPosition = this.avatar.mesh.position;
 
   var noteData = {
     text: $('#message-content-input').val(),

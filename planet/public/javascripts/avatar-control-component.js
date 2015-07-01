@@ -1,4 +1,6 @@
 
+var $ = require('jquery');
+
 var globals = require('./global-state');
 var config = require('./config');
 var SceneComponent = require('./scene-component');

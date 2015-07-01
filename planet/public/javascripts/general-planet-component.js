@@ -84,7 +84,7 @@ GeneralPlanetComponent.prototype.attemptToEnterNearestDoor = function() {
   if (!this.controlsActive()) return;
 
   var requiredDistanceSquared = MINIMUM_REQUIRED_DOOR_ENTRY_DISTANCE * MINIMUM_REQUIRED_DOOR_ENTRY_DISTANCE;
-  var avatarPosition = this.avatar.trackingMesh().position;
+  var avatarPosition = this.avatar.mesh.position;
 
   var minDistanceSquared = 100000000000;
   var nearestDoor = null;
