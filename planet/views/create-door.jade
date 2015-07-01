@@ -5,18 +5,35 @@
     form(name="door-name-form", id="door-name-form")
       input(type="text", id="door-name-input", name="door-name")
 
-  .door-texture-picker
-    .door-texture-option#wood-door-texture
+  .door-texture-picker.door-option-picker
+    .door-texture-option.door-option#wood-door-texture
       img(src="/images/wooden_door.jpg")
     
-    .door-texture-option#metal-door-texture
+    .door-texture-option.door-option#metal-door-texture
       img(src="/images/metal_door.jpg")
         
-    .door-texture-option#neon-door-texture
+    .door-texture-option.door-option#neon-door-texture
       img(src="/images/neon_door.jpg")
         
-    .door-texture-option#rainbow-door-texture
+    .door-texture-option.door-option#rainbow-door-texture
       img(src="/images/rainbow_door.jpg")
+        
+  .door-wall-picker.door-option-picker
+    .door-wall-option.door-option#door-wall-factory
+      img(src="/images/factory_room.jpg")
+        
+    .door-wall-option.door-option#door-wall-farm
+      img(src="/images/farm_room.jpg")
+        
+    .door-wall-option.door-option#door-wall-girl
+      img(src="/images/girl_room.jpg")
+        
+    .door-wall-option.door-option#door-wall-space
+      img(src="/images/space_room.jpg")
+        
+    .door-wall-option.door-option#door-wall-underwater
+      img(src="/images/underwater_room.jpg")            
+        
 
   .door-submit-button create thread
   

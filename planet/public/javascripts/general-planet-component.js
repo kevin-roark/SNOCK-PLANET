@@ -68,6 +68,10 @@ GeneralPlanetComponent.prototype.addInteractionGlue = function() {
     self.doorTextureSelected($(this));
   });
 
+  $('.door-wall-option').click(function() {
+    self.doorWallTextureSelected($(this));
+  });
+
   $('#door-name-form').submit(function(e) {
     e.preventDefault();
     self.attemptDoorCreation();
@@ -104,22 +108,22 @@ GeneralPlanetComponent.prototype.enterFormCreation = function() {
   AvatarControlComponent.prototype.enterFormCreation.call(this);
 
   this.creationDoor.setVisible(true);
-  var avatarPos = this.avatar.trackingMesh().position;
+  var avatarPos = this.avatar.mesh.position;
   this.creationDoor.moveTo(avatarPos.x - 10, 4, avatarPos.z - 5);
 
   $('.door-ui-wrapper').fadeIn();
+
+  $('#door-name-input').val('');
   $('#door-name-input').focus();
 };
 
 GeneralPlanetComponent.prototype.attemptDoorCreation = function() {
   var self = this;
 
-  var doorData = {
-    subject: $('#door-name-input').val(),
-    position: this.creationDoor.mesh.position,
-    creator: this.avatar._id,
-    texture: this.creationDoor.texture
-  };
+  this.creationDoor.subject = $('#door-name-input').val();
+  this.creationDoor.creator = this.avatar._id;
+
+  var doorData = this.creationDoor.serialize();
 
   apiTools.createDoor(doorData, function(result) {
     if (result.error) {
@@ -150,6 +154,21 @@ GeneralPlanetComponent.prototype.doorTextureSelected = function(elem) {
 
   var texture = textureMap[id];
   this.creationDoor.setTexture(texture);
+};
+
+GeneralPlanetComponent.prototype.doorWallTextureSelected = function(elem) {
+  var id = elem.attr('id');
+
+  var textureMap = {
+    'door-wall-factory': '/images/factory_room.jpg',
+    'door-wall-farm': '/images/farm_room.jpg',
+    'door-wall-girl': '/images/girl_room.jpg',
+    'door-wall-space': '/images/space_room.jpg',
+    'door-wall-underwater': '/images/underwater_room.jpg'
+  };
+
+  var texture = textureMap[id];
+  this.creationDoor.wallTexture = texture;
 };
 
 /** IO Response */

@@ -143,7 +143,7 @@ progress {
 #door-name-input {
   position: absolute;
   left: 50%;
-  top: 33%;
+  top: 30%;
   height: 60px;
   width: 500px;
   margin: -40px -250px;
@@ -163,39 +163,60 @@ progress {
     box-shadow: 0px 0px 20px 10px #7571ee;
   }
 
-.door-texture-picker {
-  text-align: center;
-
+.door-option-picker {
   position: relative;
+
   top: 50%;
   left: 50%;
   height: 160px;
+}
+
+.door-texture-picker {
   width: 600px;
   margin: -60px -300px;
 }
 
-.door-texture-option {
+.door-wall-picker {
+  width: 720px;
+  margin: 40px -360px;
+}
+
+.door-option {
   cursor: pointer;
   display: inline;
 
   margin: 20px;
 }
 
-  .door-texture-option img {
+  .door-option img {
     width: 100px;
+  }
+
+.door-texture-option {}
+
+  .door-texture-option img {
     box-shadow: 0px 0px 10px 10px yellow;
   }
     .door-texture-option img:hover {
       box-shadow: 0px 0px 10px 10px red;
     }
 
+.door-wall-option {}
+
+  .door-wall-option img {
+    box-shadow: 0px 0px 10px 10px green;
+  }
+    .door-wall-option img:hover {
+      box-shadow: 0px 0px 10px 10px blue;
+    }
+
 .door-submit-button {
   position: relative;
-  top: 65%;
+  top: 50%;
   left: 50%;
   height: 60px;
   width: 200px;
-  margin: -60px -100px;
+  margin: 0px -100px;
 
   line-height: 60px;
   background-color: white;

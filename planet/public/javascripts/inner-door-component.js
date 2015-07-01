@@ -26,7 +26,7 @@ InnerDoorComponent.prototype.postInit = function(options) {
 
   this.avatar.currentDoor = this.door;
 
-  this.room = skybox.create(2000);
+  this.room = skybox.create(2000, this.door.wallTexture);
   this.addMesh(this.room);
 
   if (this.socket) {

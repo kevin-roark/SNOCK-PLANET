@@ -18,6 +18,7 @@ var doorSchema = Schema({
   subject: {type: String, trim: true},
   when: {type: Date, default: Date.now},
   texture: String,
+  wallTexture: String,
   skyboxTexture: String,
   creator: {type: Schema.Types.ObjectId, ref: 'Avatar'},
   position: Position
