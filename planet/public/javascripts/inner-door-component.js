@@ -54,7 +54,7 @@ InnerDoorComponent.prototype.updatedAvatarsState = function(avatarsState) {
 InnerDoorComponent.prototype.addInteractionGlue = function() {
   AvatarControlComponent.prototype.addInteractionGlue.call(this);
 
-  keymaster.keydown(90, this.exit.bind(this)); // z to exit
+  keymaster.keypress(122, this.exit.bind(this)); // z to exit
 
   var self = this;
   $('#message-content-form').submit(function(e) {
