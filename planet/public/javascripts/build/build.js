@@ -18243,10 +18243,10 @@ module.exports = function ObjectControls( opts ) {
             max = options.maxPositionVelocity;
 
         if( forward ) {
-            positionVector.z -= (options.invertZ? -inc : inc);;
+            positionVector.z -= (options.invertZ? -inc : inc);
         }
         else if( back ) {
-            positionVector.z += (options.invertZ? -inc : inc);;
+            positionVector.z += (options.invertZ? -inc : inc);
         }
         else {
             positionVector.z *= dec;
