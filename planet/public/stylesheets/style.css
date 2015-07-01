@@ -201,13 +201,21 @@ progress {
       box-shadow: 0px 0px 10px 10px red;
     }
 
+    .door-texture-option.selected-door-option img {
+      box-shadow: 0px 0px 10px 10px rgb(227, 106, 28);
+    }
+
 .door-wall-option {}
 
   .door-wall-option img {
     box-shadow: 0px 0px 10px 10px green;
   }
     .door-wall-option img:hover {
-      box-shadow: 0px 0px 10px 10px blue;
+      box-shadow: 0px 0px 10px 10px rgb(17, 83, 230);
+    }
+
+    .door-wall-option.selected-door-option img {
+      box-shadow: 0px 0px 10px 10px rgb(92, 28, 215);
     }
 
 .door-submit-button {

@@ -17332,6 +17332,8 @@ GeneralPlanetComponent.prototype.enterFormCreation = function() {
 
   $('#door-name-input').val('');
   $('#door-name-input').focus();
+
+  $('.door-option').removeClass('selected-door-option');
 };
 
 GeneralPlanetComponent.prototype.attemptDoorCreation = function() {
@@ -17370,7 +17372,11 @@ GeneralPlanetComponent.prototype.doorTextureSelected = function(elem) {
   };
 
   var texture = textureMap[id];
-  this.creationDoor.setTexture(texture);
+  if (texture) {
+    $('.door-texture-option').removeClass('selected-door-option');
+    elem.addClass('selected-door-option');
+    this.creationDoor.setTexture(texture);
+  }
 };
 
 GeneralPlanetComponent.prototype.doorWallTextureSelected = function(elem) {
@@ -17385,7 +17391,11 @@ GeneralPlanetComponent.prototype.doorWallTextureSelected = function(elem) {
   };
 
   var texture = textureMap[id];
-  this.creationDoor.wallTexture = texture;
+  if (texture) {
+    $('.door-wall-option').removeClass('selected-door-option');
+    elem.addClass('selected-door-option');
+    this.creationDoor.wallTexture = texture;
+  }
 };
 
 /** IO Response */
@@ -17569,8 +17579,6 @@ InnerDoorComponent.prototype.postInit = function(options) {
   this.noteSet = {};
 
   this.avatar.currentDoor = this.door;
-
-  console.log(this.door);
 
   this.room = skybox.create(2000, this.door.wallTexture);
   this.addMesh(this.room);
