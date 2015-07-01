@@ -21,7 +21,7 @@ function Avatar(options) {
 Avatar.prototype.loadMesh = function(callback) {
   var self = this;
 
-  this.faceGeometry = new THREE.BoxGeometry(2, 2, 2);
+  this.faceGeometry = new THREE.BoxGeometry(1.25, 1.25, 1.25);
   this.faceMesh = new THREE.Mesh(this.faceGeometry, this.faceMaterial);
 
   loader('/javascripts/3d_models/body.js', function (geometry, materials) {
@@ -31,8 +31,11 @@ Avatar.prototype.loadMesh = function(callback) {
     self.mesh = new THREE.SkinnedMesh(geometry, new THREE.MeshFaceMaterial(materials));
 
     self.mesh.scale.set(self.scale, self.scale, self.scale);
-    self.faceMesh.scale.set(self.scale / 2, self.scale / 2, self.scale / 2);
-    self.meshes = [self.mesh, self.faceMesh];
+
+    self.faceMesh.position.y = 2.7;
+    self.mesh.add(self.faceMesh);
+
+    self.meshes = [self.mesh];
 
     if (callback) callback();
   });
@@ -49,20 +52,8 @@ Avatar.prototype.meshDidLoad = function() {
     this.updateMeshForSleeping();
   }
 };
-
-Avatar.prototype.move = function(x, y, z) {
-  Super.move.call(this, x, y, z);
-
-  if (!this.hasLoadedMesh) return;
-
-  this.faceMesh.position.x = this.mesh.position.x;
-  this.faceMesh.position.z = this.mesh.position.z;
-  this.faceMesh.position.y = this.mesh.position.y + 2.5 * this.scale;
-};
-
 Avatar.prototype.setScale = function(s) {
   this.mesh.scale.set(s, s, s);
-  this.faceMesh.scale.set(s / 2, s / 2, s / 2);
 };
 
 Avatar.prototype.render = function() {
@@ -139,10 +130,10 @@ Avatar.prototype.updateSleepState = function(sleeping) {
 
 Avatar.prototype.updateMeshForSleeping = function() {
   if (this.sleeping) {
-    this.moveTo(this.mesh.position.x, -10, this.mesh.position.y);
+    this.moveTo(this.mesh.position.x, -10, this.mesh.position.z);
     this.rotate(Math.PI / 2, 0, 0);
   } else {
-    this.moveTo(this.mesh.position.x, 0, this.mesh.position.y);
+    this.moveTo(this.mesh.position.x, 0, this.mesh.position.z);
     this.rotate(-Math.PI / 2, 0, 0);
   }
 };
