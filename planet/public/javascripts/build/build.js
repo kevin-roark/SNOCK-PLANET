@@ -16323,6 +16323,7 @@ function fetchSocket() {
 },{"./global-state":60,"jquery":1}],53:[function(require,module,exports){
 
 var globals = require('./global-state');
+var config = require('./config');
 var SceneComponent = require('./scene-component');
 var keymaster = require('./keymaster');
 var mousemaster = require('./mousemaster');
@@ -16543,7 +16544,7 @@ AvatarControlComponent.prototype.controlsActive = function() {
   return !this.inCreationMode;
 };
 
-},{"./avatar":54,"./global-state":60,"./keymaster":63,"./mousemaster":67,"./object-controls":69,"./scene-component":70}],54:[function(require,module,exports){
+},{"./avatar":54,"./config":57,"./global-state":60,"./keymaster":63,"./mousemaster":67,"./object-controls":69,"./scene-component":70}],54:[function(require,module,exports){
 
 var SheenModel = require('./sheen-model.js');
 var loader = require('./model-loader');
@@ -16567,7 +16568,7 @@ function Avatar(options) {
 Avatar.prototype.loadMesh = function(callback) {
   var self = this;
 
-  this.faceGeometry = new THREE.BoxGeometry(2, 2, 2);
+  this.faceGeometry = new THREE.BoxGeometry(1.25, 1.25, 1.25);
   this.faceMesh = new THREE.Mesh(this.faceGeometry, this.faceMaterial);
 
   loader('/javascripts/3d_models/body.js', function (geometry, materials) {
@@ -16577,8 +16578,11 @@ Avatar.prototype.loadMesh = function(callback) {
     self.mesh = new THREE.SkinnedMesh(geometry, new THREE.MeshFaceMaterial(materials));
 
     self.mesh.scale.set(self.scale, self.scale, self.scale);
-    self.faceMesh.scale.set(self.scale / 2, self.scale / 2, self.scale / 2);
-    self.meshes = [self.mesh, self.faceMesh];
+
+    self.faceMesh.position.y = 2.7;
+    self.mesh.add(self.faceMesh);
+
+    self.meshes = [self.mesh];
 
     if (callback) callback();
   });
@@ -16595,20 +16599,8 @@ Avatar.prototype.meshDidLoad = function() {
     this.updateMeshForSleeping();
   }
 };
-
-Avatar.prototype.move = function(x, y, z) {
-  Super.move.call(this, x, y, z);
-
-  if (!this.hasLoadedMesh) return;
-
-  this.faceMesh.position.x = this.mesh.position.x;
-  this.faceMesh.position.z = this.mesh.position.z;
-  this.faceMesh.position.y = this.mesh.position.y + 2.5 * this.scale;
-};
-
 Avatar.prototype.setScale = function(s) {
   this.mesh.scale.set(s, s, s);
-  this.faceMesh.scale.set(s / 2, s / 2, s / 2);
 };
 
 Avatar.prototype.render = function() {
@@ -16685,10 +16677,10 @@ Avatar.prototype.updateSleepState = function(sleeping) {
 
 Avatar.prototype.updateMeshForSleeping = function() {
   if (this.sleeping) {
-    this.moveTo(this.mesh.position.x, -10, this.mesh.position.y);
+    this.moveTo(this.mesh.position.x, -10, this.mesh.position.z);
     this.rotate(Math.PI / 2, 0, 0);
   } else {
-    this.moveTo(this.mesh.position.x, 0, this.mesh.position.y);
+    this.moveTo(this.mesh.position.x, 0, this.mesh.position.z);
     this.rotate(-Math.PI / 2, 0, 0);
   }
 };
@@ -17574,7 +17566,7 @@ InnerDoorComponent.prototype.updatedAvatarsState = function(avatarsState) {
 InnerDoorComponent.prototype.addInteractionGlue = function() {
   AvatarControlComponent.prototype.addInteractionGlue.call(this);
 
-  keymaster.keydown(90, this.exit.bind(this)); // z to exit
+  keymaster.keypress(122, this.exit.bind(this)); // z to exit
 
   var self = this;
   $('#message-content-form').submit(function(e) {
@@ -17646,6 +17638,7 @@ InnerDoorComponent.prototype.exit = function() {
 },{"./api-tools":52,"./avatar-control-component":53,"./keymaster":63,"./note":68,"./skybox":72,"jquery":1}],63:[function(require,module,exports){
 
 var $ = require('jquery');
+var config = require('./config');
 
 var keydownMap = {};
 var keyupMap = {};
@@ -17662,6 +17655,10 @@ $('body').keyup(function(ev) {
 
 $('body').keypress(function(ev) {
   callListener(keypressMap, ev);
+
+  if (config.testing) {
+    console.log('keypress: ' + ev.which);
+  }
 });
 
 function callListener(listenerMap, ev) {
@@ -17736,7 +17733,7 @@ module.exports.setPreventDefaults = function(preventDefaults) {
   shouldPreventDefaults = preventDefaults;
 };
 
-},{"jquery":1}],64:[function(require,module,exports){
+},{"./config":57,"jquery":1}],64:[function(require,module,exports){
 // Return an array to iterate over. For my uses this is
 // more efficient, because I only need to calculate the line text
 // and positions once, instead of each iteration during animations.
