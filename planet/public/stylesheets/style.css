@@ -163,7 +163,7 @@ progress {
     box-shadow: 0px 0px 20px 10px #7571ee;
   }
 
-.door-option-picker {
+.texture-option-picker {
   position: relative;
 
   top: 50%;
@@ -181,41 +181,46 @@ progress {
   margin: 40px -360px;
 }
 
-.door-option {
+.note-texture-picker {
+  width: 720px;
+  margin: 0px -360px;
+}
+
+.texture-option {
   cursor: pointer;
   display: inline;
 
   margin: 20px;
 }
 
-  .door-option img {
+  .texture-option img {
     width: 100px;
   }
 
 .door-texture-option {}
 
   .door-texture-option img {
-    box-shadow: 0px 0px 10px 10px yellow;
+    box-shadow: 0px 0px 10px 10px rgb(131, 235, 82);
   }
     .door-texture-option img:hover {
-      box-shadow: 0px 0px 10px 10px red;
+      box-shadow: 0px 0px 10px 10px rgb(244, 85, 114);
     }
 
-    .door-texture-option.selected-door-option img {
-      box-shadow: 0px 0px 10px 10px rgb(227, 106, 28);
+    .door-texture-option.selected-texture img {
+      box-shadow: 0px 0px 10px 10px rgb(236, 122, 73);
     }
 
 .door-wall-option {}
 
   .door-wall-option img {
-    box-shadow: 0px 0px 10px 10px green;
+    box-shadow: 0px 0px 10px 10px rgb(93, 140, 245);
   }
     .door-wall-option img:hover {
-      box-shadow: 0px 0px 10px 10px rgb(17, 83, 230);
+      box-shadow: 0px 0px 10px 10px rgb(65, 249, 144);
     }
 
-    .door-wall-option.selected-door-option img {
-      box-shadow: 0px 0px 10px 10px rgb(92, 28, 215);
+    .door-wall-option.selected-texture img {
+      box-shadow: 0px 0px 10px 10px rgb(125, 65, 241);
     }
 
 .door-submit-button {
@@ -260,7 +265,7 @@ progress {
   top: 33%;
   height: 100px;
   width: 600px;
-  margin: -50px -300px;
+  margin: -50px -320px;
 
   padding: 20px;
 
@@ -278,6 +283,20 @@ progress {
     outline: none;
     box-shadow: 0px 0px 20px 10px #60b563;
   }
+
+.note-texture-option {}
+
+  .note-texture-option img {
+    width: 66px;
+    box-shadow: 0px 0px 10px 10px #f8ee22;
+  }
+    .note-texture-option img:hover {
+      box-shadow: 0px 0px 10px 10px #3461ec;
+    }
+
+    .note-texture-option.selected-texture img {
+      box-shadow: 0px 0px 10px 10px #f91095;
+    }
 
 .message-submit-button {
   position: relative;
