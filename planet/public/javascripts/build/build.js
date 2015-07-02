@@ -17088,18 +17088,22 @@ Camera.prototype.addPointerlockListeners = function() {
 var debug = true;
 
 // Paths and such
-module.exports.mongo_url = debug? 'mongodb://localhost/test' : '';
-module.exports.io_url = debug? 'http://localhost:3000' : '';
+module.exports.mongo_url = debug ? 'mongodb://localhost/test' : '';
+module.exports.io_url = debug ? 'http://localhost:3000' : '';
 module.exports.static_path = __dirname + '/..';
 
 // Testing
 module.exports.testing = true;
 
-// Door config
-module.exports.door_texture = '/images/wooden_door.jpg';
-module.exports.addTestDoor = false;
+// Door Textures
+module.exports.door_textures = {
+  wood: '/images/wooden_door.jpg',
+  metal: '/images/metal_door.jpg',
+  neon: '/images/neon_door.jpg',
+  rainbow: '/images/rainbow_door.jpg'
+};
 
-// Skybox config
+// Skybox Textures
 module.exports.room_textures = {
   girl: '/images/girl_room.jpg',
   farm: '/images/farm_room.jpg',
@@ -17108,9 +17112,20 @@ module.exports.room_textures = {
   underwater: '/images/underwater_room.jpg'
 };
 
-// Note config
+// Note Textures
 module.exports.note_textures = {
-  paper: '/images/paper_texture.jpg'
+  paper: '/images/paper_texture.jpg',
+  tablet: '/images/stonetablet_texture.jpg',
+  ipad: '/images/ipad_texture.jpg',
+  googledocs: '/images/googledocs_texture.jpg',
+  chalkboard: '/images/chalkboard_texture.jpg'
+};
+
+module.exports.randomTexture = function(textureMap) {
+  var keys = Object.keys(textureMap);
+  var randomKey = keys[Math.floor(Math.random() * keys.length)];
+  var randomTexture = textureMap[randomKey];
+  return randomTexture;
 };
 
 }).call(this,"/public/javascripts")
@@ -17133,8 +17148,8 @@ Door.prototype.updateFromModel = function(doorData) {
 
   this.subject = doorData.subject || '';
   this.when = doorData.when || new Date();
-  this.texture = doorData.texture || config.door_texture;
-  this.wallTexture = doorData.wallTexture || randomTextureURL();
+  this.texture = doorData.texture || config.randomTexture(config.door_textures);
+  this.wallTexture = doorData.wallTexture || config.randomTexture(config.room_textures);
   this.creator = doorData.creator;
 };
 
@@ -17200,23 +17215,18 @@ Door.prototype.serialize = function() {
 
   data.subject = this.subject;
   data.texture = this.texture;
-  data.wallTexture = this.wallTexture || randomTextureURL();
+  data.wallTexture = this.wallTexture || config.randomTexture(config.room_textures);
   data.when = this.when;
   data.creator = this.creator;
 
   return data;
 };
 
-function randomTextureURL() {
-  var keys = Object.keys(config.room_textures);
-  var randomKey = keys[Math.floor(Math.random() * keys.length)];
-  var randomTexture = config.room_textures[randomKey];
-  return randomTexture;
-}
-
 },{"./config":57,"./sheen-model":71}],59:[function(require,module,exports){
 
 var $ = require('jquery');
+
+var config = require('./config');
 var AvatarControlComponent = require('./avatar-control-component');
 var keymaster = require('./keymaster');
 var Door = require('./door');
@@ -17333,7 +17343,7 @@ GeneralPlanetComponent.prototype.enterFormCreation = function() {
   $('#door-name-input').val('');
   $('#door-name-input').focus();
 
-  $('.door-option').removeClass('selected-door-option');
+  $('.texture-option').removeClass('selected-texture');
 };
 
 GeneralPlanetComponent.prototype.attemptDoorCreation = function() {
@@ -17364,17 +17374,19 @@ GeneralPlanetComponent.prototype.exitFormCreation = function() {
 GeneralPlanetComponent.prototype.doorTextureSelected = function(elem) {
   var id = elem.attr('id');
 
+  var doorTextures = config.door_textures;
+
   var textureMap = {
-    'wood-door-texture': '/images/wooden_door.jpg',
-    'metal-door-texture': '/images/metal_door.jpg',
-    'neon-door-texture': '/images/neon_door.jpg',
-    'rainbow-door-texture': '/images/rainbow_door.jpg'
+    'wood-door-texture': doorTextures.wood,
+    'metal-door-texture': doorTextures.metal,
+    'neon-door-texture': doorTextures.neon,
+    'rainbow-door-texture': doorTextures.rainbow
   };
 
   var texture = textureMap[id];
   if (texture) {
-    $('.door-texture-option').removeClass('selected-door-option');
-    elem.addClass('selected-door-option');
+    $('.door-texture-option').removeClass('selected-texture');
+    elem.addClass('selected-texture');
     this.creationDoor.setTexture(texture);
   }
 };
@@ -17382,18 +17394,20 @@ GeneralPlanetComponent.prototype.doorTextureSelected = function(elem) {
 GeneralPlanetComponent.prototype.doorWallTextureSelected = function(elem) {
   var id = elem.attr('id');
 
+  var wallTextures = config.room_textures;
+
   var textureMap = {
-    'door-wall-factory': '/images/factory_room.jpg',
-    'door-wall-farm': '/images/farm_room.jpg',
-    'door-wall-girl': '/images/girl_room.jpg',
-    'door-wall-space': '/images/space_room.jpg',
-    'door-wall-underwater': '/images/underwater_room.jpg'
+    'door-wall-factory': wallTextures.factory,
+    'door-wall-farm': wallTextures.farm,
+    'door-wall-girl': wallTextures.girl,
+    'door-wall-space': wallTextures.space,
+    'door-wall-underwater': wallTextures.underwater
   };
 
   var texture = textureMap[id];
   if (texture) {
-    $('.door-wall-option').removeClass('selected-door-option');
-    elem.addClass('selected-door-option');
+    $('.door-wall-option').removeClass('selected-texture');
+    elem.addClass('selected-texture');
     this.creationDoor.wallTexture = texture;
   }
 };
@@ -17414,7 +17428,7 @@ GeneralPlanetComponent.prototype.addDoor = function(doorData) {
   this.doors.push(door);
 };
 
-},{"./api-tools":52,"./avatar-control-component":53,"./door":58,"./keymaster":63,"jquery":1}],60:[function(require,module,exports){
+},{"./api-tools":52,"./avatar-control-component":53,"./config":57,"./door":58,"./keymaster":63,"jquery":1}],60:[function(require,module,exports){
 
 // Store anything you think should be accessible everywhere here
 
@@ -17554,6 +17568,8 @@ function readfiles(files) {
 },{}],62:[function(require,module,exports){
 
 var $ = require('jquery');
+
+var config = require('./config');
 var AvatarControlComponent = require('./avatar-control-component');
 var keymaster = require('./keymaster');
 var apiTools = require('./api-tools');
@@ -17611,10 +17627,16 @@ InnerDoorComponent.prototype.addInteractionGlue = function() {
   keymaster.keypress(122, this.exit.bind(this)); // z to exit
 
   var self = this;
+
+  $('.note-texture-option').click(function() {
+    self.noteTextureSelected($(this));
+  });
+
   $('#message-content-form').submit(function(e) {
     e.preventDefault();
     self.attemptNoteCreation();
   });
+
   $('.message-submit-button').click(this.attemptNoteCreation.bind(this));
 };
 
@@ -17623,6 +17645,8 @@ InnerDoorComponent.prototype.enterFormCreation = function() {
 
   $('.message-ui-wrapper').fadeIn();
   $('#message-content-input').focus();
+
+  $('.texture-option').removeClass('selected-texture');
 };
 
 InnerDoorComponent.prototype.exitFormCreation = function() {
@@ -17631,6 +17655,27 @@ InnerDoorComponent.prototype.exitFormCreation = function() {
   }
 
   AvatarControlComponent.prototype.exitFormCreation.call(this);
+};
+
+InnerDoorComponent.prototype.noteTextureSelected = function(elem) {
+  var id = elem.attr('id');
+
+  var noteTextures = config.note_textures;
+
+  var textureMap = {
+    'note-texture-paper': noteTextures.paper,
+    'note-texture-tablet': noteTextures.tablet,
+    'note-texture-ipad': noteTextures.ipad,
+    'note-texture-googledocs': noteTextures.googledocs,
+    'note-texture-chalkboard': noteTextures.chalkboard
+  };
+
+  var texture = textureMap[id];
+  if (texture) {
+    $('.note-texture-option').removeClass('selected-texture');
+    elem.addClass('selected-texture');
+    this.creationDoor.wallTexture = texture;
+  }
 };
 
 InnerDoorComponent.prototype.attemptNoteCreation = function() {
@@ -17677,7 +17722,7 @@ InnerDoorComponent.prototype.exit = function() {
   this.markFinished();
 };
 
-},{"./api-tools":52,"./avatar-control-component":53,"./keymaster":63,"./note":68,"./skybox":72,"jquery":1}],63:[function(require,module,exports){
+},{"./api-tools":52,"./avatar-control-component":53,"./config":57,"./keymaster":63,"./note":68,"./skybox":72,"jquery":1}],63:[function(require,module,exports){
 
 var $ = require('jquery');
 var config = require('./config');
@@ -17877,12 +17922,7 @@ $(function() {
   globals.camera = cam;
 
   if (config.testing) {
-    if (config.addTestDoor) {
-      var doorInFrontOfYou = new Door({
-        position: {x: 0, y: 5, z: -15}
-      });
-      doorInFrontOfYou.addTo(scene);
-    }
+    // do test stuff
   }
 
   // start rendering
@@ -18055,7 +18095,7 @@ Note.prototype = Object.create(Super);
 function Note(options) {
   SheenModel.call(this, options);
 
-  if (this.initialPosition.y == 0) {
+  if (!this.initialPosition.y) {
     this.initialPosition.y = (Math.random() + 0.05) * 16 + 5;
   }
 }
@@ -18066,7 +18106,7 @@ Note.prototype.updateFromModel = function(noteData) {
   this.text = noteData.text || '';
   this.when = noteData.when || new Date();
   this.depth = noteData.depth || (Math.random() + 0.05) * 25;
-  this.accentTexture = noteData.accentTexture || config.note_textures.paper;
+  this.accentTexture = noteData.accentTexture || config.randomTexture(config.note_textures);
   this.door = noteData.door || null;
   this.creator = noteData.creator || null;
 };
@@ -18076,7 +18116,7 @@ Note.prototype.serialize = function() {
 
   data.text = this.text;
   data.when = this.when;
-  data.accentTexture = this.accentTexture;
+  data.accentTexture = this.accentTexture || config.randomTexture(config.note_textures);
   data.door = this.door;
   data.creator = this.creator;
 
@@ -18093,7 +18133,8 @@ Note.prototype.loadMesh = function(callback) {
 
   // this.material === material wit tha words on it
   this.material = new THREE.MeshBasicMaterial({
-    map: this.texture
+    map: this.texture,
+    side: THREE.DoubleSide
   });
 
   var accentTexture = new THREE.ImageUtils.loadTexture(this.accentTexture);
@@ -18101,7 +18142,8 @@ Note.prototype.loadMesh = function(callback) {
   accentTexture.wrapT = THREE.RepeatWrapping;
 
   this.accentMaterial = new THREE.MeshBasicMaterial({
-    map: accentTexture
+    map: accentTexture,
+    side: THREE.DoubleSide
   });
 
   var materials = [
@@ -18689,16 +18731,9 @@ function skyboxMaterial(textureURL) {
   });
 }
 
-function randomTextureURL() {
-  var keys = Object.keys(config.room_textures);
-  var randomKey = keys[Math.floor(Math.random() * keys.length)];
-  var randomTexture = config.room_textures[randomKey];
-  return randomTexture;
-}
-
 module.exports.create = function(size, textureURL) {
   if (!size) size = 20000;
-  if (!textureURL) textureURL = randomTextureURL();
+  if (!textureURL) textureURL = config.randomTexture(config.room_textures);
 
   var geometry = new THREE.BoxGeometry(size, size, size);
   var material = skyboxMaterial(textureURL);
