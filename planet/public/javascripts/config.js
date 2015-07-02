@@ -2,18 +2,22 @@
 var debug = true;
 
 // Paths and such
-module.exports.mongo_url = debug? 'mongodb://localhost/test' : '';
-module.exports.io_url = debug? 'http://localhost:3000' : '';
+module.exports.mongo_url = debug ? 'mongodb://localhost/test' : '';
+module.exports.io_url = debug ? 'http://localhost:3000' : '';
 module.exports.static_path = __dirname + '/..';
 
 // Testing
 module.exports.testing = true;
 
-// Door config
-module.exports.door_texture = '/images/wooden_door.jpg';
-module.exports.addTestDoor = false;
+// Door Textures
+module.exports.door_textures = {
+  wood: '/images/wooden_door.jpg',
+  metal: '/images/metal_door.jpg',
+  neon: '/images/neon_door.jpg',
+  rainbow: '/images/rainbow_door.jpg'
+};
 
-// Skybox config
+// Skybox Textures
 module.exports.room_textures = {
   girl: '/images/girl_room.jpg',
   farm: '/images/farm_room.jpg',
@@ -22,7 +26,18 @@ module.exports.room_textures = {
   underwater: '/images/underwater_room.jpg'
 };
 
-// Note config
+// Note Textures
 module.exports.note_textures = {
-  paper: '/images/paper_texture.jpg'
+  paper: '/images/paper_texture.jpg',
+  tablet: '/images/stonetablet_texture.jpg',
+  ipad: '/images/ipad_texture.jpg',
+  googledocs: '/images/googledocs_texture.jpg',
+  chalkboard: '/images/chalkboard_texture.jpg'
+};
+
+module.exports.randomTexture = function(textureMap) {
+  var keys = Object.keys(textureMap);
+  var randomKey = keys[Math.floor(Math.random() * keys.length)];
+  var randomTexture = textureMap[randomKey];
+  return randomTexture;
 };

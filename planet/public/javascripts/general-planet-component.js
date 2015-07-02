@@ -1,5 +1,7 @@
 
 var $ = require('jquery');
+
+var config = require('./config');
 var AvatarControlComponent = require('./avatar-control-component');
 var keymaster = require('./keymaster');
 var Door = require('./door');
@@ -116,7 +118,7 @@ GeneralPlanetComponent.prototype.enterFormCreation = function() {
   $('#door-name-input').val('');
   $('#door-name-input').focus();
 
-  $('.door-option').removeClass('selected-door-option');
+  $('.texture-option').removeClass('selected-texture');
 };
 
 GeneralPlanetComponent.prototype.attemptDoorCreation = function() {
@@ -147,17 +149,19 @@ GeneralPlanetComponent.prototype.exitFormCreation = function() {
 GeneralPlanetComponent.prototype.doorTextureSelected = function(elem) {
   var id = elem.attr('id');
 
+  var doorTextures = config.door_textures;
+
   var textureMap = {
-    'wood-door-texture': '/images/wooden_door.jpg',
-    'metal-door-texture': '/images/metal_door.jpg',
-    'neon-door-texture': '/images/neon_door.jpg',
-    'rainbow-door-texture': '/images/rainbow_door.jpg'
+    'wood-door-texture': doorTextures.wood,
+    'metal-door-texture': doorTextures.metal,
+    'neon-door-texture': doorTextures.neon,
+    'rainbow-door-texture': doorTextures.rainbow
   };
 
   var texture = textureMap[id];
   if (texture) {
-    $('.door-texture-option').removeClass('selected-door-option');
-    elem.addClass('selected-door-option');
+    $('.door-texture-option').removeClass('selected-texture');
+    elem.addClass('selected-texture');
     this.creationDoor.setTexture(texture);
   }
 };
@@ -165,18 +169,20 @@ GeneralPlanetComponent.prototype.doorTextureSelected = function(elem) {
 GeneralPlanetComponent.prototype.doorWallTextureSelected = function(elem) {
   var id = elem.attr('id');
 
+  var wallTextures = config.room_textures;
+
   var textureMap = {
-    'door-wall-factory': '/images/factory_room.jpg',
-    'door-wall-farm': '/images/farm_room.jpg',
-    'door-wall-girl': '/images/girl_room.jpg',
-    'door-wall-space': '/images/space_room.jpg',
-    'door-wall-underwater': '/images/underwater_room.jpg'
+    'door-wall-factory': wallTextures.factory,
+    'door-wall-farm': wallTextures.farm,
+    'door-wall-girl': wallTextures.girl,
+    'door-wall-space': wallTextures.space,
+    'door-wall-underwater': wallTextures.underwater
   };
 
   var texture = textureMap[id];
   if (texture) {
-    $('.door-wall-option').removeClass('selected-door-option');
-    elem.addClass('selected-door-option');
+    $('.door-wall-option').removeClass('selected-texture');
+    elem.addClass('selected-texture');
     this.creationDoor.wallTexture = texture;
   }
 };

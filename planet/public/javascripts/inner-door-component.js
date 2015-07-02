@@ -1,5 +1,7 @@
 
 var $ = require('jquery');
+
+var config = require('./config');
 var AvatarControlComponent = require('./avatar-control-component');
 var keymaster = require('./keymaster');
 var apiTools = require('./api-tools');
@@ -57,10 +59,16 @@ InnerDoorComponent.prototype.addInteractionGlue = function() {
   keymaster.keypress(122, this.exit.bind(this)); // z to exit
 
   var self = this;
+
+  $('.note-texture-option').click(function() {
+    self.noteTextureSelected($(this));
+  });
+
   $('#message-content-form').submit(function(e) {
     e.preventDefault();
     self.attemptNoteCreation();
   });
+
   $('.message-submit-button').click(this.attemptNoteCreation.bind(this));
 };
 
@@ -69,6 +77,8 @@ InnerDoorComponent.prototype.enterFormCreation = function() {
 
   $('.message-ui-wrapper').fadeIn();
   $('#message-content-input').focus();
+
+  $('.texture-option').removeClass('selected-texture');
 };
 
 InnerDoorComponent.prototype.exitFormCreation = function() {
@@ -77,6 +87,27 @@ InnerDoorComponent.prototype.exitFormCreation = function() {
   }
 
   AvatarControlComponent.prototype.exitFormCreation.call(this);
+};
+
+InnerDoorComponent.prototype.noteTextureSelected = function(elem) {
+  var id = elem.attr('id');
+
+  var noteTextures = config.note_textures;
+
+  var textureMap = {
+    'note-texture-paper': noteTextures.paper,
+    'note-texture-tablet': noteTextures.tablet,
+    'note-texture-ipad': noteTextures.ipad,
+    'note-texture-googledocs': noteTextures.googledocs,
+    'note-texture-chalkboard': noteTextures.chalkboard
+  };
+
+  var texture = textureMap[id];
+  if (texture) {
+    $('.note-texture-option').removeClass('selected-texture');
+    elem.addClass('selected-texture');
+    this.creationDoor.wallTexture = texture;
+  }
 };
 
 InnerDoorComponent.prototype.attemptNoteCreation = function() {

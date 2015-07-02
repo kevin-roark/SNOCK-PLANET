@@ -11,7 +11,7 @@ Note.prototype = Object.create(Super);
 function Note(options) {
   SheenModel.call(this, options);
 
-  if (this.initialPosition.y == 0) {
+  if (!this.initialPosition.y) {
     this.initialPosition.y = (Math.random() + 0.05) * 16 + 5;
   }
 }
@@ -22,7 +22,7 @@ Note.prototype.updateFromModel = function(noteData) {
   this.text = noteData.text || '';
   this.when = noteData.when || new Date();
   this.depth = noteData.depth || (Math.random() + 0.05) * 25;
-  this.accentTexture = noteData.accentTexture || config.note_textures.paper;
+  this.accentTexture = noteData.accentTexture || config.randomTexture(config.note_textures);
   this.door = noteData.door || null;
   this.creator = noteData.creator || null;
 };
@@ -32,7 +32,7 @@ Note.prototype.serialize = function() {
 
   data.text = this.text;
   data.when = this.when;
-  data.accentTexture = this.accentTexture;
+  data.accentTexture = this.accentTexture || config.randomTexture(config.note_textures);
   data.door = this.door;
   data.creator = this.creator;
 
@@ -49,7 +49,8 @@ Note.prototype.loadMesh = function(callback) {
 
   // this.material === material wit tha words on it
   this.material = new THREE.MeshBasicMaterial({
-    map: this.texture
+    map: this.texture,
+    side: THREE.DoubleSide
   });
 
   var accentTexture = new THREE.ImageUtils.loadTexture(this.accentTexture);
@@ -57,7 +58,8 @@ Note.prototype.loadMesh = function(callback) {
   accentTexture.wrapT = THREE.RepeatWrapping;
 
   this.accentMaterial = new THREE.MeshBasicMaterial({
-    map: accentTexture
+    map: accentTexture,
+    side: THREE.DoubleSide
   });
 
   var materials = [

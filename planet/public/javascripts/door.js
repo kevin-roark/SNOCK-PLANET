@@ -16,8 +16,8 @@ Door.prototype.updateFromModel = function(doorData) {
 
   this.subject = doorData.subject || '';
   this.when = doorData.when || new Date();
-  this.texture = doorData.texture || config.door_texture;
-  this.wallTexture = doorData.wallTexture || randomTextureURL();
+  this.texture = doorData.texture || config.randomTexture(config.door_textures);
+  this.wallTexture = doorData.wallTexture || config.randomTexture(config.room_textures);
   this.creator = doorData.creator;
 };
 
@@ -83,16 +83,9 @@ Door.prototype.serialize = function() {
 
   data.subject = this.subject;
   data.texture = this.texture;
-  data.wallTexture = this.wallTexture || randomTextureURL();
+  data.wallTexture = this.wallTexture || config.randomTexture(config.room_textures);
   data.when = this.when;
   data.creator = this.creator;
 
   return data;
 };
-
-function randomTextureURL() {
-  var keys = Object.keys(config.room_textures);
-  var randomKey = keys[Math.floor(Math.random() * keys.length)];
-  var randomTexture = config.room_textures[randomKey];
-  return randomTexture;
-}

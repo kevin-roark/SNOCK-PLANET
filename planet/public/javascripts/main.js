@@ -61,12 +61,7 @@ $(function() {
   globals.camera = cam;
 
   if (config.testing) {
-    if (config.addTestDoor) {
-      var doorInFrontOfYou = new Door({
-        position: {x: 0, y: 5, z: -15}
-      });
-      doorInFrontOfYou.addTo(scene);
-    }
+    // do test stuff
   }
 
   // start rendering

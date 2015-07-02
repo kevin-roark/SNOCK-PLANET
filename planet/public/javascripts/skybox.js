@@ -41,16 +41,9 @@ function skyboxMaterial(textureURL) {
   });
 }
 
-function randomTextureURL() {
-  var keys = Object.keys(config.room_textures);
-  var randomKey = keys[Math.floor(Math.random() * keys.length)];
-  var randomTexture = config.room_textures[randomKey];
-  return randomTexture;
-}
-
 module.exports.create = function(size, textureURL) {
   if (!size) size = 20000;
-  if (!textureURL) textureURL = randomTextureURL();
+  if (!textureURL) textureURL = config.randomTexture(config.room_textures);
 
   var geometry = new THREE.BoxGeometry(size, size, size);
   var material = skyboxMaterial(textureURL);
