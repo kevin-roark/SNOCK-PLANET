@@ -47,6 +47,10 @@ GeneralPlanetComponent.prototype.restore = function() {
   AvatarControlComponent.prototype.restore.call(this);
 
   this.avatar.currentDoor = null;
+
+  if (this.savedPosition) {
+    this.avatar.moveTo(this.savedPosition);
+  }
 };
 
 GeneralPlanetComponent.prototype.updatedAvatarsState = function(avatarsState) {
@@ -101,6 +105,8 @@ GeneralPlanetComponent.prototype.attemptToEnterNearestDoor = function() {
 
   if (nearestDoor && minDistanceSquared <= requiredDistanceSquared) {
     if (this.enterDoorCallback) {
+      this.savedPosition = this.avatar.mesh.position.clone();
+
       this.enterDoorCallback(nearestDoor);
     }
   }

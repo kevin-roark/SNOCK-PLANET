@@ -17277,6 +17277,10 @@ GeneralPlanetComponent.prototype.restore = function() {
   AvatarControlComponent.prototype.restore.call(this);
 
   this.avatar.currentDoor = null;
+
+  if (this.savedPosition) {
+    this.avatar.moveTo(this.savedPosition);
+  }
 };
 
 GeneralPlanetComponent.prototype.updatedAvatarsState = function(avatarsState) {
@@ -17331,6 +17335,8 @@ GeneralPlanetComponent.prototype.attemptToEnterNearestDoor = function() {
 
   if (nearestDoor && minDistanceSquared <= requiredDistanceSquared) {
     if (this.enterDoorCallback) {
+      this.savedPosition = this.avatar.mesh.position.clone();
+
       this.enterDoorCallback(nearestDoor);
     }
   }
@@ -17600,6 +17606,7 @@ InnerDoorComponent.prototype.postInit = function(options) {
   this.noteSet = {};
 
   this.avatar.currentDoor = this.door;
+  this.avatar.moveTo(0, 0, 0);
 
   this.room = skybox.create(2000, this.door.wallTexture);
   this.addMesh(this.room);
@@ -18547,7 +18554,12 @@ $(function() {
   // cleanup
   window.onbeforeunload = function() {
     var avatar = globals.playerAvatar;
+
     if (avatar) {
+      if (state.mode === INSIDE_DOOR_MODE && state.generalPlanetComponent.savedPosition) {
+        avatar.moveTo(state.generalPlanetComponent.savedPosition);
+      }
+
       avatar.goSleep();
       updateMyAvatar();
     }
@@ -18588,7 +18600,6 @@ $(function() {
 
   function startInsideDoorState(door) {
     state.mode = INSIDE_DOOR_MODE;
-
 
     setCurrentSpaceText(door.subject.toUpperCase());
 
