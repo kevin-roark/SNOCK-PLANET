@@ -170,3 +170,8 @@ Avatar.prototype.uploadableFaceImageData = function() {
 
   return this.faceImageCanvas.toDataURL('image/jpeg', 0.7);
 };
+
+Avatar.prototype.positionAsCoordinates = function() {
+  var pos = this.hasLoadedMesh ? this.mesh.position : {x: 0, y: 0, z: 0};
+  return pos.x.toFixed(0) + 'x, ' + pos.z.toFixed(0) + 'y';
+};

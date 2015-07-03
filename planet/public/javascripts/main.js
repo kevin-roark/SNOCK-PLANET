@@ -1,6 +1,7 @@
 
 var $ = require('jquery');
 var io = require('socket.io-client');
+var kt = require('./lib/kutility');
 
 var Camera = require('./camera');
 var Door = require('./door');
@@ -22,6 +23,10 @@ $(function() {
     mode: BECOME_AVATAR_MODE
   };
   var socket = io(config.io_url);
+
+  var $bottomHud = $('.bottom-hud');
+  var $worldCoordinates = $('.world-coordinates');
+  var $currentSpace = $('.current-space');
 
   // create renderer
   var renderer;
@@ -94,6 +99,11 @@ $(function() {
         break;
     }
 
+    if (state.mode !== BECOME_AVATAR_MODE) {
+      var coordinates = globals.playerAvatar.positionAsCoordinates();
+      $worldCoordinates.text('(' + coordinates + ')');
+    }
+
     renderer.render(scene, camera);
   }
 
@@ -118,6 +128,7 @@ $(function() {
     state.becomeAvatarComponent = new BecomeAvatarComponent();
     state.becomeAvatarComponent.init(scene, socket, cam);
     state.becomeAvatarComponent.finishedCallback = function() {
+      $bottomHud.fadeIn();
       startGeneralPlanetState();
     };
   }
@@ -127,6 +138,8 @@ $(function() {
 
     state.generalPlanetComponent = new GeneralPlanetComponent();
     state.generalPlanetComponent.init(scene, socket, cam);
+
+    setCurrentSpaceText('SNOCK PLANET');
 
     state.generalPlanetComponent.enterDoorCallback = function(door) {
       state.generalPlanetComponent.removeObjects();
@@ -139,10 +152,13 @@ $(function() {
   function restoreGeneralPlanetState() {
     state.mode = GENERAL_PLANET_MODE;
     state.generalPlanetComponent.restore();
+    setCurrentSpaceText('SNOCK PLANET');
   }
 
   function startInsideDoorState(door) {
     state.mode = INSIDE_DOOR_MODE;
+
+    setCurrentSpaceText(door.subject.toUpperCase());
 
     state.currentInnerDoorComponent = new InnerDoorComponent();
     state.currentInnerDoorComponent.init(scene, socket, cam, {door: door});
@@ -152,6 +168,20 @@ $(function() {
 
       restoreGeneralPlanetState();
     };
+  }
+
+  function setCurrentSpaceText(text) {
+    var currentSpaceColors = [
+      'rgb(50, 221, 103)',
+      'rgb(50, 124, 221)',
+      'rgb(110, 50, 221)',
+      'rgb(221, 50, 147)',
+      'rgb(221, 112, 50)',
+      'rgb(221, 214, 50)'
+    ];
+    $currentSpace.css('color', kt.choice(currentSpaceColors));
+
+    $currentSpace.text(text);
   }
 
 });
