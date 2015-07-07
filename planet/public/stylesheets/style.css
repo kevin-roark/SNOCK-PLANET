@@ -119,20 +119,33 @@ canvas {
   right: 0px;
   height: 250px;
   bottom: 30px;
-  box-shadow: 10px 10px 5px 0px rgba(0,0,0,0.75);
 }
 #avatar-color-picker-slider {
   width: 30px;
   right: 15px;
+  box-shadow: 10px 10px 5px 0px rgba(0,0,0,0.75);
 }
 #avatar-color-picker-picker {
   right: 45px;
   width: 280px;
+  box-shadow: 10px 10px 5px 0px rgba(0,0,0,0.75);
+}
+#avatar-color-picker-text {
+  position: absolute;
+  height: 15px;
+  bottom: 280px;
+  right: 0px;
+  width: 310px;
+
+  text-align: center;
+  font-size: 12px;
+  letter-spacing: 1px;
+  font-style: italic;
 }
 
 #avatar-image-drop-zone {
   position: absolute;
-  bottom: 310px;
+  bottom: 320px;
   right: 15px;
   height: 250px;
   width: 310px;
@@ -176,19 +189,26 @@ progress {
   display: none;
 
   position: absolute;
-  height: 30%;
-  min-height: 150px;
+  top: 60%;
+  left: 50%;
+  height: 300px; margin-top: -150px; line-height: 300px;
+  width: 300px; margin-left: -150px;
+  border-radius: 150px;
 
-  background-color: blue;
+  background-color: rgb(255, 62, 97);
   color: white;
   text-align: center;
-  font-size: 18px;
+  font-size: 19px;
+  box-shadow: 0px 0px 15px 15px rgba(0,0,0,0.75);
+  text-shadow: 4px 3px 8px rgba(0, 0, 0, 0.5);
+  letter-spacing: 2px;
   font-weight: 100;
 
   cursor: pointer;
 }
   .avatar-creation-submit-button:hover {
-    background-color: red;
+    background-color: rgb(255, 126, 62);
+    box-shadow: 0px 0px 15px 15px rgba(46, 244, 143, 0.75);
   }
 
 /* Door creation */

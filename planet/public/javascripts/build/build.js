@@ -16796,10 +16796,6 @@ BecomeAvatarComponent.prototype.preRender = function() {
   this.avatar.rotate(0, 0.01, 0);
 };
 
-BecomeAvatarComponent.prototype.layout = function() {
-  layoutSubmitButton();
-};
-
 BecomeAvatarComponent.prototype.clean = function() {
   SceneComponent.prototype.clean.call(this);
   $('.avatar-ui-wrapper').fadeOut();
@@ -16920,24 +16916,6 @@ BecomeAvatarComponent.prototype.commonFinish = function(avatarData) {
 
   this.markFinished();
 };
-
-/** layout functions */
-
-function layoutSubmitButton() {
-  var button = $('.avatar-creation-submit-button');
-  setWidthEqualToHeight(button);
-
-  var height = button.height();
-  button.css('border-radius', (height / 2) + 'px');
-  button.css('line-height', height + 'px');
-  button.css('top', (window.innerHeight / 2 - height / 2) + 'px');
-  button.css('left', (window.innerWidth / 2 - button.width() / 2) + 'px');
-}
-
-function setWidthEqualToHeight($el) {
-  var height = $el.height();
-  $el.css('width', height + 'px');
-}
 
 },{"./api-tools":52,"./avatar":54,"./global-state":60,"./image-dropper":61,"./scene-component":72,"jquery":1}],56:[function(require,module,exports){
 /**
