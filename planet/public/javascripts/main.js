@@ -24,7 +24,7 @@ $(function() {
   };
   var socket = io(config.io_url);
 
-  var $bottomHud = $('.bottom-hud');
+  var $huds = $('.bottom-hud, .top-hud');
   var $worldCoordinates = $('.world-coordinates');
   var $currentSpace = $('.current-space');
 
@@ -133,7 +133,7 @@ $(function() {
     state.becomeAvatarComponent = new BecomeAvatarComponent();
     state.becomeAvatarComponent.init(scene, socket, cam);
     state.becomeAvatarComponent.finishedCallback = function() {
-      $bottomHud.fadeIn();
+      $huds.fadeIn();
       startGeneralPlanetState();
     };
   }
@@ -144,7 +144,7 @@ $(function() {
     state.generalPlanetComponent = new GeneralPlanetComponent();
     state.generalPlanetComponent.init(scene, socket, cam);
 
-    setCurrentSpaceText('SNOCK PLANET');
+    setGeneralPlanetHud();
 
     state.generalPlanetComponent.enterDoorCallback = function(door) {
       state.generalPlanetComponent.removeObjects();
@@ -157,13 +157,19 @@ $(function() {
   function restoreGeneralPlanetState() {
     state.mode = GENERAL_PLANET_MODE;
     state.generalPlanetComponent.restore();
+    setGeneralPlanetHud();
+  }
+
+  function setGeneralPlanetHud() {
     setCurrentSpaceText('SNOCK PLANET');
+    setCurrentInstructions('arrows: move. mouse: camera. "Q": toggle view. space: enter a room. "N": create a room.');
   }
 
   function startInsideDoorState(door) {
     state.mode = INSIDE_DOOR_MODE;
 
     setCurrentSpaceText(door.subject.toUpperCase());
+    setCurrentInstructions('arrows: move. mouse: camera. "Q": toggle view. "Z": exit room. "N": leave a message.');
 
     state.currentInnerDoorComponent = new InnerDoorComponent();
     state.currentInnerDoorComponent.init(scene, socket, cam, {door: door});
@@ -173,6 +179,10 @@ $(function() {
 
       restoreGeneralPlanetState();
     };
+  }
+
+  function setCurrentInstructions(text) {
+    $('.current-instructions').text(text);
   }
 
   function setCurrentSpaceText(text) {
