@@ -95,6 +95,8 @@ BecomeAvatarComponent.prototype.activateColorPicker = function() {
 BecomeAvatarComponent.prototype.setupFiledropper = function() {
   var self = this;
 
+  $('#avatar-image-drop-zone').text('DROP OR CLICK YOUR FACE HERE');
+
   imageDropper.previewCallback = function(renderedCanvas) {
     self.avatar.updateFaceImage(renderedCanvas);
   };

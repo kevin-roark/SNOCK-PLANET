@@ -1,8 +1,11 @@
 
+var $ = require('jquery');
+
 var options = module.exports.options = {
   dragAreaSelector: '#avatar-image-drop-zone',
   previewAreaSelector: null,
   dragoverClassname: 'hover',
+  dragoverText: "THAT'S RIGHT",
   maxFiles: 1,
   resizeWidth: 128,
   resizeHeight: 128,
@@ -26,25 +29,65 @@ var acceptedTypes = {
   'image/gif': true
 };
 
-var dragArea;
+var dragArea, $fileSelect;
 
 module.exports.init = function() {
   dragArea = document.querySelector(options.dragAreaSelector);
+  options.previousText = dragArea.innerHTML || '';
+
+  if (dragArea) {
+    $fileSelect = $('<input></input>');
+    $fileSelect.attr('type', 'file');
+    $fileSelect.attr('accept', 'image/*');
+    $fileSelect.css('display', 'none');
+    $('body').append($fileSelect);
+  }
 
   if (tests.dnd) {
-    dragArea.ondragover = function () {
+    dragArea.ondragover = function (e) {
+      e.preventDefault();
+
       this.className = options.dragoverClassname;
+      if (options.dragoverText) {
+        $(dragArea).text(options.dragoverText);
+      }
+
       return false;
     };
-    dragArea.ondragend = function () {
+    dragArea.ondragleave = function (e) {
+      e.preventDefault();
+
       this.className = '';
+      if (options.previousText) {
+        $(dragArea).text(options.previousText);
+      }
+
       return false;
     };
     dragArea.ondrop = function (e) {
-      this.className = '';
       e.preventDefault();
+
+      this.className = '';
+      if (options.previousText) {
+        $(dragArea).text(options.previousText);
+      }
+
       readfiles(e.dataTransfer.files);
     };
+  }
+
+  if ($fileSelect) {
+    dragArea.onclick = function(e) {
+      $fileSelect.click();
+      e.preventDefault();
+    };
+
+    $fileSelect.change(function() {
+      var files = $fileSelect.get(0).files;
+      if (files) {
+        readfiles(files);
+      }
+    });
   }
 };
 
