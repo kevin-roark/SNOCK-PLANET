@@ -74,7 +74,9 @@ canvas {
 .avatar-ui-wrapper {
   position: absolute;
   width: 100%;
+  min-width: 1024px;
   height: 100%;
+  min-height: 600px;
 }
 
 .avatar-name-form-wrapper {
@@ -109,15 +111,14 @@ canvas {
 }
 
 .avatar-color-picker {
-  position: absolute;
-  right: 0px;
-  top: 5%;
-  height: 100%;
   display: none;
 }
+
 .avatar-color-picker-component {
-  height: 35%;
   position: absolute;
+  right: 0px;
+  height: 250px;
+  bottom: 30px;
 }
 #avatar-color-picker-slider {
   width: 30px;
@@ -125,15 +126,16 @@ canvas {
 }
 #avatar-color-picker-picker {
   right: 45px;
+  width: 280px;
 }
 
 #avatar-image-drop-zone {
   position: absolute;
-  top: 60%;
-  right: 30px;
-  height: 35%;
+  bottom: 310px;
+  right: 15px;
+  height: 250px;
+  width: 310px;
 
-  border: 10px dashed #ccc;
   background-color: black;
   color: white;
   display: none;

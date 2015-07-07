@@ -16746,7 +16746,7 @@ BecomeAvatarComponent.prototype.postInit = function(options) {
   var self = this;
 
   this.avatar = new Avatar({
-    position: {x: -13, y: 0, z: -25}
+    position: {x: -13, y: -2, z: -25}
   });
 
   globals.playerAvatar = this.avatar;
@@ -16797,8 +16797,6 @@ BecomeAvatarComponent.prototype.preRender = function() {
 };
 
 BecomeAvatarComponent.prototype.layout = function() {
-  layoutColorPicker();
-  layoutFacePicker();
   layoutSubmitButton();
 };
 
@@ -16916,18 +16914,12 @@ BecomeAvatarComponent.prototype.commonFinish = function(avatarData) {
 
   this.avatar.updateFromModel(avatarData);
   this.avatar.wakeUp();
+  this.avatar.moveTo(0, 0, 0);
+
   this.markFinished();
 };
 
 /** layout functions */
-
-function layoutColorPicker() {
-  setWidthEqualToHeight($('#avatar-color-picker-picker'));
-}
-
-function layoutFacePicker() {
-  setWidthEqualToHeight($('#avatar-image-drop-zone'));
-}
 
 function layoutSubmitButton() {
   var button = $('.avatar-creation-submit-button');
