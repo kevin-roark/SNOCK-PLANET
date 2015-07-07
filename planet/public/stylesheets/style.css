@@ -77,16 +77,17 @@ canvas {
   height: 100%;
 }
 
-.avatar-form-wrapper {
+.avatar-name-form-wrapper {
   position: absolute;
+  text-align: center;
+  left: 25%;
+  width: 50%;
+  top: 300px;
 }
 #avatar-name-input {
-  position: absolute;
-  top: 300px;
-  left: 25%;
   margin: 15px;
   height: 60px;
-  width: 50%;
+  width: 100%;
   border-radius: 10px;
   border: none;
   text-align: center;
@@ -100,6 +101,12 @@ canvas {
     outline: none;
     box-shadow: 0px 0px 20px 10px #ffbc96;
   }
+
+.avatar-form-descriptor {
+  margin-top: 3px;
+  font-size: 11px;
+  color: rgb(150, 150, 150);
+}
 
 .avatar-color-picker {
   position: absolute;

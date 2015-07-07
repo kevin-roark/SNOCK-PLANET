@@ -16757,6 +16757,7 @@ BecomeAvatarComponent.prototype.postInit = function(options) {
 
   this.setupFiledropper();
   this.startTitleRainbow();
+  this.checkLocalStorage();
 
   this.hasEnteredName = false;
   $('#avatar-name-input').focus();
@@ -16773,7 +16774,7 @@ BecomeAvatarComponent.prototype.postInit = function(options) {
         }
       });
 
-      self.hideTitleRainbow();
+      self.hideExistingAvatarUI();
     }
 
     self.hasEnteredName = true;
@@ -16853,8 +16854,17 @@ BecomeAvatarComponent.prototype.startTitleRainbow = function() {
     $('.snock-title').rainbow(this.rainbowOptions);
 };
 
-BecomeAvatarComponent.prototype.hideTitleRainbow = function() {
+BecomeAvatarComponent.prototype.checkLocalStorage = function() {
+  var lastEnteredName = localStorage.getItem('lastEnteredAvatarName');
+  if (lastEnteredName) {
+    $('#avatar-name-input').val(lastEnteredName);
+    $('.avatar-form-descriptor').text('BECOME WHO YOU WERE / OR CHOOSE A NEW YOU');
+  }
+};
+
+BecomeAvatarComponent.prototype.hideExistingAvatarUI = function() {
   var self = this;
+
   $('.snock-title').fadeOut(function() {
     clearInterval(self.rainbowOptions.interval);
   });
@@ -16864,15 +16874,17 @@ BecomeAvatarComponent.prototype.enterAvatarCreationState = function() {
   var name = $('#avatar-name-input').val();
   $('#avatar-name-input').val('');
   $('#avatar-name-input').blur();
+  $('.avatar-form-descriptor').text('YOUR CHANCE TO MAKE YOU / SELECT AVATAR COLOR / DRAG IMAGE TO CHANGE FACE / PERMANENT ONCE YOU ENTER');
 
   $('.avatar-creation-submit-button').fadeIn();
   $('.avatar-color-picker').fadeIn();
   $('#avatar-image-drop-zone').fadeIn();
+
   this.activateColorPicker();
   this.layout();
 
   var self = this;
-  $('#avatar-name-input').animate({
+  $('.avatar-name-form-wrapper').animate({
     top: 60
   }, function() {
     $('#avatar-name-input').val(name);
@@ -16892,12 +16904,16 @@ BecomeAvatarComponent.prototype.setAvatarCameraTarget = function() {
 
 BecomeAvatarComponent.prototype.finishAfterFetchingAvatar = function(avatarData) {
   this.avatar.setVisible(true);
-  this.avatar.updateFromModel(avatarData);
-  this.avatar.wakeUp();
-  this.markFinished();
+  this.commonFinish(avatarData);
 };
 
 BecomeAvatarComponent.prototype.finishAfterCreatingAvatar = function(avatarData) {
+  this.commonFinish(avatarData);
+};
+
+BecomeAvatarComponent.prototype.commonFinish = function(avatarData) {
+  localStorage.setItem('lastEnteredAvatarName', avatarData.name);
+
   this.avatar.updateFromModel(avatarData);
   this.avatar.wakeUp();
   this.markFinished();
