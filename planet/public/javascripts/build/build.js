@@ -16546,7 +16546,7 @@ AvatarControlComponent.prototype.controlsActive = function() {
   return !this.inCreationMode;
 };
 
-},{"./avatar":54,"./config":57,"./global-state":60,"./keymaster":63,"./mousemaster":68,"./object-controls":70,"./scene-component":71,"jquery":1}],54:[function(require,module,exports){
+},{"./avatar":54,"./config":57,"./global-state":60,"./keymaster":63,"./mousemaster":69,"./object-controls":71,"./scene-component":72,"jquery":1}],54:[function(require,module,exports){
 
 var SheenModel = require('./sheen-model.js');
 var loader = require('./model-loader');
@@ -16725,7 +16725,7 @@ Avatar.prototype.positionAsCoordinates = function() {
   return pos.x.toFixed(0) + 'x, ' + pos.z.toFixed(0) + 'y';
 };
 
-},{"./model-loader":67,"./sheen-model.js":72}],55:[function(require,module,exports){
+},{"./model-loader":68,"./sheen-model.js":73}],55:[function(require,module,exports){
 
 var $ = require('jquery');
 var SceneComponent = require('./scene-component');
@@ -16756,6 +16756,7 @@ BecomeAvatarComponent.prototype.postInit = function(options) {
   });
 
   this.setupFiledropper();
+  this.startTitleRainbow();
 
   this.hasEnteredName = false;
   $('#avatar-name-input').focus();
@@ -16771,6 +16772,8 @@ BecomeAvatarComponent.prototype.postInit = function(options) {
           self.enterAvatarCreationState();
         }
       });
+
+      self.hideTitleRainbow();
     }
 
     self.hasEnteredName = true;
@@ -16826,6 +16829,35 @@ BecomeAvatarComponent.prototype.setupFiledropper = function() {
   };
 
   imageDropper.init();
+};
+
+BecomeAvatarComponent.prototype.startTitleRainbow = function() {
+  var rainbowColors = [
+        '#FF0000',
+        '#f26522',
+        '#fff200',
+        '#00a651',
+        '#28abe2',
+        '#2e3192',
+        '#6868ff'
+    ];
+
+    this.rainbowOptions = {
+        colors: rainbowColors,
+        animate: true,
+        animateInterval: 100,
+        pad: false,
+        pauseLength: 100
+    };
+
+    $('.snock-title').rainbow(this.rainbowOptions);
+};
+
+BecomeAvatarComponent.prototype.hideTitleRainbow = function() {
+  var self = this;
+  $('.snock-title').fadeOut(function() {
+    clearInterval(self.rainbowOptions.interval);
+  });
 };
 
 BecomeAvatarComponent.prototype.enterAvatarCreationState = function() {
@@ -16897,7 +16929,7 @@ function setWidthEqualToHeight($el) {
   $el.css('width', height + 'px');
 }
 
-},{"./api-tools":52,"./avatar":54,"./global-state":60,"./image-dropper":61,"./scene-component":71,"jquery":1}],56:[function(require,module,exports){
+},{"./api-tools":52,"./avatar":54,"./global-state":60,"./image-dropper":61,"./scene-component":72,"jquery":1}],56:[function(require,module,exports){
 /**
  * BELOW CODE INSPIRED FROM
  * http://threejs.org/examples/misc_controls_pointerlock.html
@@ -17227,7 +17259,7 @@ Door.prototype.serialize = function() {
   return data;
 };
 
-},{"./config":57,"./sheen-model":72}],59:[function(require,module,exports){
+},{"./config":57,"./sheen-model":73}],59:[function(require,module,exports){
 
 var $ = require('jquery');
 
@@ -17734,7 +17766,7 @@ InnerDoorComponent.prototype.exit = function() {
   this.markFinished();
 };
 
-},{"./api-tools":52,"./avatar-control-component":53,"./config":57,"./keymaster":63,"./note":69,"./skybox":73,"jquery":1}],63:[function(require,module,exports){
+},{"./api-tools":52,"./avatar-control-component":53,"./config":57,"./keymaster":63,"./note":70,"./skybox":74,"jquery":1}],63:[function(require,module,exports){
 
 var $ = require('jquery');
 var config = require('./config');
@@ -18437,12 +18469,117 @@ module.exports.draw = function drawMultiline(context, text, linespacing, x, y, w
 
 },{}],66:[function(require,module,exports){
 
+module.exports = function($) {
+    $.fn.rainbow = function(options) {
+        this.each(function() {
+
+            options.originalText = $(this).html();
+            options.iterations = 0;
+            if (!options.pauseLength) {
+                options.pauseLength = options.animateInterval;
+            }
+            $(this).data('options',options);
+
+            if (options.pad) {
+
+                for (x = 0; x < options.originalText.length; x++) {
+                    options.colors.unshift(options.colors[options.colors.length-1]);
+                }
+            }
+
+            $.fn.rainbow.render(this);
+
+        });
+    };
+
+    $.fn.pauseRainbow = function() {
+        this.each(function() {
+            var options = $(this).data('options');
+            if (options) {
+                options.animate = false;
+                $(this).data('options',options);
+            }
+        });
+    };
+
+    $.fn.resumeRainbow = function() {
+        this.each(function() {
+            var options = $(this).data('options');
+            if (options) {
+                options.animate = true;
+                $(this).data('options',options);
+                $.fn.rainbow.render(this);
+            }
+        });
+    };
+
+    $.fn.rainbow.render = function(obj) {
+
+            var options = $(obj).data('options');
+            var chars = options.originalText.split('');
+
+            options.iterations++;
+
+            var newstr = '';
+            var counter = 0;
+            for (var x in chars) {
+
+                if (chars[x]!=' ') {
+                    newstr = newstr + '<span style="color: ' + options.colors[counter] + ';">' + chars[x] + '</span>';
+                    counter++;
+                } else {
+                    newstr = newstr + ' ';
+
+                }
+
+
+                if (counter >= options.colors.length) {
+                    counter = 0;
+                }
+            }
+            $(obj).html(newstr);
+
+            var pause = (options.iterations % options.colors.length == 0);
+
+
+
+            if (options.animate) {
+
+                (
+                    function(obj,interval) {
+                        var options = $(obj).data('options');
+                        var i = setTimeout(function() {
+                            $.fn.rainbow.shift(obj);
+                        },interval);
+                        options.interval = i;
+                        $(obj).data('options',options);
+                    }
+                )(obj,pause?options.pauseLength:options.animateInterval);
+            }
+
+
+    };
+
+
+    $.fn.rainbow.shift = function(obj) {
+
+        var options = $(obj).data('options');
+        var color = options.colors.pop();
+        options.colors.unshift(color);
+        $.fn.rainbow.render(obj);
+
+    };
+
+};
+
+},{}],67:[function(require,module,exports){
+
 var $ = require('jquery');
 var io = require('socket.io-client');
 var kt = require('./lib/kutility');
+require('./lib/rainbow')($);
 
 var Camera = require('./camera');
-var Door = require('./door');
 var config = require('./config');
 var globals = require('./global-state');
 var BecomeAvatarComponent = require('./become-avatar-component');
@@ -18629,7 +18766,7 @@ $(function() {
 
 });
 
-},{"./become-avatar-component":55,"./camera":56,"./config":57,"./door":58,"./general-planet-component":59,"./global-state":60,"./inner-door-component":62,"./lib/kutility":64,"jquery":1,"socket.io-client":2}],67:[function(require,module,exports){
+},{"./become-avatar-component":55,"./camera":56,"./config":57,"./general-planet-component":59,"./global-state":60,"./inner-door-component":62,"./lib/kutility":64,"./lib/rainbow":66,"jquery":1,"socket.io-client":2}],68:[function(require,module,exports){
 
 var cache = {};
 
@@ -18664,7 +18801,7 @@ function fetch(name, clone, callback) {
   callback(cache[name].geometry.clone(), cache[name].materials.clone());
 }
 
-},{}],68:[function(require,module,exports){
+},{}],69:[function(require,module,exports){
 
 var $ = require('jquery');
 
@@ -18693,7 +18830,7 @@ module.exports.clearMove = function(key) {
   delete moveListeners[key];
 }
 
-},{"jquery":1}],69:[function(require,module,exports){
+},{"jquery":1}],70:[function(require,module,exports){
 
 var SheenModel = require('./sheen-model');
 var config = require('./config');
@@ -18860,7 +18997,7 @@ function loadImage(path, callback) {
   img.src = path;
 }
 
-},{"./config":57,"./lib/multiline":65,"./sheen-model":72}],70:[function(require,module,exports){
+},{"./config":57,"./lib/multiline":65,"./sheen-model":73}],71:[function(require,module,exports){
 
 /**
  * Originally written by squarefeet (github.com/squarefeet).
@@ -19066,7 +19203,7 @@ module.exports = function ObjectControls( opts ) {
     };
 };
 
-},{}],71:[function(require,module,exports){
+},{}],72:[function(require,module,exports){
 
 var $ = require('jquery');
 
@@ -19158,7 +19295,7 @@ SceneComponent.prototype.clean = function() {};
 
 SceneComponent.prototype.layout = function() {};
 
-},{"jquery":1}],72:[function(require,module,exports){
+},{"jquery":1}],73:[function(require,module,exports){
 
 module.exports = SheenModel;
 
@@ -19299,7 +19436,7 @@ SheenModel.prototype.updateFromModel = function(modelData) {
   this._id = modelData._id || null;
 };
 
-},{}],73:[function(require,module,exports){
+},{}],74:[function(require,module,exports){
 
 var config = require('./config.js');
 
@@ -19365,4 +19502,4 @@ module.exports.blocker = function(size) {
   return new THREE.Mesh(geometry, material);
 };
 
-},{"./config.js":57}]},{},[66]);
+},{"./config.js":57}]},{},[67]);

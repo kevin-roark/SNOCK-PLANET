@@ -2,9 +2,9 @@
 var $ = require('jquery');
 var io = require('socket.io-client');
 var kt = require('./lib/kutility');
+require('./lib/rainbow')($);
 
 var Camera = require('./camera');
-var Door = require('./door');
 var config = require('./config');
 var globals = require('./global-state');
 var BecomeAvatarComponent = require('./become-avatar-component');

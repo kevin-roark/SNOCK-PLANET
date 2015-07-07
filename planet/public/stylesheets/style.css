@@ -29,6 +29,22 @@ canvas {
   z-index: 1000;
 }
 
+/* TITLE */
+
+.snock-title {
+  margin-top: 50px;
+  font-size: 140px;
+  font-style: italic;
+  text-align: center;
+
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
 /* HUD */
 
 .bottom-hud {
@@ -66,7 +82,7 @@ canvas {
 }
 #avatar-name-input {
   position: absolute;
-  top: 200px;
+  top: 300px;
   left: 25%;
   margin: 15px;
   height: 60px;

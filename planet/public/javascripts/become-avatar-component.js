@@ -28,6 +28,7 @@ BecomeAvatarComponent.prototype.postInit = function(options) {
   });
 
   this.setupFiledropper();
+  this.startTitleRainbow();
 
   this.hasEnteredName = false;
   $('#avatar-name-input').focus();
@@ -43,6 +44,8 @@ BecomeAvatarComponent.prototype.postInit = function(options) {
           self.enterAvatarCreationState();
         }
       });
+
+      self.hideTitleRainbow();
     }
 
     self.hasEnteredName = true;
@@ -98,6 +101,35 @@ BecomeAvatarComponent.prototype.setupFiledropper = function() {
   };
 
   imageDropper.init();
+};
+
+BecomeAvatarComponent.prototype.startTitleRainbow = function() {
+  var rainbowColors = [
+        '#FF0000',
+        '#f26522',
+        '#fff200',
+        '#00a651',
+        '#28abe2',
+        '#2e3192',
+        '#6868ff'
+    ];
+
+    this.rainbowOptions = {
+        colors: rainbowColors,
+        animate: true,
+        animateInterval: 100,
+        pad: false,
+        pauseLength: 100
+    };
+
+    $('.snock-title').rainbow(this.rainbowOptions);
+};
+
+BecomeAvatarComponent.prototype.hideTitleRainbow = function() {
+  var self = this;
+  $('.snock-title').fadeOut(function() {
+    clearInterval(self.rainbowOptions.interval);
+  });
 };
 
 BecomeAvatarComponent.prototype.enterAvatarCreationState = function() {
