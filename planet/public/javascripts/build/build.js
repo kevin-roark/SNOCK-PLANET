@@ -16355,7 +16355,8 @@ AvatarControlComponent.prototype.postInit = function(options) {
   this.inCreationMode = false;
 
   this.controls = new ObjectControls({
-    target: this.avatar
+    target: this.avatar,
+    verticalMouseControl: false
   });
 
   this.addCameraTargets();
@@ -19068,6 +19069,9 @@ module.exports = function ObjectControls( opts ) {
         invertX: true,
         invertZ: true,
 
+        horizontalMouseControl: true,
+        verticalMouseControl: true,
+
         positionVelocityIncrement: 2,
         positionVelocityDecrement: 0.95,
         maxPositionVelocity: 40,
@@ -19206,15 +19210,19 @@ module.exports = function ObjectControls( opts ) {
     };
 
     this.mouseUpdate = function(movementX, movementY) {
-      yawObject.rotation.y -= movementX / options.rotationDamping.x;
-
-      var x = pitchObject.rotation.x - movementY / options.rotationDamping.y;
-      if (x < options.rotationLimit.y.min) {
-        x = options.rotationLimit.y.min;
-      } else if (x > options.rotationLimit.y.max) {
-        x = options.rotationLimit.y.max;
+      if (options.horizontalMouseControl) {
+        yawObject.rotation.y -= movementX / options.rotationDamping.x;
       }
-      pitchObject.rotation.x = x;
+
+      if (options.verticalMouseControl) {
+        var x = pitchObject.rotation.x - movementY / options.rotationDamping.y;
+        if (x < options.rotationLimit.y.min) {
+          x = options.rotationLimit.y.min;
+        } else if (x > options.rotationLimit.y.max) {
+          x = options.rotationLimit.y.max;
+        }
+        pitchObject.rotation.x = x;
+      }
     };
 
 

@@ -32,7 +32,8 @@ AvatarControlComponent.prototype.postInit = function(options) {
   this.inCreationMode = false;
 
   this.controls = new ObjectControls({
-    target: this.avatar
+    target: this.avatar,
+    verticalMouseControl: false
   });
 
   this.addCameraTargets();
