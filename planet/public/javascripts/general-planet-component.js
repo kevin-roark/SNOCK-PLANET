@@ -113,7 +113,9 @@ GeneralPlanetComponent.prototype.attemptToEnterNearestDoor = function() {
 };
 
 GeneralPlanetComponent.prototype.enterFormCreation = function() {
-  AvatarControlComponent.prototype.enterFormCreation.call(this);
+  if (!AvatarControlComponent.prototype.enterFormCreation.call(this)) {
+    return false;
+  }
 
   this.creationDoor.setVisible(true);
   var avatarPos = this.avatar.mesh.position;
@@ -125,6 +127,8 @@ GeneralPlanetComponent.prototype.enterFormCreation = function() {
   $('#door-name-input').focus();
 
   $('.texture-option').removeClass('selected-texture');
+
+  return true;
 };
 
 GeneralPlanetComponent.prototype.attemptDoorCreation = function() {
@@ -146,10 +150,14 @@ GeneralPlanetComponent.prototype.attemptDoorCreation = function() {
 };
 
 GeneralPlanetComponent.prototype.exitFormCreation = function() {
-  AvatarControlComponent.prototype.exitFormCreation.call(this);
+  if (!AvatarControlComponent.prototype.exitFormCreation.call(this)) {
+    return false;
+  }
 
   this.creationDoor.setVisible(false);
   $('.door-ui-wrapper').fadeOut();
+
+  return true;
 };
 
 GeneralPlanetComponent.prototype.doorTextureSelected = function(elem) {

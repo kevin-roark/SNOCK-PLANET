@@ -74,12 +74,16 @@ InnerDoorComponent.prototype.addInteractionGlue = function() {
 };
 
 InnerDoorComponent.prototype.enterFormCreation = function() {
-  AvatarControlComponent.prototype.enterFormCreation.call(this);
+  if (!AvatarControlComponent.prototype.enterFormCreation.call(this)) {
+    return false;
+  }
 
   $('.message-ui-wrapper').fadeIn();
   $('#message-content-input').focus();
 
   $('.texture-option').removeClass('selected-texture');
+
+  return true;
 };
 
 InnerDoorComponent.prototype.exitFormCreation = function() {
@@ -87,7 +91,7 @@ InnerDoorComponent.prototype.exitFormCreation = function() {
     $('.message-ui-wrapper').fadeOut();
   }
 
-  AvatarControlComponent.prototype.exitFormCreation.call(this);
+  return AvatarControlComponent.prototype.exitFormCreation.call(this);
 };
 
 InnerDoorComponent.prototype.noteTextureSelected = function(elem) {

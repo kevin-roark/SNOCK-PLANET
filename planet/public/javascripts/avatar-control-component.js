@@ -127,19 +127,23 @@ AvatarControlComponent.prototype.toggleCameraPerspective = function() {
 };
 
 AvatarControlComponent.prototype.enterFormCreation = function() {
-  if (this.inCreationMode) return;
+  if (this.inCreationMode) return false;
 
   this.inCreationMode = true;
   keymaster.setPreventDefaults(false);
   this.cam.exitPointerlock();
+
+  return true;
 };
 
 AvatarControlComponent.prototype.exitFormCreation = function() {
-  if (!this.inCreationMode) return;
+  if (!this.inCreationMode) return false;
 
   this.inCreationMode = false;
   keymaster.setPreventDefaults(true);
   this.cam.requestPointerlock();
+
+  return true;
 };
 
 AvatarControlComponent.prototype.showError = function(divSelector, message) {

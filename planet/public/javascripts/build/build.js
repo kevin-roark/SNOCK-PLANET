@@ -16450,19 +16450,23 @@ AvatarControlComponent.prototype.toggleCameraPerspective = function() {
 };
 
 AvatarControlComponent.prototype.enterFormCreation = function() {
-  if (this.inCreationMode) return;
+  if (this.inCreationMode) return false;
 
   this.inCreationMode = true;
   keymaster.setPreventDefaults(false);
   this.cam.exitPointerlock();
+
+  return true;
 };
 
 AvatarControlComponent.prototype.exitFormCreation = function() {
-  if (!this.inCreationMode) return;
+  if (!this.inCreationMode) return false;
 
   this.inCreationMode = false;
   keymaster.setPreventDefaults(true);
   this.cam.requestPointerlock();
+
+  return true;
 };
 
 AvatarControlComponent.prototype.showError = function(divSelector, message) {
@@ -17363,7 +17367,9 @@ GeneralPlanetComponent.prototype.attemptToEnterNearestDoor = function() {
 };
 
 GeneralPlanetComponent.prototype.enterFormCreation = function() {
-  AvatarControlComponent.prototype.enterFormCreation.call(this);
+  if (!AvatarControlComponent.prototype.enterFormCreation.call(this)) {
+    return false;
+  }
 
   this.creationDoor.setVisible(true);
   var avatarPos = this.avatar.mesh.position;
@@ -17375,6 +17381,8 @@ GeneralPlanetComponent.prototype.enterFormCreation = function() {
   $('#door-name-input').focus();
 
   $('.texture-option').removeClass('selected-texture');
+
+  return true;
 };
 
 GeneralPlanetComponent.prototype.attemptDoorCreation = function() {
@@ -17396,10 +17404,14 @@ GeneralPlanetComponent.prototype.attemptDoorCreation = function() {
 };
 
 GeneralPlanetComponent.prototype.exitFormCreation = function() {
-  AvatarControlComponent.prototype.exitFormCreation.call(this);
+  if (!AvatarControlComponent.prototype.exitFormCreation.call(this)) {
+    return false;
+  }
 
   this.creationDoor.setVisible(false);
   $('.door-ui-wrapper').fadeOut();
+
+  return true;
 };
 
 GeneralPlanetComponent.prototype.doorTextureSelected = function(elem) {
@@ -17716,12 +17728,16 @@ InnerDoorComponent.prototype.addInteractionGlue = function() {
 };
 
 InnerDoorComponent.prototype.enterFormCreation = function() {
-  AvatarControlComponent.prototype.enterFormCreation.call(this);
+  if (!AvatarControlComponent.prototype.enterFormCreation.call(this)) {
+    return false;
+  }
 
   $('.message-ui-wrapper').fadeIn();
   $('#message-content-input').focus();
 
   $('.texture-option').removeClass('selected-texture');
+
+  return true;
 };
 
 InnerDoorComponent.prototype.exitFormCreation = function() {
@@ -17729,7 +17745,7 @@ InnerDoorComponent.prototype.exitFormCreation = function() {
     $('.message-ui-wrapper').fadeOut();
   }
 
-  AvatarControlComponent.prototype.exitFormCreation.call(this);
+  return AvatarControlComponent.prototype.exitFormCreation.call(this);
 };
 
 InnerDoorComponent.prototype.noteTextureSelected = function(elem) {
