@@ -84,6 +84,8 @@ GeneralPlanetComponent.prototype.addInteractionGlue = function() {
   });
 
   $('.door-submit-button').click(this.attemptDoorCreation.bind(this));
+
+  $('.door-escape-button').click(this.exitFormCreation.bind(this));
 };
 
 GeneralPlanetComponent.prototype.attemptToEnterNearestDoor = function() {

@@ -29,6 +29,18 @@ canvas {
   z-index: 1000;
 }
 
+.pointer-lock-tip {
+  position: absolute;
+  left: 180px;
+  top: 60px;
+  padding: 10px;
+  color: rgb(60, 60, 60);
+  box-shadow: 5px 5px 5px 0px;
+  font-weight: bold;
+  background-color: rgba(60, 60, 255, 0.498039);
+  z-index: 100000000;
+}
+
 /* TITLE */
 
 .snock-title {
@@ -349,6 +361,25 @@ progress {
   color: red;
   font-size: 18px;
 }
+
+.escape-button {
+  position: absolute;
+  border-radius: 2px;
+  top: 20px;
+  left: 20px;
+  padding: 10px;
+
+  text-decoration: underline;
+  border: 1px solid black;
+  background-color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+}
+  .door-escape-button {
+    box-shadow: 8px 8px 5px 0px rgba(60,0,0,0.5);
+  }
+  .message-escape-button {
+    box-shadow: 8px 8px 5px 0px rgba(0,100,0,0.5);
+  }
 
 /* Message creation */
 

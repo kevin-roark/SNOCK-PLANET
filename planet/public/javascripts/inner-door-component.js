@@ -71,6 +71,8 @@ InnerDoorComponent.prototype.addInteractionGlue = function() {
   });
 
   $('.message-submit-button').click(this.attemptNoteCreation.bind(this));
+
+  $('.message-escape-button').click(this.exitFormCreation.bind(this));
 };
 
 InnerDoorComponent.prototype.enterFormCreation = function() {

@@ -106,11 +106,15 @@ Camera.prototype.pointerlockchange = function () {
   } else {
     this.hasPointerlock = false;
   }
+
+  if (this.pointerLockChangeCallback) {
+    this.pointerLockChangeCallback(this.hasPointerlock);
+  }
 };
 
-Camera.prototype.pointerlockerror = function (event) {
+Camera.prototype.pointerlockerror = function (ev) {
   console.log('POINTER LOCK ERROR:');
-  console.log(event);
+  console.log(ev);
 };
 
 Camera.prototype.requestPointerlock = function() {
@@ -157,27 +161,21 @@ Camera.prototype.exitPointerlock = function() {
 Camera.prototype.addPointerlockListeners = function() {
   var self = this;
 
+  // Hook pointer lock state change events
   if (havePointerLock) {
-    // Hook pointer lock state change events
-    document.addEventListener('pointerlockchange', function() {
-      self.pointerlockchange();
-    }, false);
-    document.addEventListener('mozpointerlockchange', function() {
-      self.pointerlockchange();
-    }, false);
-    document.addEventListener('webkitpointerlockchange', function() {
-      self.pointerlockchange();
-    }, false);
+    var changeEvents = ['pointerlockchange', 'mozpointerlockchange', 'webkitpointerlockchange'];
+    changeEvents.forEach(function(eventName) {
+      document.addEventListener(eventName, function(ev) {
+        self.pointerlockchange(ev);
+      }, false);
+    });
 
-    document.addEventListener('pointerlockerror', function() {
-      self.pointerlockerror();
-    }, false);
-    document.addEventListener('mozpointerlockerror', function() {
-      self.pointerlockerror();
-    }, false);
-    document.addEventListener('webkitpointerlockerror', function() {
-      self.pointerlockerror();
-    }, false);
+    var errorEvents = ['pointerlockerror', 'mozpointerlockerror', 'webkitpointerlockerror'];
+    errorEvents.forEach(function(eventName) {
+      document.addEventListener(eventName, function(ev) {
+        self.pointerlockerror(ev);
+      }, false);
+    });
 
     document.addEventListener('click', function() {
       if (!canRequestPointerlock) return;

@@ -69,6 +69,8 @@ AvatarControlComponent.prototype.clean = function() {
 
   this.camera.removeTarget(THIRD_PERSON_CAM_NAME);
   this.camera.removeTarget(FIRST_PERSON_CAM_NAME);
+
+  this.cam.pointerLockChangeCallback = null;
 };
 
 /** User Interaction */
@@ -96,12 +98,14 @@ AvatarControlComponent.prototype.addCameraTargets = function() {
 };
 
 AvatarControlComponent.prototype.addInteractionGlue = function() {
+  var self = this;
+
   keymaster.setPreventDefaults(true);
 
   keymaster.keypress(113, this.toggleCameraPerspective.bind(this));
 
   keymaster.keypress(110, this.enterFormCreation.bind(this)); // n
-  keymaster.keydown(27, this.exitFormCreation.bind(this)); // esc
+  //keymaster.keydown(27, this.exitFormCreation.bind(this)); // esc
 
   keymaster.keydown([38, 87], this.forwardKeydown.bind(this));
   keymaster.keydown([37, 65], this.leftwardKeydown.bind(this));
@@ -114,6 +118,10 @@ AvatarControlComponent.prototype.addInteractionGlue = function() {
   keymaster.keyup([39, 68], this.rightwardKeyup.bind(this));
 
   mousemaster.move(this.mousemove.bind(this), 'controls');
+
+  this.cam.pointerLockChangeCallback = function(hasPointerLock) {
+    self.reactToPointerLock(hasPointerLock);
+  };
 };
 
 AvatarControlComponent.prototype.toggleCameraPerspective = function() {
@@ -133,6 +141,7 @@ AvatarControlComponent.prototype.enterFormCreation = function() {
   this.inCreationMode = true;
   keymaster.setPreventDefaults(false);
   this.cam.exitPointerlock();
+  this.reactToPointerLock(this.cam.hasPointerlock);
 
   return true;
 };
@@ -143,8 +152,28 @@ AvatarControlComponent.prototype.exitFormCreation = function() {
   this.inCreationMode = false;
   keymaster.setPreventDefaults(true);
   this.cam.requestPointerlock();
+  this.reactToPointerLock(this.cam.hasPointerlock);
 
   return true;
+};
+
+AvatarControlComponent.prototype.reactToPointerLock = function(hasPointerlock) {
+  var $pointerLockTip = $('.pointer-lock-tip');
+
+  if (this.inCreationMode && !hasPointerlock) {
+    $pointerLockTip.hide();
+  }
+  else if (!this.inCreationMode && hasPointerlock) {
+    $pointerLockTip.hide();
+  }
+  else if (this.inCreationMode && hasPointerlock) {
+    $pointerLockTip.text('PRESS ESCAPE TO UNLOCK YOUR HANDS (MOUSE)');
+    $pointerLockTip.show();
+  }
+  else if (!this.inCreationMode && !hasPointerlock) {
+    $pointerLockTip.text('CLICK TO UNLOCK YOUR EYES (MOUSE)');
+    $pointerLockTip.show();
+  }
 };
 
 AvatarControlComponent.prototype.showError = function(divSelector, message) {
