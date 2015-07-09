@@ -121,7 +121,15 @@ GeneralPlanetComponent.prototype.enterFormCreation = function() {
 
   this.creationDoor.setVisible(true);
   var avatarPos = this.avatar.mesh.position;
-  this.creationDoor.moveTo(avatarPos.x - 10, 4, avatarPos.z - 5);
+  var avatarRot = this.avatar.mesh.rotation;
+
+  var offsetVector = new THREE.Vector3(-24, 0, 15);
+  var yAxis = new THREE.Vector3(0, 1, 0);
+  var yRotation = avatarRot.y;
+  offsetVector.applyAxisAngle(yAxis, yRotation);
+
+  this.creationDoor.moveTo(avatarPos.x + offsetVector.x, 4, avatarPos.z + offsetVector.z);
+  this.creationDoor.rotateTo(0, yRotation, 0);
 
   $('.door-ui-wrapper').fadeIn();
 

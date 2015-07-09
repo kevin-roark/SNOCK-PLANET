@@ -16392,6 +16392,8 @@ AvatarControlComponent.prototype.clean = function() {
 
   this.camera.removeTarget(THIRD_PERSON_CAM_NAME);
   this.camera.removeTarget(FIRST_PERSON_CAM_NAME);
+
+  this.cam.pointerLockChangeCallback = null;
 };
 
 /** User Interaction */
@@ -16419,12 +16421,14 @@ AvatarControlComponent.prototype.addCameraTargets = function() {
 };
 
 AvatarControlComponent.prototype.addInteractionGlue = function() {
+  var self = this;
+
   keymaster.setPreventDefaults(true);
 
   keymaster.keypress(113, this.toggleCameraPerspective.bind(this));
 
   keymaster.keypress(110, this.enterFormCreation.bind(this)); // n
-  keymaster.keydown(27, this.exitFormCreation.bind(this)); // esc
+  //keymaster.keydown(27, this.exitFormCreation.bind(this)); // esc
 
   keymaster.keydown([38, 87], this.forwardKeydown.bind(this));
   keymaster.keydown([37, 65], this.leftwardKeydown.bind(this));
@@ -16437,6 +16441,10 @@ AvatarControlComponent.prototype.addInteractionGlue = function() {
   keymaster.keyup([39, 68], this.rightwardKeyup.bind(this));
 
   mousemaster.move(this.mousemove.bind(this), 'controls');
+
+  this.cam.pointerLockChangeCallback = function(hasPointerLock) {
+    self.reactToPointerLock(hasPointerLock);
+  };
 };
 
 AvatarControlComponent.prototype.toggleCameraPerspective = function() {
@@ -16456,6 +16464,7 @@ AvatarControlComponent.prototype.enterFormCreation = function() {
   this.inCreationMode = true;
   keymaster.setPreventDefaults(false);
   this.cam.exitPointerlock();
+  this.reactToPointerLock(this.cam.hasPointerlock);
 
   return true;
 };
@@ -16466,8 +16475,28 @@ AvatarControlComponent.prototype.exitFormCreation = function() {
   this.inCreationMode = false;
   keymaster.setPreventDefaults(true);
   this.cam.requestPointerlock();
+  this.reactToPointerLock(this.cam.hasPointerlock);
 
   return true;
+};
+
+AvatarControlComponent.prototype.reactToPointerLock = function(hasPointerlock) {
+  var $pointerLockTip = $('.pointer-lock-tip');
+
+  if (this.inCreationMode && !hasPointerlock) {
+    $pointerLockTip.hide();
+  }
+  else if (!this.inCreationMode && hasPointerlock) {
+    $pointerLockTip.hide();
+  }
+  else if (this.inCreationMode && hasPointerlock) {
+    $pointerLockTip.text('PRESS ESCAPE TO UNLOCK YOUR HANDS (MOUSE)');
+    $pointerLockTip.show();
+  }
+  else if (!this.inCreationMode && !hasPointerlock) {
+    $pointerLockTip.text('CLICK TO UNLOCK YOUR EYES (MOUSE)');
+    $pointerLockTip.show();
+  }
 };
 
 AvatarControlComponent.prototype.showError = function(divSelector, message) {
@@ -17031,11 +17060,15 @@ Camera.prototype.pointerlockchange = function () {
   } else {
     this.hasPointerlock = false;
   }
+
+  if (this.pointerLockChangeCallback) {
+    this.pointerLockChangeCallback(this.hasPointerlock);
+  }
 };
 
-Camera.prototype.pointerlockerror = function (event) {
+Camera.prototype.pointerlockerror = function (ev) {
   console.log('POINTER LOCK ERROR:');
-  console.log(event);
+  console.log(ev);
 };
 
 Camera.prototype.requestPointerlock = function() {
@@ -17082,27 +17115,21 @@ Camera.prototype.exitPointerlock = function() {
 Camera.prototype.addPointerlockListeners = function() {
   var self = this;
 
+  // Hook pointer lock state change events
   if (havePointerLock) {
-    // Hook pointer lock state change events
-    document.addEventListener('pointerlockchange', function() {
-      self.pointerlockchange();
-    }, false);
-    document.addEventListener('mozpointerlockchange', function() {
-      self.pointerlockchange();
-    }, false);
-    document.addEventListener('webkitpointerlockchange', function() {
-      self.pointerlockchange();
-    }, false);
+    var changeEvents = ['pointerlockchange', 'mozpointerlockchange', 'webkitpointerlockchange'];
+    changeEvents.forEach(function(eventName) {
+      document.addEventListener(eventName, function(ev) {
+        self.pointerlockchange(ev);
+      }, false);
+    });
 
-    document.addEventListener('pointerlockerror', function() {
-      self.pointerlockerror();
-    }, false);
-    document.addEventListener('mozpointerlockerror', function() {
-      self.pointerlockerror();
-    }, false);
-    document.addEventListener('webkitpointerlockerror', function() {
-      self.pointerlockerror();
-    }, false);
+    var errorEvents = ['pointerlockerror', 'mozpointerlockerror', 'webkitpointerlockerror'];
+    errorEvents.forEach(function(eventName) {
+      document.addEventListener(eventName, function(ev) {
+        self.pointerlockerror(ev);
+      }, false);
+    });
 
     document.addEventListener('click', function() {
       if (!canRequestPointerlock) return;
@@ -17339,6 +17366,8 @@ GeneralPlanetComponent.prototype.addInteractionGlue = function() {
   });
 
   $('.door-submit-button').click(this.attemptDoorCreation.bind(this));
+
+  $('.door-escape-button').click(this.exitFormCreation.bind(this));
 };
 
 GeneralPlanetComponent.prototype.attemptToEnterNearestDoor = function() {
@@ -17374,7 +17403,15 @@ GeneralPlanetComponent.prototype.enterFormCreation = function() {
 
   this.creationDoor.setVisible(true);
   var avatarPos = this.avatar.mesh.position;
-  this.creationDoor.moveTo(avatarPos.x - 10, 4, avatarPos.z - 5);
+  var avatarRot = this.avatar.mesh.rotation;
+
+  var offsetVector = new THREE.Vector3(-24, 0, 15);
+  var yAxis = new THREE.Vector3(0, 1, 0);
+  var yRotation = avatarRot.y;
+  offsetVector.applyAxisAngle(yAxis, yRotation);
+
+  this.creationDoor.moveTo(avatarPos.x + offsetVector.x, 4, avatarPos.z + offsetVector.z);
+  this.creationDoor.rotateTo(0, yRotation, 0);
 
   $('.door-ui-wrapper').fadeIn();
 
@@ -17726,6 +17763,8 @@ InnerDoorComponent.prototype.addInteractionGlue = function() {
   });
 
   $('.message-submit-button').click(this.attemptNoteCreation.bind(this));
+
+  $('.message-escape-button').click(this.exitFormCreation.bind(this));
 };
 
 InnerDoorComponent.prototype.enterFormCreation = function() {
