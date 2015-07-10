@@ -184,7 +184,7 @@ BecomeAvatarComponent.prototype.commonFinish = function(avatarData) {
 
   this.avatar.updateFromModel(avatarData);
   this.avatar.wakeUp();
-  this.avatar.moveTo(0, 0, 0);
+  this.avatar.moveTo(this.avatar.mesh.position.x, 0, this.avatar.mesh.position.z);
 
   this.markFinished();
 };
