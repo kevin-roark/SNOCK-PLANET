@@ -16,7 +16,7 @@ var avatars = {};
 
 // start socket.io
 var io = socketIO(port);
-console.log('listening on *:' + port);
+console.log('io listening on *:' + port);
 
 // set up redis socket.io adapter
 var redisAdapter = socketIORedis(redis.uri, {key: 'planet'});
