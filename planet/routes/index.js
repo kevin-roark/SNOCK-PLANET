@@ -23,6 +23,7 @@ router.post('/upload-face-image', function(req, res, next) {
 
   faceImager.uploadFaceImage(buffer, function(err, filepath) {
     if (err) {
+      console.log('error uploading face: ');
       console.log(err);
       res.status(500).json({err: 'error writing file: ' + err});
       return;

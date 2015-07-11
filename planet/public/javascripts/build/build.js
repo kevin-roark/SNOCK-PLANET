@@ -16594,6 +16594,7 @@ function Avatar(options) {
   this.twitching = false;
   this.sleeping = false;
 
+  THREE.ImageUtils.crossOrigin = '';
   this.faceMaterial = new THREE.MeshBasicMaterial({
     map: THREE.ImageUtils.loadTexture('')
   });

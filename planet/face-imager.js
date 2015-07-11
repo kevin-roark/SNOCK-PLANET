@@ -1,9 +1,11 @@
 
 var s3 = require('s3');
 var fs = require('fs');
+var mkpath = require('mkpath');
 
 var keys = require('./keys');
-var config = require('./public/javascripts/config');
+
+var temporaryImagePath = './temp-images/';
 
 // create the pretty s3 client
 var s3Client = s3.createClient({
@@ -15,41 +17,49 @@ var s3Client = s3.createClient({
 
 module.exports.uploadFaceImage = function(imageBuffer, callback) {
   var filename = generateFilename();
-  var localFilepath = config.static_path + filename;
+  var localFilepath = temporaryImagePath + filename;
 
+  mkpath.sync(temporaryImagePath);
   fs.writeFile(localFilepath, imageBuffer, function(err) {
     if (err) {
       callback(err);
       return;
     }
 
-    var uploader = generateUploader(localFilepath);
+    var uploader = generateUploader(filename);
 
     uploader.on('error', function(err) {
+      deleteFile(localFilepath);
       callback(err);
     });
 
     uploader.on('end', function() {
-      var s3URL = 'asdfasdf' + filename; // TODO need to generate this shit
+      var s3URL = generateURL(filename);
+      console.log(s3URL);
+      deleteFile(localFilepath);
       callback(null, s3URL);
     });
   });
 };
 
 function generateUploader(filename) {
-  var localFilepath = config.static_path + filename;
+  var localFilepath = temporaryImagePath + filename;
 
   var params = {
     localFile: localFilepath,
 
     s3Params: {
       Bucket: keys.s3_bucket_name,
-      Key: filename
+      Key: filename,
+      ACL: 'public-read'
     }
   };
 
-  var uploader = s3Client.uploadFile(params);
-  return uploader;
+  return s3Client.uploadFile(params);
+}
+
+function generateURL(filename) {
+  return s3.getPublicUrl(keys.s3_bucket_name, filename);
 }
 
 function generateFilename() {
@@ -60,5 +70,13 @@ function generateFilename() {
     filename += chars.charAt(Math.floor(Math.random() * chars.length));
   }
 
-  return '/face-images/' + filename + '.jpg';
+  return filename + '.jpg';
+}
+
+function deleteFile(filepath) {
+  fs.unlink(filepath, function(err) {
+    if (err) {
+      console.log('error deleting local image file: ' + filepath);
+    }
+  });
 }
