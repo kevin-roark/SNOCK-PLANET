@@ -22,7 +22,7 @@ $(function() {
     frameCount: 0,
     mode: BECOME_AVATAR_MODE
   };
-  var socket = io(config.io_url);
+  var socket = io(window.serverConfig.ioURL);
 
   var $huds = $('.bottom-hud, .top-hud');
   var $worldCoordinates = $('.world-coordinates');

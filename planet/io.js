@@ -4,48 +4,58 @@ var models = require('./models');
 var Avatar = models.Avatar;
 var Door = models.Door;
 var Note = models.Note;
-var planetState = require('./planet-state');
+var socketIO = require('socket.io');
+var socketIORedis = require('socket.io-redis');
+var redis = require('./redis');
 
-// constants
-var IO_PORT = 3000;
+var port = process.env.PLANET_IO_PORT || 6001;
+var uid = port;
 
-// globals
-var io;
+// process-level local copy
+var avatars = {};
 
-module.exports.init = function(app) {
-  var server = require('http').createServer(app);
-  io = require('socket.io')(server);
+// start socket.io
+var io = socketIO(port);
+console.log('listening on *:' + port);
 
-  io.on('connection', function(socket) {
+// set up redis socket.io adapter
+var redisAdapter = socketIORedis(redis.uri, {key: 'planet'});
+io.adapter(redisAdapter);
 
-    socket.on('avatar-update', avatarUpdate);
+io.on('connection', function(socket) {
 
-    socket.on('get-avatar', getAvatar);
-    socket.on('create-avatar', createAvatar);
-    socket.on('get-avatars-in-door', getAvatarsInDoor);
+  socket.on('avatar-update', avatarUpdate);
 
-    socket.on('get-door', getDoor);
-    socket.on('create-door', createDoor);
-    socket.on('get-doors', getDoors);
+  socket.on('get-avatar', getAvatar);
+  socket.on('create-avatar', createAvatar);
+  socket.on('get-avatars-in-door', getAvatarsInDoor);
 
-    socket.on('create-note', createNote);
-    socket.on('get-notes', getNotes);
+  socket.on('get-door', getDoor);
+  socket.on('create-door', createDoor);
+  socket.on('get-doors', getDoors);
 
-    var stateInterval = setInterval(function() {
-      planetState.getState(function(state) {
-        io.emit('avatars-state', state);
-      });
-    }, 7777);
+  socket.on('create-note', createNote);
+  socket.on('get-notes', getNotes);
 
-  });
+});
 
-  app.server_ = server;
-};
-
-// API Method Implementations
+/// API Method Implementations
 
 var avatarUpdate = function(avatarData) {
-  planetState.avatarUpdate(avatarData);
+  var id = avatarData._id;
+
+  // update the database for longterm consistency
+  var query = {_id: id};
+  Avatar.update(query, avatarData, {}, function(err) {
+    if (err) {
+      console.log('err updating avatar: ');
+      console.log(err);
+    }
+  });
+
+  // update redis for current consistency
+  avatars[id] = avatarData;
+  redis.hset('planet:avatars', uid, avatars);
 };
 
 var getAvatar = function(name, callback) {

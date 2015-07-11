@@ -4,9 +4,11 @@ var router = express.Router();
 
 var faceImager = require('../face-imager');
 
+var ioURL = process.env.PLANET_IO_URL || 'http://localhost:6001';
+
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  res.render('index', { title: 'SNOCK PLANET' });
+  res.render('index', { title: 'SNOCK PLANET', ioURL: ioURL });
 });
 
 /* POST FACE IMAGE DATA */
