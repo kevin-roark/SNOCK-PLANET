@@ -7,5 +7,5 @@ module.exports.uri = uri;
 var pieces = uri.split(':');
 
 module.exports.createClient = function() {
-  return redis.createClient(pieces[1], pieces[0], {return_buffers: true});
+  return redis.createClient(pieces[1], pieces[0], {return_buffers: false});
 };

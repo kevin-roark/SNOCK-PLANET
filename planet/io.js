@@ -22,6 +22,9 @@ console.log('io listening on *:' + port);
 var redisAdapter = socketIORedis(redis.uri, {key: 'planet'});
 io.adapter(redisAdapter);
 
+// set up redis client
+var redisClient = redis.createClient();
+
 io.on('connection', function(socket) {
 
   socket.on('avatar-update', avatarUpdate);
@@ -42,21 +45,27 @@ io.on('connection', function(socket) {
 /// API Method Implementations
 
 var avatarUpdate = function(avatarData) {
+  if (!avatarData) avatarData = {};
   var id = avatarData._id;
 
-  // update the database for longterm consistency
-  var query = {_id: id};
-  Avatar.update(query, avatarData, {}, function(err) {
-    if (err) {
-      console.log('err updating avatar: ');
-      console.log(err);
-    }
-  });
+  if (id) {
+    // update the database for longterm consistency
+    var query = {_id: id};
+    Avatar.update(query, avatarData, {}, function(err) {
+      if (err) {
+        console.log('err updating avatar: ');
+        console.log(err);
+      }
+    });
 
-  // update redis for current consistency
-  avatars[id] = avatarData;
-  redis.hset('planet:avatars', uid, avatars);
+    // update redis for current consistency
+    avatars[id] = avatarData;
+  }
+
+  var avatarsJSON = JSON.stringify(avatars);
+  redisClient.hset('planet:avatars', uid, avatarsJSON);
 };
+avatarUpdate();
 
 var getAvatar = function(name, callback) {
   getModel(Avatar, {'name': name}, callback);

@@ -37,8 +37,8 @@ var calculateState = function(callback) {
 };
 
 var amalgamateAvatars = function(callback) {
-  redisClient.hgetall('planet:avatars', function(err, avatarMaps) {
-    if (!avatarMaps) {
+  redisClient.hgetall('planet:avatars', function(err, avatarMapsMap) {
+    if (!avatarMapsMap) {
       if (err) {
         console.log('err getting redis avatars: ');
         console.log(err);
@@ -48,11 +48,13 @@ var amalgamateAvatars = function(callback) {
     }
 
     var allAvatarsMap = {};
-    for (var i = 0; i < avatarMaps.length; i++) {
-      var avatarMap = avatarMaps[i];
-      for (var idKey in avatarMap) {
-        if (avatarMap.hasOwnProperty(idKey)) {
-          allAvatarsMap[idKey] = avatarMap[idKey];
+    for (var uid in avatarMapsMap) {
+      if (avatarMapsMap.hasOwnProperty(uid)) {
+        var avatarMap = JSON.parse(avatarMapsMap[uid]);
+        for (var idKey in avatarMap) {
+          if (avatarMap.hasOwnProperty(idKey)) {
+            allAvatarsMap[idKey] = avatarMap[idKey];
+          }
         }
       }
     }
