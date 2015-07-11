@@ -49,9 +49,10 @@ module.exports.createFaceURL = function(faceData, callback) {
       imgBase64: faceData
   }, function(res) {
     if (res.err) {
+      console.log('error uploading face:')
       console.log(res.err);
     }
-    callback(res.imageURL);
+    callback(res);
   });
 };
 

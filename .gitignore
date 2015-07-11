@@ -28,3 +28,6 @@ node_modules
 .lock-wscript
 
 .DS_STORE
+
+# This is where I keep my API keys for now
+planet/keys.js
