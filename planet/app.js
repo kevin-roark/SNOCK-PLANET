@@ -1,3 +1,4 @@
+
 var express = require('express');
 var path = require('path');
 var favicon = require('serve-favicon');
@@ -6,12 +7,14 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 
 var routes = require('./routes/index');
-var io = require('./io');
 
 var config = require('./public/javascripts/config');
 
 var app = express();
-io.init(app);
+
+var port = process.env.PLANET_WEB_PORT || '3000';
+app.listen(port);
+console.log('web listening on *:' + port);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

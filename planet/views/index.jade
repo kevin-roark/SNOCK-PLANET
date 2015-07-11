@@ -20,3 +20,7 @@ block content
   include create-door
   
   include create-message
+  
+  script(type='text/javascript').
+      var serverConfig = {};
+      serverConfig.ioURL="#{ioURL}";

@@ -5,14 +5,13 @@ module.exports = function loadModel(name, callback) {
   if (typeof callback !== 'function') return;
 
   if (cache[name]) {
-    fetch(name, true, callback);
+    fetch(name, callback);
   }
 
   var loader = new THREE.JSONLoader();
   loader.load(name, function(geometry, materials) {
-    callback(geometry, materials);
-    // add(name, geometry, materials);
-    // fetch(name, false, callback);
+    add(name, geometry, materials);
+    fetch(name, callback);
   });
 };
 
@@ -23,11 +22,19 @@ function add(name, geometry, materials) {
   };
 }
 
-function fetch(name, clone, callback) {
-  if (!clone) {
-    callback(cache[name].geometry, cache[name].materials);
-    return;
+function fetch(name, callback) {
+  var cached = cache[name];
+
+  var geometry = cached.geometry.clone();
+  var materials;
+  if (Array.isArray(cached.materials)) {
+    materials = [];
+    for (var i = 0; i < cached.materials.length; i++) {
+      materials.push(cached.materials[i].clone());
+    }
+  } else {
+    materials = cached.materials.clone();
   }
 
-  callback(cache[name].geometry.clone(), cache[name].materials.clone());
+  callback(geometry, materials);
 }

@@ -27,9 +27,12 @@
     "mkpath": "^0.1.0",
     "mongoose": "~3.8.23",
     "morgan": "~1.5.1",
+    "redis": "^0.12.1",
     "s3": "^4.4.0",
     "serve-favicon": "~2.2.0",
     "socket.io": "~1.3.3",
-    "socket.io-client": "~1.3.3"
+    "socket.io-client": "~1.3.3",
+    "socket.io-emitter": "^0.2.0",
+    "socket.io-redis": "^0.1.4"
   }
 }
