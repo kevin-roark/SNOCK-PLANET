@@ -17164,7 +17164,6 @@ var debug = true;
 
 // Paths and such
 module.exports.mongo_url = debug ? 'mongodb://localhost/test' : '';
-module.exports.io_url = debug ? 'http://localhost:3000' : '';
 module.exports.static_path = __dirname + '/..';
 
 // Testing
@@ -18702,7 +18701,7 @@ $(function() {
     frameCount: 0,
     mode: BECOME_AVATAR_MODE
   };
-  var socket = io(config.io_url);
+  var socket = io(window.serverConfig.ioURL);
 
   var $huds = $('.bottom-hud, .top-hud');
   var $worldCoordinates = $('.world-coordinates');
@@ -18889,14 +18888,14 @@ module.exports = function loadModel(name, callback) {
   if (typeof callback !== 'function') return;
 
   if (cache[name]) {
-    fetch(name, true, callback);
+    fetch(name, callback);
   }
 
   var loader = new THREE.JSONLoader();
   loader.load(name, function(geometry, materials) {
-    callback(geometry, materials);
-    // add(name, geometry, materials);
-    // fetch(name, false, callback);
+    //callback(geometry, materials);
+    add(name, geometry, materials);
+    fetch(name, callback);
   });
 };
 
@@ -18907,13 +18906,22 @@ function add(name, geometry, materials) {
   };
 }
 
-function fetch(name, clone, callback) {
-  if (!clone) {
-    callback(cache[name].geometry, cache[name].materials);
-    return;
+function fetch(name, callback) {
+  var cached = cache[name];
+  console.log(cached);
+
+  var geometry = cached.geometry.clone();
+  var materials;
+  if (Array.isArray(cached.materials)) {
+    materials = [];
+    for (var i = 0; i < cached.materials.length; i++) {
+      materials.push(cached.materials[i].clone());
+    }
+  } else {
+    materials = cached.materials.clone();
   }
 
-  callback(cache[name].geometry.clone(), cache[name].materials.clone());
+  callback(geometry, materials);
 }
 
 },{}],69:[function(require,module,exports){
