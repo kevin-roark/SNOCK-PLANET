@@ -81,6 +81,23 @@ SceneComponent.prototype.addMesh = function(mesh) {
   this.additionalMeshes.push(mesh);
 };
 
+SceneComponent.prototype.showLoading = function(show) {
+  var $loading = $('.loading-wrapper');
+  if (show) {
+    $loading.show();
+  } else {
+    $loading.hide();
+  }
+};
+
+SceneComponent.prototype.showError = function(message) {
+  var $error = $('.error');
+  $error.text(message);
+  $error.show();
+  setTimeout(function() {
+    $error.hide();
+  }, 2000);
+}
 
 SceneComponent.prototype.preRender = function() {};
 SceneComponent.prototype.postRender = function() {};

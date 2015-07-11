@@ -38,7 +38,9 @@ BecomeAvatarComponent.prototype.postInit = function(options) {
     var name = $('#avatar-name-input').val();
 
     if (!self.hasEnteredName) {
+      self.showLoading(true);
       apiTools.fetchAvatar(name, function(avatarData) {
+        self.showLoading(false);
         if (avatarData) {
           self.finishAfterFetchingAvatar(avatarData);
         } else {
@@ -55,9 +57,23 @@ BecomeAvatarComponent.prototype.postInit = function(options) {
   $('.avatar-creation-submit-button').click(function() {
     self.avatar.name = $('#avatar-name-input').val();
 
-    apiTools.createFaceURL(self.avatar.uploadableFaceImageData(), function(faceURL) {
+    self.showLoading(true);
+    apiTools.createFaceURL(self.avatar.uploadableFaceImageData(), function(res) {
+      var faceURL = res ? res.imageURL : null;
+      if (res && !faceURL) {
+        self.showError(res.err);
+        self.showLoading(false);
+        return;
+      }
+
       self.avatar.updateFaceImage(faceURL);
       apiTools.createAvatar(self.avatar.serialize(), function(avatarData) {
+        self.showLoading(false);
+        if (!avatarData) {
+          self.showError('error creating avatar do better');
+          return;
+        }
+
         self.finishAfterCreatingAvatar(avatarData);
       });
     });

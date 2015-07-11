@@ -16254,9 +16254,10 @@ module.exports.createFaceURL = function(faceData, callback) {
       imgBase64: faceData
   }, function(res) {
     if (res.err) {
+      console.log('error uploading face:')
       console.log(res.err);
     }
-    callback(res.imageURL);
+    callback(res);
   });
 };
 
@@ -16801,7 +16802,9 @@ BecomeAvatarComponent.prototype.postInit = function(options) {
     var name = $('#avatar-name-input').val();
 
     if (!self.hasEnteredName) {
+      self.showLoading(true);
       apiTools.fetchAvatar(name, function(avatarData) {
+        self.showLoading(false);
         if (avatarData) {
           self.finishAfterFetchingAvatar(avatarData);
         } else {
@@ -16818,9 +16821,23 @@ BecomeAvatarComponent.prototype.postInit = function(options) {
   $('.avatar-creation-submit-button').click(function() {
     self.avatar.name = $('#avatar-name-input').val();
 
-    apiTools.createFaceURL(self.avatar.uploadableFaceImageData(), function(faceURL) {
+    self.showLoading(true);
+    apiTools.createFaceURL(self.avatar.uploadableFaceImageData(), function(res) {
+      var faceURL = res ? res.imageURL : null;
+      if (res && !faceURL) {
+        self.showError(res.err);
+        self.showLoading(false);
+        return;
+      }
+
       self.avatar.updateFaceImage(faceURL);
       apiTools.createAvatar(self.avatar.serialize(), function(avatarData) {
+        self.showLoading(false);
+        if (!avatarData) {
+          self.showError('error creating avatar do better');
+          return;
+        }
+
         self.finishAfterCreatingAvatar(avatarData);
       });
     });
@@ -19392,6 +19409,23 @@ SceneComponent.prototype.addMesh = function(mesh) {
   this.additionalMeshes.push(mesh);
 };
 
+SceneComponent.prototype.showLoading = function(show) {
+  var $loading = $('.loading-wrapper');
+  if (show) {
+    $loading.show();
+  } else {
+    $loading.hide();
+  }
+};
+
+SceneComponent.prototype.showError = function(message) {
+  var $error = $('.error');
+  $error.text(message);
+  $error.show();
+  setTimeout(function() {
+    $error.hide();
+  }, 2000);
+}
 
 SceneComponent.prototype.preRender = function() {};
 SceneComponent.prototype.postRender = function() {};
