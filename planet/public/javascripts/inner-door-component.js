@@ -88,6 +88,7 @@ InnerDoorComponent.prototype.enterFormCreation = function() {
 
   $('.message-ui-wrapper').fadeIn();
   $('#message-content-input').focus();
+  $('#message-content-input').val('');
 
   $('.texture-option').removeClass('selected-texture');
 
@@ -126,10 +127,16 @@ InnerDoorComponent.prototype.noteTextureSelected = function(elem) {
 InnerDoorComponent.prototype.attemptNoteCreation = function() {
   var self = this;
 
+  var text = $('#message-content-input').val();
+  if (text.length > 4096) {
+    this.showError('ur message is too long. 4096 max chars.');
+    return;
+  }
+
   var avatarPosition = this.avatar.mesh.position;
 
   var noteData = {
-    text: $('#message-content-input').val(),
+    text: text,
     position: {x: avatarPosition.x, y: 0, z: avatarPosition.z},
     creator: this.avatar._id,
     door: this.door._id

@@ -17942,6 +17942,7 @@ InnerDoorComponent.prototype.enterFormCreation = function() {
 
   $('.message-ui-wrapper').fadeIn();
   $('#message-content-input').focus();
+  $('#message-content-input').val('');
 
   $('.texture-option').removeClass('selected-texture');
 
@@ -17980,10 +17981,16 @@ InnerDoorComponent.prototype.noteTextureSelected = function(elem) {
 InnerDoorComponent.prototype.attemptNoteCreation = function() {
   var self = this;
 
+  var text = $('#message-content-input').val();
+  if (text.length > 4096) {
+    this.showError('ur message is too long. 4096 max chars.');
+    return;
+  }
+
   var avatarPosition = this.avatar.mesh.position;
 
   var noteData = {
-    text: $('#message-content-input').val(),
+    text: text,
     position: {x: avatarPosition.x, y: 0, z: avatarPosition.z},
     creator: this.avatar._id,
     door: this.door._id
@@ -19117,7 +19124,7 @@ function Note(options) {
   SheenModel.call(this, options);
 
   if (!this.initialPosition.y) {
-    this.initialPosition.y = (Math.random() + 0.05) * 16 + 5;
+    this.initialPosition.y = (Math.random() + 0.05) * 9 + 5;
   }
 }
 
@@ -19126,7 +19133,7 @@ Note.prototype.updateFromModel = function(noteData) {
 
   this.text = noteData.text || '';
   this.when = noteData.when || new Date();
-  this.depth = noteData.depth || (Math.random() + 0.05) * 25;
+  this.depth = noteData.depth || (Math.random() + 0.05) * 15;
   this.accentTexture = noteData.accentTexture || config.randomTexture(config.note_textures);
   this.door = noteData.door || null;
   this.creator = noteData.creator || null;
