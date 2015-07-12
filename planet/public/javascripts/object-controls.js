@@ -23,7 +23,9 @@ module.exports = function ObjectControls( opts ) {
 
         rollVelocityIncrement: 0.05,
         rollVelocityDecrement: 0.95,
-        maxRollVelocity: 2
+        maxRollVelocity: 2,
+
+        fenceDistance: 10000000000000
     };
 
     if (!opts) opts = {};
@@ -116,7 +118,7 @@ module.exports = function ObjectControls( opts ) {
         positionVector.y *= dec;
     };
 
-    var updateCameras = function(dt) {
+    var updateObject = function(dt) {
         var velX = positionVector.x * dt,
             velY = positionVector.y * dt,
             velZ = positionVector.z * dt,
@@ -137,9 +139,17 @@ module.exports = function ObjectControls( opts ) {
           if (obj) {
             obj.rotation.set(pitchObject.getWorldQuaternion().x, yawObject.rotation.y, 0);
 
-            obj.translateX( velX );
-            obj.translateY( velY );
-            obj.translateZ( velZ );
+            obj.translateX(velX);
+            obj.translateY(velY);
+            obj.translateZ(velZ);
+
+            var fence = options.fenceDistance;
+            if (obj.position.x < -fence) obj.position.x = -fence;
+            else if (obj.position.x > fence) obj.position.x = fence;
+            if (obj.position.y < -fence) obj.position.y = -fence;
+            else if (obj.position.y > fence) obj.position.y = fence;
+            if (obj.position.z < -fence) obj.position.z = -fence;
+            else if (obj.position.z > fence) obj.position.z = fence;
           }
         }
     };
@@ -148,7 +158,7 @@ module.exports = function ObjectControls( opts ) {
     this.update = function( dt ) {
       updateRolling(dt);
       updatePosition(dt);
-      updateCameras(dt);
+      updateObject(dt);
     };
 
     this.mouseUpdate = function(movementX, movementY) {

@@ -43,6 +43,12 @@ InnerDoorComponent.prototype.postInit = function(options) {
   }
 };
 
+InnerDoorComponent.prototype.controlsOptions = function() {
+  var options =  AvatarControlComponent.prototype.controlsOptions.call(this);
+  options.fenceDistance = 1000;
+  return options;
+};
+
 InnerDoorComponent.prototype.updatedAvatarsState = function(avatarsState) {
   var avatarsWithinDoors = avatarsState.doors;
   var avatarsInThisDoor = avatarsWithinDoors[this.door._id];

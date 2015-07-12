@@ -31,10 +31,7 @@ AvatarControlComponent.prototype.postInit = function(options) {
   this.firstPerson = false;
   this.inCreationMode = false;
 
-  this.controls = new ObjectControls({
-    target: this.avatar,
-    verticalMouseControl: false
-  });
+  this.controls = new ObjectControls(this.controlsOptions());
 
   this.addCameraTargets();
 
@@ -44,6 +41,13 @@ AvatarControlComponent.prototype.postInit = function(options) {
   if (this.socket) {
     this.socket.on('avatars-state', this.updatedAvatarsState.bind(this));
   }
+};
+
+AvatarControlComponent.prototype.controlsOptions = function() {
+  return {
+    target: this.avatar,
+    verticalMouseControl: false,
+  };
 };
 
 AvatarControlComponent.prototype.preRender = function() {
