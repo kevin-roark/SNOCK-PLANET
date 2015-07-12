@@ -72,7 +72,14 @@ var getAvatar = function(name, callback) {
 };
 
 var createAvatar = function(avatarData, callback) {
-  createModel(Avatar, avatarData, callback);
+  getAvatar(avatarData.name, function(existingAvatar) {
+    if (existingAvatar) {
+      if (callback) callback({error: 'avatar with that name exists. pick another.'});
+      return;
+    }
+
+    createModel(Avatar, avatarData, callback);
+  });
 };
 
 var getAvatarsInDoor = function(doorID, callback) {

@@ -25,6 +25,8 @@ Avatar.prototype.loadMesh = function(callback) {
   this.faceGeometry = new THREE.BoxGeometry(1.25, 1.25, 1.25);
   this.faceMesh = new THREE.Mesh(this.faceGeometry, this.faceMaterial);
 
+  this.createTextMesh();
+
   loader('/javascripts/3d_models/body.js', function (geometry, materials) {
     self.geometry = geometry;
     self.materials = materials;
@@ -36,10 +38,52 @@ Avatar.prototype.loadMesh = function(callback) {
     self.faceMesh.position.y = 2.7;
     self.mesh.add(self.faceMesh);
 
+    if (self.textMesh) {
+      self.mesh.add(self.textMesh);
+    }
+
     self.meshes = [self.mesh];
 
     if (callback) callback();
   });
+};
+
+Avatar.prototype.createTextMesh = function() {
+  if (this.name === 'nameless_fuck') {
+    return;
+  }
+
+  this.textMaterial = new THREE.MeshBasicMaterial({
+    color: 0x000000
+  });
+
+  this.textGeometry = new THREE.TextGeometry(this.name, {
+    size: 0.7,
+    height: 0.1,
+    curveSegments: 5,
+    font: 'droid sans',
+    bevelEnabled: false
+  });
+
+  this.textGeometry.computeBoundingBox();
+  this.textGeometry.computeBoundingSphere();
+  this.textGeometry.computeVertexNormals();
+  this.textGeometry.center();
+
+  this.textMesh = new THREE.Mesh(this.textGeometry, this.textMaterial);
+  this.textMesh.position.set(0, 4.3, 0);
+};
+
+Avatar.prototype.refreshTextMesh = function() {
+  if (this.textMesh && this.hasLoadedMesh) {
+    this.mesh.remove(this.textMesh);
+  }
+
+  this.createTextMesh();
+
+  if (this.textMesh && this.hasLoadedMesh) {
+    this.mesh.add(this.textMesh);
+  }
 };
 
 Avatar.prototype.meshDidLoad = function() {
@@ -53,6 +97,7 @@ Avatar.prototype.meshDidLoad = function() {
     this.updateMeshForSleeping();
   }
 };
+
 Avatar.prototype.setScale = function(s) {
   this.mesh.scale.set(s, s, s);
 };
@@ -83,6 +128,13 @@ Avatar.prototype.goSleep = function() {
   this.updateSleepState(true);
 };
 
+Avatar.prototype.updateName = function(name) {
+  if (this.name !== name) {
+    this.name = name;
+    this.refreshTextMesh();
+  }
+};
+
 Avatar.prototype.updateSkinColor = function(hex) {
   this.color = hex;
 
@@ -95,6 +147,10 @@ Avatar.prototype.updateSkinColor = function(hex) {
     material.ambient = new THREE.Color(hex);
     material.emissive = new THREE.Color(hex);
     material.needsUpdate = true;
+  }
+
+  if (this.textMaterial) {
+    this.textMaterial.color = new THREE.Color(hex);
   }
 };
 
@@ -156,7 +212,7 @@ Avatar.prototype.updateFromModel = function(avatarData) {
 
   if (!avatarData) avatarData = {};
 
-  this.name = avatarData.name || 'nameless_fuck';
+  this.updateName(avatarData.name || 'nameless_fuck');
   this.updateSkinColor(avatarData.color || '#000000');
   this.updateFaceImage(avatarData.faceImageUrl);
   this.updateSleepState(avatarData.sleeping || false);

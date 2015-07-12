@@ -5,6 +5,7 @@ var Avatar = require('./avatar');
 var globals = require('./global-state');
 var apiTools = require('./api-tools');
 var imageDropper = require('./image-dropper');
+var formValidator = require('./form-validator');
 
 module.exports = BecomeAvatarComponent;
 
@@ -54,6 +55,20 @@ BecomeAvatarComponent.prototype.postInit = function(options) {
     self.hasEnteredName = true;
   });
 
+  $('#avatar-name-input').on('input', function(ev) {
+    if (self.hasEnteredName) {
+      var newName = $(this).val();
+      if (!formValidator.isValidName(newName)) {
+        ev.preventDefault();
+        self.showError('invalid name. letters, numbers, underscores. reasonable length.', 800);
+        $(this).val(self.currentlyEnteredName);
+      }
+      else {
+        self.updateAvatarName(newName);
+      }
+    }
+  });
+
   $('.avatar-creation-submit-button').click(function() {
     self.avatar.name = $('#avatar-name-input').val();
 
@@ -69,8 +84,9 @@ BecomeAvatarComponent.prototype.postInit = function(options) {
       self.avatar.updateFaceImage(faceURL);
       apiTools.createAvatar(self.avatar.serialize(), function(avatarData) {
         self.showLoading(false);
-        if (!avatarData) {
-          self.showError('error creating avatar do better');
+        if (!avatarData || avatarData.error) {
+          var error = avatarData.error || 'error creating avatar do better';
+          self.showError(error);
           return;
         }
 
@@ -167,6 +183,8 @@ BecomeAvatarComponent.prototype.enterAvatarCreationState = function() {
   this.activateColorPicker();
   this.layout();
 
+  this.updateAvatarName(name);
+
   var self = this;
   $('.avatar-name-form-wrapper').animate({
     top: 60
@@ -174,6 +192,11 @@ BecomeAvatarComponent.prototype.enterAvatarCreationState = function() {
     $('#avatar-name-input').val(name);
     self.avatar.setVisible(true);
   });
+};
+
+BecomeAvatarComponent.prototype.updateAvatarName = function(name) {
+  this.currentlyEnteredName = name;
+  this.avatar.updateName(name);
 };
 
 BecomeAvatarComponent.prototype.setAvatarCameraTarget = function() {

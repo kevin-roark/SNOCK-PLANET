@@ -90,13 +90,15 @@ SceneComponent.prototype.showLoading = function(show) {
   }
 };
 
-SceneComponent.prototype.showError = function(message) {
+SceneComponent.prototype.showError = function(message, timeout) {
+  if (!timeout) timeout = 2000;
+
   var $error = $('.error');
   $error.text(message);
   $error.show();
   setTimeout(function() {
     $error.hide();
-  }, 2000);
+  }, timeout);
 }
 
 SceneComponent.prototype.preRender = function() {};

@@ -16321,7 +16321,7 @@ function fetchSocket() {
   return socket;
 }
 
-},{"./global-state":60,"jquery":1}],53:[function(require,module,exports){
+},{"./global-state":61,"jquery":1}],53:[function(require,module,exports){
 
 var $ = require('jquery');
 
@@ -16581,7 +16581,7 @@ AvatarControlComponent.prototype.controlsActive = function() {
   return !this.inCreationMode;
 };
 
-},{"./avatar":54,"./config":57,"./global-state":60,"./keymaster":63,"./mousemaster":69,"./object-controls":71,"./scene-component":72,"jquery":1}],54:[function(require,module,exports){
+},{"./avatar":54,"./config":57,"./global-state":61,"./keymaster":64,"./mousemaster":70,"./object-controls":72,"./scene-component":73,"jquery":1}],54:[function(require,module,exports){
 
 var SheenModel = require('./sheen-model.js');
 var loader = require('./model-loader');
@@ -16609,6 +16609,8 @@ Avatar.prototype.loadMesh = function(callback) {
   this.faceGeometry = new THREE.BoxGeometry(1.25, 1.25, 1.25);
   this.faceMesh = new THREE.Mesh(this.faceGeometry, this.faceMaterial);
 
+  this.createTextMesh();
+
   loader('/javascripts/3d_models/body.js', function (geometry, materials) {
     self.geometry = geometry;
     self.materials = materials;
@@ -16620,10 +16622,52 @@ Avatar.prototype.loadMesh = function(callback) {
     self.faceMesh.position.y = 2.7;
     self.mesh.add(self.faceMesh);
 
+    if (self.textMesh) {
+      self.mesh.add(self.textMesh);
+    }
+
     self.meshes = [self.mesh];
 
     if (callback) callback();
   });
+};
+
+Avatar.prototype.createTextMesh = function() {
+  if (this.name === 'nameless_fuck') {
+    return;
+  }
+
+  this.textMaterial = new THREE.MeshBasicMaterial({
+    color: 0x000000
+  });
+
+  this.textGeometry = new THREE.TextGeometry(this.name, {
+    size: 0.7,
+    height: 0.1,
+    curveSegments: 5,
+    font: 'droid sans',
+    bevelEnabled: false
+  });
+
+  this.textGeometry.computeBoundingBox();
+  this.textGeometry.computeBoundingSphere();
+  this.textGeometry.computeVertexNormals();
+  this.textGeometry.center();
+
+  this.textMesh = new THREE.Mesh(this.textGeometry, this.textMaterial);
+  this.textMesh.position.set(0, 4.3, 0);
+};
+
+Avatar.prototype.refreshTextMesh = function() {
+  if (this.textMesh && this.hasLoadedMesh) {
+    this.mesh.remove(this.textMesh);
+  }
+
+  this.createTextMesh();
+
+  if (this.textMesh && this.hasLoadedMesh) {
+    this.mesh.add(this.textMesh);
+  }
 };
 
 Avatar.prototype.meshDidLoad = function() {
@@ -16637,6 +16681,7 @@ Avatar.prototype.meshDidLoad = function() {
     this.updateMeshForSleeping();
   }
 };
+
 Avatar.prototype.setScale = function(s) {
   this.mesh.scale.set(s, s, s);
 };
@@ -16667,6 +16712,13 @@ Avatar.prototype.goSleep = function() {
   this.updateSleepState(true);
 };
 
+Avatar.prototype.updateName = function(name) {
+  if (this.name !== name) {
+    this.name = name;
+    this.refreshTextMesh();
+  }
+};
+
 Avatar.prototype.updateSkinColor = function(hex) {
   this.color = hex;
 
@@ -16679,6 +16731,10 @@ Avatar.prototype.updateSkinColor = function(hex) {
     material.ambient = new THREE.Color(hex);
     material.emissive = new THREE.Color(hex);
     material.needsUpdate = true;
+  }
+
+  if (this.textMaterial) {
+    this.textMaterial.color = new THREE.Color(hex);
   }
 };
 
@@ -16740,7 +16796,7 @@ Avatar.prototype.updateFromModel = function(avatarData) {
 
   if (!avatarData) avatarData = {};
 
-  this.name = avatarData.name || 'nameless_fuck';
+  this.updateName(avatarData.name || 'nameless_fuck');
   this.updateSkinColor(avatarData.color || '#000000');
   this.updateFaceImage(avatarData.faceImageUrl);
   this.updateSleepState(avatarData.sleeping || false);
@@ -16761,7 +16817,7 @@ Avatar.prototype.positionAsCoordinates = function() {
   return pos.x.toFixed(0) + 'x, ' + pos.z.toFixed(0) + 'y';
 };
 
-},{"./model-loader":68,"./sheen-model.js":73}],55:[function(require,module,exports){
+},{"./model-loader":69,"./sheen-model.js":74}],55:[function(require,module,exports){
 
 var $ = require('jquery');
 var SceneComponent = require('./scene-component');
@@ -16769,6 +16825,7 @@ var Avatar = require('./avatar');
 var globals = require('./global-state');
 var apiTools = require('./api-tools');
 var imageDropper = require('./image-dropper');
+var formValidator = require('./form-validator');
 
 module.exports = BecomeAvatarComponent;
 
@@ -16818,6 +16875,20 @@ BecomeAvatarComponent.prototype.postInit = function(options) {
     self.hasEnteredName = true;
   });
 
+  $('#avatar-name-input').on('input', function(ev) {
+    if (self.hasEnteredName) {
+      var newName = $(this).val();
+      if (!formValidator.isValidName(newName)) {
+        ev.preventDefault();
+        self.showError('invalid name. letters, numbers, underscores. reasonable length.', 800);
+        $(this).val(self.currentlyEnteredName);
+      }
+      else {
+        self.updateAvatarName(newName);
+      }
+    }
+  });
+
   $('.avatar-creation-submit-button').click(function() {
     self.avatar.name = $('#avatar-name-input').val();
 
@@ -16833,8 +16904,9 @@ BecomeAvatarComponent.prototype.postInit = function(options) {
       self.avatar.updateFaceImage(faceURL);
       apiTools.createAvatar(self.avatar.serialize(), function(avatarData) {
         self.showLoading(false);
-        if (!avatarData) {
-          self.showError('error creating avatar do better');
+        if (!avatarData || avatarData.error) {
+          var error = avatarData.error || 'error creating avatar do better';
+          self.showError(error);
           return;
         }
 
@@ -16931,6 +17003,8 @@ BecomeAvatarComponent.prototype.enterAvatarCreationState = function() {
   this.activateColorPicker();
   this.layout();
 
+  this.updateAvatarName(name);
+
   var self = this;
   $('.avatar-name-form-wrapper').animate({
     top: 60
@@ -16938,6 +17012,11 @@ BecomeAvatarComponent.prototype.enterAvatarCreationState = function() {
     $('#avatar-name-input').val(name);
     self.avatar.setVisible(true);
   });
+};
+
+BecomeAvatarComponent.prototype.updateAvatarName = function(name) {
+  this.currentlyEnteredName = name;
+  this.avatar.updateName(name);
 };
 
 BecomeAvatarComponent.prototype.setAvatarCameraTarget = function() {
@@ -16969,7 +17048,7 @@ BecomeAvatarComponent.prototype.commonFinish = function(avatarData) {
   this.markFinished();
 };
 
-},{"./api-tools":52,"./avatar":54,"./global-state":60,"./image-dropper":61,"./scene-component":72,"jquery":1}],56:[function(require,module,exports){
+},{"./api-tools":52,"./avatar":54,"./form-validator":59,"./global-state":61,"./image-dropper":62,"./scene-component":73,"jquery":1}],56:[function(require,module,exports){
 /**
  * BELOW CODE INSPIRED FROM
  * http://threejs.org/examples/misc_controls_pointerlock.html
@@ -17296,7 +17375,36 @@ Door.prototype.serialize = function() {
   return data;
 };
 
-},{"./config":57,"./sheen-model":73}],59:[function(require,module,exports){
+},{"./config":57,"./sheen-model":74}],59:[function(require,module,exports){
+
+var validChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_';
+
+module.exports.isValidName = function(name, options) {
+  if (!options) options = {};
+
+  var minLength = options.minLength || 1;
+  var maxLength = options.maxLength || 15;
+
+  if (!name || name.length < minLength || name.length > maxLength) {
+    return false;
+  }
+
+  for (var i = 0; i < name.length; i++) {
+    var iChar = name.charAt(i);
+    if (!isValidChar(iChar)) {
+      return false;
+    }
+  }
+
+  return true;
+};
+
+var isValidChar = module.exports.isValidChar = function(char) {
+  var idx = validChars.indexOf(char);
+  return idx >= 0;
+};
+
+},{}],60:[function(require,module,exports){
 
 var $ = require('jquery');
 
@@ -17526,13 +17634,13 @@ GeneralPlanetComponent.prototype.addDoor = function(doorData) {
   this.doors.push(door);
 };
 
-},{"./api-tools":52,"./avatar-control-component":53,"./config":57,"./door":58,"./keymaster":63,"jquery":1}],60:[function(require,module,exports){
+},{"./api-tools":52,"./avatar-control-component":53,"./config":57,"./door":58,"./keymaster":64,"jquery":1}],61:[function(require,module,exports){
 
 // Store anything you think should be accessible everywhere here
 
 module.exports = {};
 
-},{}],61:[function(require,module,exports){
+},{}],62:[function(require,module,exports){
 
 var $ = require('jquery');
 
@@ -17706,7 +17814,7 @@ function readfiles(files) {
   module.exports.fileCallback(trimmedFiles);
 }
 
-},{"jquery":1}],62:[function(require,module,exports){
+},{"jquery":1}],63:[function(require,module,exports){
 
 var $ = require('jquery');
 
@@ -17870,7 +17978,7 @@ InnerDoorComponent.prototype.exit = function() {
   this.markFinished();
 };
 
-},{"./api-tools":52,"./avatar-control-component":53,"./config":57,"./keymaster":63,"./note":70,"./skybox":74,"jquery":1}],63:[function(require,module,exports){
+},{"./api-tools":52,"./avatar-control-component":53,"./config":57,"./keymaster":64,"./note":71,"./skybox":75,"jquery":1}],64:[function(require,module,exports){
 
 var $ = require('jquery');
 var config = require('./config');
@@ -17968,7 +18076,7 @@ module.exports.setPreventDefaults = function(preventDefaults) {
   shouldPreventDefaults = preventDefaults;
 };
 
-},{"./config":57,"jquery":1}],64:[function(require,module,exports){
+},{"./config":57,"jquery":1}],65:[function(require,module,exports){
 /* export something */
 module.exports = new Kutility;
 
@@ -18533,7 +18641,7 @@ Kutility.prototype.blur = function(el, x) {
   this.setFilter(el, cf + f);
 }
 
-},{}],65:[function(require,module,exports){
+},{}],66:[function(require,module,exports){
 // Return an array to iterate over. For my uses this is
 // more efficient, because I only need to calculate the line text
 // and positions once, instead of each iteration during animations.
@@ -18571,7 +18679,7 @@ module.exports.draw = function drawMultiline(context, text, linespacing, x, y, w
   return txt[txt.length - 1].y + linespacing;
 }
 
-},{}],66:[function(require,module,exports){
+},{}],67:[function(require,module,exports){
 
 module.exports = function($) {
     $.fn.rainbow = function(options) {
@@ -18676,7 +18784,7 @@ module.exports = function($) {
 
 };
 
-},{}],67:[function(require,module,exports){
+},{}],68:[function(require,module,exports){
 
 var $ = require('jquery');
 var io = require('socket.io-client');
@@ -18880,7 +18988,7 @@ $(function() {
 
 });
 
-},{"./become-avatar-component":55,"./camera":56,"./config":57,"./general-planet-component":59,"./global-state":60,"./inner-door-component":62,"./lib/kutility":64,"./lib/rainbow":66,"jquery":1,"socket.io-client":2}],68:[function(require,module,exports){
+},{"./become-avatar-component":55,"./camera":56,"./config":57,"./general-planet-component":60,"./global-state":61,"./inner-door-component":63,"./lib/kutility":65,"./lib/rainbow":67,"jquery":1,"socket.io-client":2}],69:[function(require,module,exports){
 
 var cache = {};
 
@@ -18893,7 +19001,6 @@ module.exports = function loadModel(name, callback) {
 
   var loader = new THREE.JSONLoader();
   loader.load(name, function(geometry, materials) {
-    //callback(geometry, materials);
     add(name, geometry, materials);
     fetch(name, callback);
   });
@@ -18908,7 +19015,6 @@ function add(name, geometry, materials) {
 
 function fetch(name, callback) {
   var cached = cache[name];
-  console.log(cached);
 
   var geometry = cached.geometry.clone();
   var materials;
@@ -18924,7 +19030,7 @@ function fetch(name, callback) {
   callback(geometry, materials);
 }
 
-},{}],69:[function(require,module,exports){
+},{}],70:[function(require,module,exports){
 
 var $ = require('jquery');
 
@@ -18953,7 +19059,7 @@ module.exports.clearMove = function(key) {
   delete moveListeners[key];
 }
 
-},{"jquery":1}],70:[function(require,module,exports){
+},{"jquery":1}],71:[function(require,module,exports){
 
 var SheenModel = require('./sheen-model');
 var config = require('./config');
@@ -19120,7 +19226,7 @@ function loadImage(path, callback) {
   img.src = path;
 }
 
-},{"./config":57,"./lib/multiline":65,"./sheen-model":73}],71:[function(require,module,exports){
+},{"./config":57,"./lib/multiline":66,"./sheen-model":74}],72:[function(require,module,exports){
 
 /**
  * Originally written by squarefeet (github.com/squarefeet).
@@ -19333,7 +19439,7 @@ module.exports = function ObjectControls( opts ) {
     };
 };
 
-},{}],72:[function(require,module,exports){
+},{}],73:[function(require,module,exports){
 
 var $ = require('jquery');
 
@@ -19426,13 +19532,15 @@ SceneComponent.prototype.showLoading = function(show) {
   }
 };
 
-SceneComponent.prototype.showError = function(message) {
+SceneComponent.prototype.showError = function(message, timeout) {
+  if (!timeout) timeout = 2000;
+
   var $error = $('.error');
   $error.text(message);
   $error.show();
   setTimeout(function() {
     $error.hide();
-  }, 2000);
+  }, timeout);
 }
 
 SceneComponent.prototype.preRender = function() {};
@@ -19442,7 +19550,7 @@ SceneComponent.prototype.clean = function() {};
 
 SceneComponent.prototype.layout = function() {};
 
-},{"jquery":1}],73:[function(require,module,exports){
+},{"jquery":1}],74:[function(require,module,exports){
 
 module.exports = SheenModel;
 
@@ -19583,7 +19691,7 @@ SheenModel.prototype.updateFromModel = function(modelData) {
   this._id = modelData._id || null;
 };
 
-},{}],74:[function(require,module,exports){
+},{}],75:[function(require,module,exports){
 
 var config = require('./config.js');
 
@@ -19649,4 +19757,4 @@ module.exports.blocker = function(size) {
   return new THREE.Mesh(geometry, material);
 };
 
-},{"./config.js":57}]},{},[67]);
+},{"./config.js":57}]},{},[68]);
