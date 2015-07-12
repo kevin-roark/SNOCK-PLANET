@@ -78,6 +78,21 @@ Door.prototype.setTexture = function(texture) {
   this.material.needsUpdate = true;
 };
 
+Door.prototype.setSubject = function(subject) {
+  if (this.subject !== subject) {
+    this.subject = subject;
+
+    if (this.hasLoadedMesh && this.textMesh) {
+      this.mesh.remove(this.textMesh);
+    }
+
+    if (this.hasLoadedMesh) {
+      this.createTextMesh();
+    }
+
+  }
+};
+
 Door.prototype.serialize = function() {
   var data = Super.serialize.call(this);
 

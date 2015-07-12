@@ -16500,7 +16500,7 @@ AvatarControlComponent.prototype.reactToPointerLock = function(hasPointerlock) {
   }
 };
 
-AvatarControlComponent.prototype.showError = function(divSelector, message) {
+AvatarControlComponent.prototype.showFormError = function(divSelector, message) {
   var div = $(divSelector);
   div.text(message);
   div.fadeIn(function() {
@@ -17363,6 +17363,21 @@ Door.prototype.setTexture = function(texture) {
   this.material.needsUpdate = true;
 };
 
+Door.prototype.setSubject = function(subject) {
+  if (this.subject !== subject) {
+    this.subject = subject;
+
+    if (this.hasLoadedMesh && this.textMesh) {
+      this.mesh.remove(this.textMesh);
+    }
+
+    if (this.hasLoadedMesh) {
+      this.createTextMesh();
+    }
+
+  }
+};
+
 Door.prototype.serialize = function() {
   var data = Super.serialize.call(this);
 
@@ -17413,6 +17428,7 @@ var AvatarControlComponent = require('./avatar-control-component');
 var keymaster = require('./keymaster');
 var Door = require('./door');
 var apiTools = require('./api-tools');
+var formValidator = require('./form-validator');
 
 module.exports = GeneralPlanetComponent;
 
@@ -17485,6 +17501,19 @@ GeneralPlanetComponent.prototype.addInteractionGlue = function() {
     self.doorWallTextureSelected($(this));
   });
 
+  $('#door-name-input').on('input', function(ev) {
+    var newSubject = $(this).val();
+    if (!formValidator.isValidName(newSubject)) {
+      ev.preventDefault();
+      console.log(self);
+      self.showError('invalid name. letters, numbers, underscores. reasonable length.', 800);
+      $(this).val(self.currentlyEnteredSubject);
+    }
+    else {
+      self.updateDoorSubject(newSubject);
+    }
+  });
+
   $('#door-name-form').submit(function(e) {
     e.preventDefault();
     self.attemptDoorCreation();
@@ -17551,14 +17580,13 @@ GeneralPlanetComponent.prototype.enterFormCreation = function() {
 GeneralPlanetComponent.prototype.attemptDoorCreation = function() {
   var self = this;
 
-  this.creationDoor.subject = $('#door-name-input').val();
   this.creationDoor.creator = this.avatar._id;
 
   var doorData = this.creationDoor.serialize();
 
   apiTools.createDoor(doorData, function(result) {
     if (result.error) {
-      self.showError('.door-error', result.error);
+      self.showFormError('.door-error', result.error);
     } else {
       self.addDoor(result.door);
       self.exitFormCreation();
@@ -17575,6 +17603,11 @@ GeneralPlanetComponent.prototype.exitFormCreation = function() {
   $('.door-ui-wrapper').fadeOut();
 
   return true;
+};
+
+GeneralPlanetComponent.prototype.updateDoorSubject = function(subject) {
+  this.currentlyEnteredSubject = subject;
+  this.creationDoor.setSubject(subject);
 };
 
 GeneralPlanetComponent.prototype.doorTextureSelected = function(elem) {
@@ -17634,7 +17667,7 @@ GeneralPlanetComponent.prototype.addDoor = function(doorData) {
   this.doors.push(door);
 };
 
-},{"./api-tools":52,"./avatar-control-component":53,"./config":57,"./door":58,"./keymaster":64,"jquery":1}],61:[function(require,module,exports){
+},{"./api-tools":52,"./avatar-control-component":53,"./config":57,"./door":58,"./form-validator":59,"./keymaster":64,"jquery":1}],61:[function(require,module,exports){
 
 // Store anything you think should be accessible everywhere here
 
@@ -17948,7 +17981,7 @@ InnerDoorComponent.prototype.attemptNoteCreation = function() {
 
   apiTools.createNote(noteData, function(result) {
     if (result.error) {
-      self.showError('.message-error', result.error);
+      self.showFormError('.message-error', result.error);
     } else {
       self.addNote(result.note);
       self.exitFormCreation();

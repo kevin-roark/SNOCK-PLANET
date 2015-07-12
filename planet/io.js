@@ -6,6 +6,7 @@ var Door = models.Door;
 var Note = models.Note;
 var socketIO = require('socket.io');
 var socketIORedis = require('socket.io-redis');
+var sanitize = require('sanitize-html');
 var redis = require('./redis');
 
 var port = process.env.PLANET_IO_PORT || 6001;
@@ -106,6 +107,8 @@ var getDoors = function(queryData, callback) {
 };
 
 var createNote = function(noteData, callback) {
+  noteData.text = sanitize(noteData.text);
+
   createModel(Note, noteData, function(note) {
     callback(note);
 

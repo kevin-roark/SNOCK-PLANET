@@ -176,7 +176,7 @@ AvatarControlComponent.prototype.reactToPointerLock = function(hasPointerlock) {
   }
 };
 
-AvatarControlComponent.prototype.showError = function(divSelector, message) {
+AvatarControlComponent.prototype.showFormError = function(divSelector, message) {
   var div = $(divSelector);
   div.text(message);
   div.fadeIn(function() {
