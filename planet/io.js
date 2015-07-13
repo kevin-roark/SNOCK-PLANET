@@ -102,7 +102,6 @@ var createDoor = function(doorData, callback) {
 };
 
 var getDoors = function(queryData, callback) {
-  // TODO: incorporate query data. Obviously cannot return all doors forever ...
   getModels(Door, {}, callback);
 };
 

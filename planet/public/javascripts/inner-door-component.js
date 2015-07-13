@@ -144,7 +144,7 @@ InnerDoorComponent.prototype.attemptNoteCreation = function() {
 
   apiTools.createNote(noteData, function(result) {
     if (result.error) {
-      self.showFormError('.message-error', result.error);
+      self.showError(result.error);
     } else {
       self.addNote(result.note);
       self.exitFormCreation();

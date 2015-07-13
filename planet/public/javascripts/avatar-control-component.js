@@ -180,16 +180,6 @@ AvatarControlComponent.prototype.reactToPointerLock = function(hasPointerlock) {
   }
 };
 
-AvatarControlComponent.prototype.showFormError = function(divSelector, message) {
-  var div = $(divSelector);
-  div.text(message);
-  div.fadeIn(function() {
-    setTimeout(function() {
-      div.fadeOut();
-    }, 3333);
-  });
-};
-
 AvatarControlComponent.prototype.forwardKeydown = function() {
   if (!this.controlsActive()) return;
   this.controls.setForward(true);

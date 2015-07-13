@@ -13,6 +13,7 @@ module.exports = GeneralPlanetComponent;
 /** Constants */
 
 var MINIMUM_REQUIRED_DOOR_ENTRY_DISTANCE = 30;
+var SUPER_CLOSE_DOOR_DISTANCE = 5;
 
 /** Inherited methods */
 
@@ -30,7 +31,7 @@ GeneralPlanetComponent.prototype.postInit = function(options) {
     self.creationDoor.setVisible(false);
   });
 
-  this.doors = []; // TODO: not sustainable to hold all doors in a freakin' array
+  this.doors = [];
   this.doorSet = {};
 
   if (this.socket) {
@@ -106,6 +107,7 @@ GeneralPlanetComponent.prototype.attemptToEnterNearestDoor = function() {
   if (!this.controlsActive()) return;
 
   var requiredDistanceSquared = MINIMUM_REQUIRED_DOOR_ENTRY_DISTANCE * MINIMUM_REQUIRED_DOOR_ENTRY_DISTANCE;
+  var superCloseDistanceSquared = SUPER_CLOSE_DOOR_DISTANCE * SUPER_CLOSE_DOOR_DISTANCE;
   var avatarPosition = this.avatar.mesh.position;
 
   var minDistanceSquared = 100000000000;
@@ -113,9 +115,14 @@ GeneralPlanetComponent.prototype.attemptToEnterNearestDoor = function() {
   for (var i = 0; i < this.doors.length; i++) {
     var door = this.doors[i];
     var distSquared = door.mesh.position.distanceToSquared(avatarPosition);
+
     if (distSquared < minDistanceSquared) {
       minDistanceSquared = distSquared;
       nearestDoor = door;
+
+      if (distSquared < superCloseDistanceSquared) {
+        break;
+      }
     }
   }
 
@@ -164,7 +171,7 @@ GeneralPlanetComponent.prototype.attemptDoorCreation = function() {
 
   apiTools.createDoor(doorData, function(result) {
     if (result.error) {
-      self.showFormError('.door-error', result.error);
+      self.showError(result.error);
     } else {
       self.addDoor(result.door);
       self.exitFormCreation();
