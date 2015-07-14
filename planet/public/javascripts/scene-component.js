@@ -18,12 +18,16 @@ SceneComponent.prototype.init = function(scene, socket, cam, options) {
   this.layout();
   $(window).resize(this.layout);
 
+  this.frameCount = 0;
+
   this.postInit(options);
 };
 
 SceneComponent.prototype.postInit = function(options) {};
 
 SceneComponent.prototype.render = function() {
+  this.frameCount += 1;
+
   this.now = performance.now();
   this.nowDelta = (this.now - this.prevTime) / 1000;
 
@@ -68,10 +72,10 @@ SceneComponent.prototype.markFinished = function() {
   }
 };
 
-SceneComponent.prototype.addObject3d = function(object3d, callback) {
+SceneComponent.prototype.addSheenModel = function(sheenModel, callback) {
   var self = this;
-  object3d.addTo(this.scene, function() {
-    self.renderObjects.push(object3d);
+  sheenModel.addTo(this.scene, function() {
+    self.renderObjects.push(sheenModel);
     if (callback) callback();
   });
 };

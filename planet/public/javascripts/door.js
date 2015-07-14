@@ -66,7 +66,7 @@ Door.prototype.createTextMesh = function() {
 Door.prototype.render = function() {
   if (!this.hasLoadedMesh) return;
 
-  this.textMesh.rotation.y += 0.015;
+  this.textMesh.rotation.y += 0.024;
 };
 
 Door.prototype.setTexture = function(texture) {

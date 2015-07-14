@@ -26,7 +26,7 @@ AvatarControlComponent.prototype.postInit = function(options) {
   this.avatarsByName = {};
 
   this.avatar = globals.playerAvatar;
-  this.addObject3d(this.avatar);
+  this.addSheenModel(this.avatar);
 
   this.firstPerson = false;
   this.inCreationMode = false;
@@ -233,7 +233,7 @@ AvatarControlComponent.prototype.avatarUpdate = function(avatarData) {
   var avatar = this.avatarWithName(avatarData.name);
   if (!avatar) {
     avatar = new Avatar(avatarData);
-    this.addObject3d(avatar);
+    this.addSheenModel(avatar);
     this.avatarsByName[avatar.name] = avatar;
   }
   else {

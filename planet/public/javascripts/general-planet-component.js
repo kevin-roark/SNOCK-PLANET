@@ -27,7 +27,7 @@ GeneralPlanetComponent.prototype.postInit = function(options) {
   var self = this;
 
   this.creationDoor = new Door();
-  this.addObject3d(this.creationDoor, function() {
+  this.addSheenModel(this.creationDoor, function() {
     self.creationDoor.setVisible(false);
   });
 
@@ -42,6 +42,17 @@ GeneralPlanetComponent.prototype.postInit = function(options) {
         self.addDoor(doors[i]);
       }
     });
+  }
+};
+
+GeneralPlanetComponent.prototype.postRender = function() {
+  AvatarControlComponent.prototype.postRender.call(this);
+
+  var shouldRenderDoors = this.frameCount % 6 === 0;
+  if (shouldRenderDoors) {
+    for (var i = 0; i < this.doors.length; i++) {
+      this.doors[i].render();
+    }
   }
 };
 
@@ -248,6 +259,10 @@ GeneralPlanetComponent.prototype.addDoor = function(doorData) {
   }
 
   var door = new Door(doorData);
-  this.addObject3d(door);
   this.doors.push(door);
+
+  var self = this;
+  door.addTo(this.scene, function() {
+    self.additionalMeshes.push(door.mesh);
+  });
 };

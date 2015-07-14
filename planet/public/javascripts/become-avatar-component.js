@@ -23,7 +23,7 @@ BecomeAvatarComponent.prototype.postInit = function(options) {
   });
 
   globals.playerAvatar = this.avatar;
-  this.addObject3d(this.avatar, function() {
+  this.addSheenModel(this.avatar, function() {
     self.avatar.setVisible(false);
     self.setAvatarCameraTarget();
   });

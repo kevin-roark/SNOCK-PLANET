@@ -16350,7 +16350,7 @@ AvatarControlComponent.prototype.postInit = function(options) {
   this.avatarsByName = {};
 
   this.avatar = globals.playerAvatar;
-  this.addObject3d(this.avatar);
+  this.addSheenModel(this.avatar);
 
   this.firstPerson = false;
   this.inCreationMode = false;
@@ -16557,7 +16557,7 @@ AvatarControlComponent.prototype.avatarUpdate = function(avatarData) {
   var avatar = this.avatarWithName(avatarData.name);
   if (!avatar) {
     avatar = new Avatar(avatarData);
-    this.addObject3d(avatar);
+    this.addSheenModel(avatar);
     this.avatarsByName[avatar.name] = avatar;
   }
   else {
@@ -16837,7 +16837,7 @@ BecomeAvatarComponent.prototype.postInit = function(options) {
   });
 
   globals.playerAvatar = this.avatar;
-  this.addObject3d(this.avatar, function() {
+  this.addSheenModel(this.avatar, function() {
     self.avatar.setVisible(false);
     self.setAvatarCameraTarget();
   });
@@ -17344,7 +17344,7 @@ Door.prototype.createTextMesh = function() {
 Door.prototype.render = function() {
   if (!this.hasLoadedMesh) return;
 
-  this.textMesh.rotation.y += 0.015;
+  this.textMesh.rotation.y += 0.024;
 };
 
 Door.prototype.setTexture = function(texture) {
@@ -17442,7 +17442,7 @@ GeneralPlanetComponent.prototype.postInit = function(options) {
   var self = this;
 
   this.creationDoor = new Door();
-  this.addObject3d(this.creationDoor, function() {
+  this.addSheenModel(this.creationDoor, function() {
     self.creationDoor.setVisible(false);
   });
 
@@ -17457,6 +17457,17 @@ GeneralPlanetComponent.prototype.postInit = function(options) {
         self.addDoor(doors[i]);
       }
     });
+  }
+};
+
+GeneralPlanetComponent.prototype.postRender = function() {
+  AvatarControlComponent.prototype.postRender.call(this);
+
+  var shouldRenderDoors = this.frameCount % 6 === 0;
+  if (shouldRenderDoors) {
+    for (var i = 0; i < this.doors.length; i++) {
+      this.doors[i].render();
+    }
   }
 };
 
@@ -17663,8 +17674,12 @@ GeneralPlanetComponent.prototype.addDoor = function(doorData) {
   }
 
   var door = new Door(doorData);
-  this.addObject3d(door);
   this.doors.push(door);
+
+  var self = this;
+  door.addTo(this.scene, function() {
+    self.additionalMeshes.push(door.mesh);
+  });
 };
 
 },{"./api-tools":52,"./avatar-control-component":53,"./config":57,"./door":58,"./form-validator":59,"./keymaster":64,"jquery":1}],61:[function(require,module,exports){
@@ -18018,7 +18033,7 @@ InnerDoorComponent.prototype.addNote = function(noteData) {
   }
 
   var note = new Note(noteData);
-  this.addObject3d(note);
+  this.addSheenModel(note);
   this.notes.push(note);
 };
 
@@ -19522,12 +19537,16 @@ SceneComponent.prototype.init = function(scene, socket, cam, options) {
   this.layout();
   $(window).resize(this.layout);
 
+  this.frameCount = 0;
+
   this.postInit(options);
 };
 
 SceneComponent.prototype.postInit = function(options) {};
 
 SceneComponent.prototype.render = function() {
+  this.frameCount += 1;
+
   this.now = performance.now();
   this.nowDelta = (this.now - this.prevTime) / 1000;
 
@@ -19572,10 +19591,10 @@ SceneComponent.prototype.markFinished = function() {
   }
 };
 
-SceneComponent.prototype.addObject3d = function(object3d, callback) {
+SceneComponent.prototype.addSheenModel = function(sheenModel, callback) {
   var self = this;
-  object3d.addTo(this.scene, function() {
-    self.renderObjects.push(object3d);
+  sheenModel.addTo(this.scene, function() {
+    self.renderObjects.push(sheenModel);
     if (callback) callback();
   });
 };

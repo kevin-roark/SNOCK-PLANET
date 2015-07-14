@@ -168,7 +168,7 @@ InnerDoorComponent.prototype.addNote = function(noteData) {
   }
 
   var note = new Note(noteData);
-  this.addObject3d(note);
+  this.addSheenModel(note);
   this.notes.push(note);
 };
 
