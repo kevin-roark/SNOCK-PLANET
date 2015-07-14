@@ -33,7 +33,11 @@ InnerDoorComponent.prototype.postInit = function(options) {
   this.addMesh(this.room);
 
   if (this.socket) {
-    this.socket.on('note-created', this.addNote.bind(this));
+    this.socket.on('note-created', function(noteData) {
+      if (noteData.door === self.door._id) {
+        self.addNote(noteData);
+      }
+    });
 
     apiTools.getNotes(this.door._id, function(notes) {
       for (var i = 0; i < notes.length; i++) {
@@ -91,6 +95,7 @@ InnerDoorComponent.prototype.enterFormCreation = function() {
   $('#message-content-input').val('');
 
   $('.texture-option').removeClass('selected-texture');
+  this.freshNoteAccentTexture = null;
 
   return true;
 };
@@ -120,7 +125,7 @@ InnerDoorComponent.prototype.noteTextureSelected = function(elem) {
   if (texture) {
     $('.note-texture-option').removeClass('selected-texture');
     elem.addClass('selected-texture');
-    this.creationDoor.wallTexture = texture;
+    this.freshNoteAccentTexture = texture;
   }
 };
 
@@ -139,7 +144,8 @@ InnerDoorComponent.prototype.attemptNoteCreation = function() {
     text: text,
     position: {x: avatarPosition.x, y: 0, z: avatarPosition.z},
     creator: this.avatar._id,
-    door: this.door._id
+    door: this.door._id,
+    accentTexture: this.freshNoteAccentTexture
   };
 
   apiTools.createNote(noteData, function(result) {
@@ -158,7 +164,7 @@ InnerDoorComponent.prototype.addNote = function(noteData) {
       return; // already in here....
     }
 
-    this.noteSet[noteData._id] = true;
+    this.noteSet[noteData._id] = noteData;
   }
 
   var note = new Note(noteData);

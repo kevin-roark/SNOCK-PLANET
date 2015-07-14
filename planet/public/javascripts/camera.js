@@ -113,8 +113,7 @@ Camera.prototype.pointerlockchange = function () {
 };
 
 Camera.prototype.pointerlockerror = function (ev) {
-  console.log('POINTER LOCK ERROR:');
-  console.log(ev);
+  // eh i could react to this ...
 };
 
 Camera.prototype.requestPointerlock = function() {
