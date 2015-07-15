@@ -49,7 +49,7 @@ function Camera(scene, renderer, config) {
   this.proximityLimit = config.proximityLimit || 22500;
 
   this.hasPointerlock = false;
-  this.addPointerlockListeners();
+  this.addPointerlockListeners(config.forbiddenRequestClasses);
 
   resize();
 }
@@ -157,7 +157,7 @@ Camera.prototype.exitPointerlock = function() {
   canRequestPointerlock = false;
 };
 
-Camera.prototype.addPointerlockListeners = function() {
+Camera.prototype.addPointerlockListeners = function(forbiddenRequestClasses) {
   var self = this;
 
   // Hook pointer lock state change events
@@ -176,8 +176,15 @@ Camera.prototype.addPointerlockListeners = function() {
       }, false);
     });
 
-    document.addEventListener('click', function() {
+    document.addEventListener('click', function(ev) {
       if (!canRequestPointerlock) return;
+
+      if (forbiddenRequestClasses) {
+        var elementClass = ev.srcElement.className;
+        if (forbiddenRequestClasses.indexOf(elementClass) !== -1) {
+          return;
+        }
+      }
 
       self.requestPointerlock();
     }, false);

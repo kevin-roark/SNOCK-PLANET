@@ -201,7 +201,7 @@ Avatar.prototype.serialize = function() {
   data.name = this.name;
   data.color = this.color;
   data.faceImageUrl = this.faceImageUrl;
-  data.currentDoor = this.currentDoor? this.currentDoor._id : null;
+  data.currentDoor = this.currentDoor ? this.currentDoor._id : null;
   data.sleeping = this.sleeping;
 
   return data;

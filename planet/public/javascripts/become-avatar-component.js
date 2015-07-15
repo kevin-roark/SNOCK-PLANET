@@ -41,10 +41,10 @@ BecomeAvatarComponent.prototype.postInit = function(options) {
     if (!self.hasEnteredName) {
       self.showLoading(true);
       apiTools.fetchAvatar(name, function(avatarData) {
-        self.showLoading(false);
         if (avatarData) {
           self.finishAfterFetchingAvatar(avatarData);
         } else {
+          self.showLoading(false);
           self.enterAvatarCreationState();
         }
       });
@@ -83,8 +83,8 @@ BecomeAvatarComponent.prototype.postInit = function(options) {
 
       self.avatar.updateFaceImage(faceURL);
       apiTools.createAvatar(self.avatar.serialize(), function(avatarData) {
-        self.showLoading(false);
         if (!avatarData || avatarData.error) {
+          self.showLoading(false);
           var error = avatarData.error || 'error creating avatar do better';
           self.showError(error);
           return;
@@ -226,4 +226,6 @@ BecomeAvatarComponent.prototype.commonFinish = function(avatarData) {
   this.avatar.moveTo(this.avatar.mesh.position.x, 0, this.avatar.mesh.position.z);
 
   this.markFinished();
+
+  this.showLoading(false);
 };

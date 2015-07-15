@@ -16347,6 +16347,8 @@ function AvatarControlComponent() {}
 AvatarControlComponent.prototype = Object.create(SceneComponent.prototype);
 
 AvatarControlComponent.prototype.postInit = function(options) {
+  var self = this;
+
   this.avatarsByName = {};
 
   this.avatar = globals.playerAvatar;
@@ -16360,6 +16362,9 @@ AvatarControlComponent.prototype.postInit = function(options) {
   this.addCameraTargets();
 
   this.cam.requestPointerlock();
+  setTimeout(function() {
+    self.reactToPointerLock(self.cam.hasPointerlock);
+  }, 2000);
   this.addInteractionGlue();
 
   if (this.socket) {
@@ -16545,8 +16550,18 @@ AvatarControlComponent.prototype.mousemove = function(x, y, ev) {
 
 /** IO Response */
 
-AvatarControlComponent.prototype.updatedAvatarsState = function() {
-  // override me pzlzzzz
+AvatarControlComponent.prototype.updatedAvatarsState = function(avatarsState) {
+  var awakeCount = avatarsState.awakeCount;
+  this.updateCohabitantCount(awakeCount);
+};
+
+AvatarControlComponent.prototype.updateCohabitantCount = function(count) {
+  var number = parseInt(count);
+  if (number !== undefined) {
+    var numberMinusSelf = Math.max(number - 1, 0);
+    var others = numberMinusSelf === 1 ? 'other' : 'others';
+    $('.avatar-count').text(numberMinusSelf + ' living ' + others);
+  }
 };
 
 AvatarControlComponent.prototype.avatarUpdate = function(avatarData) {
@@ -16554,7 +16569,7 @@ AvatarControlComponent.prototype.avatarUpdate = function(avatarData) {
     return;
   }
 
-  var avatar = this.avatarWithName(avatarData.name);
+  var avatar = this.avatarsByName[avatarData.name];
   if (!avatar) {
     avatar = new Avatar(avatarData);
     this.addSheenModel(avatar);
@@ -16565,11 +16580,27 @@ AvatarControlComponent.prototype.avatarUpdate = function(avatarData) {
   }
 };
 
-/** Utility */
+AvatarControlComponent.prototype.handleMyAvatars = function(myAvatars) {
+  // add new avatars
+  var myAvatarsMap = {};
+  for (var i = 0; i < myAvatars.length; i++) {
+    var avatarData = myAvatars[i];
+    myAvatarsMap[avatarData.name] = avatarData;
+    this.avatarUpdate(avatarData);
+  }
 
-AvatarControlComponent.prototype.avatarWithName = function(name) {
-  return this.avatarsByName[name];
+  // cleanse old ones
+  for (var avatarName in this.avatarsByName) {
+    if (this.avatarsByName.hasOwnProperty(avatarName)) {
+      if (!myAvatarsMap[avatarName]) {
+        var oldAvatar = this.avatarsByName[avatarName];
+        this.removeSheenModel(oldAvatar);
+      }
+    }
+  }
 };
+
+/** Utility */
 
 AvatarControlComponent.prototype.controlsActive = function() {
   return !this.inCreationMode;
@@ -16779,7 +16810,7 @@ Avatar.prototype.serialize = function() {
   data.name = this.name;
   data.color = this.color;
   data.faceImageUrl = this.faceImageUrl;
-  data.currentDoor = this.currentDoor? this.currentDoor._id : null;
+  data.currentDoor = this.currentDoor ? this.currentDoor._id : null;
   data.sleeping = this.sleeping;
 
   return data;
@@ -16855,10 +16886,10 @@ BecomeAvatarComponent.prototype.postInit = function(options) {
     if (!self.hasEnteredName) {
       self.showLoading(true);
       apiTools.fetchAvatar(name, function(avatarData) {
-        self.showLoading(false);
         if (avatarData) {
           self.finishAfterFetchingAvatar(avatarData);
         } else {
+          self.showLoading(false);
           self.enterAvatarCreationState();
         }
       });
@@ -16897,8 +16928,8 @@ BecomeAvatarComponent.prototype.postInit = function(options) {
 
       self.avatar.updateFaceImage(faceURL);
       apiTools.createAvatar(self.avatar.serialize(), function(avatarData) {
-        self.showLoading(false);
         if (!avatarData || avatarData.error) {
+          self.showLoading(false);
           var error = avatarData.error || 'error creating avatar do better';
           self.showError(error);
           return;
@@ -17040,6 +17071,8 @@ BecomeAvatarComponent.prototype.commonFinish = function(avatarData) {
   this.avatar.moveTo(this.avatar.mesh.position.x, 0, this.avatar.mesh.position.z);
 
   this.markFinished();
+
+  this.showLoading(false);
 };
 
 },{"./api-tools":52,"./avatar":54,"./form-validator":59,"./global-state":61,"./image-dropper":62,"./scene-component":73,"jquery":1}],56:[function(require,module,exports){
@@ -17094,7 +17127,7 @@ function Camera(scene, renderer, config) {
   this.proximityLimit = config.proximityLimit || 22500;
 
   this.hasPointerlock = false;
-  this.addPointerlockListeners();
+  this.addPointerlockListeners(config.forbiddenRequestClasses);
 
   resize();
 }
@@ -17202,7 +17235,7 @@ Camera.prototype.exitPointerlock = function() {
   canRequestPointerlock = false;
 };
 
-Camera.prototype.addPointerlockListeners = function() {
+Camera.prototype.addPointerlockListeners = function(forbiddenRequestClasses) {
   var self = this;
 
   // Hook pointer lock state change events
@@ -17221,8 +17254,15 @@ Camera.prototype.addPointerlockListeners = function() {
       }, false);
     });
 
-    document.addEventListener('click', function() {
+    document.addEventListener('click', function(ev) {
       if (!canRequestPointerlock) return;
+
+      if (forbiddenRequestClasses) {
+        var elementClass = ev.srcElement.className;
+        if (forbiddenRequestClasses.indexOf(elementClass) !== -1) {
+          return;
+        }
+      }
 
       self.requestPointerlock();
     }, false);
@@ -17482,11 +17522,10 @@ GeneralPlanetComponent.prototype.restore = function() {
 };
 
 GeneralPlanetComponent.prototype.updatedAvatarsState = function(avatarsState) {
+  AvatarControlComponent.prototype.updatedAvatarsState.call(this, avatarsState);
+
   var planetAvatars = avatarsState.planet;
-  for (var i = 0; i < planetAvatars.length; i++) {
-    var avatarData = planetAvatars[i];
-    this.avatarUpdate(avatarData);
-  }
+  this.handleMyAvatars(planetAvatars);
 };
 
 /** User Interaction */
@@ -17919,14 +17958,13 @@ InnerDoorComponent.prototype.controlsOptions = function() {
 };
 
 InnerDoorComponent.prototype.updatedAvatarsState = function(avatarsState) {
+  AvatarControlComponent.prototype.updatedAvatarsState.call(this, avatarsState);
+
   var avatarsWithinDoors = avatarsState.doors;
   var avatarsInThisDoor = avatarsWithinDoors[this.door._id];
-  if (avatarsInThisDoor) {
-    for (var i = 0; i < avatarsInThisDoor.length; i++) {
-      var avatarData = avatarsInThisDoor[i];
-      this.avatarUpdate(avatarData);
-    }
-  }
+  if (!avatarsInThisDoor) avatarsInThisDoor = [];
+
+  this.handleMyAvatars(avatarsInThisDoor);
 };
 
 InnerDoorComponent.prototype.addInteractionGlue = function() {
@@ -18881,6 +18919,8 @@ $(function() {
   var $huds = $('.bottom-hud, .top-hud');
   var $worldCoordinates = $('.world-coordinates');
   var $currentSpace = $('.current-space');
+  var $questionMark = $('.question-mark');
+  var $faq = $('.faq');
 
   // create renderer
   var renderer;
@@ -18910,7 +18950,7 @@ $(function() {
   scene.add(ambientLight);
 
   // create camera
-  var cam = new Camera(scene, renderer, {});
+  var cam = new Camera(scene, renderer, {forbiddenRequestClasses: ['question-mark', 'faq']});
   var camera = cam.cam;
 
   // set up globals
@@ -18927,6 +18967,27 @@ $(function() {
   cam.active = true;
   startBecomeAvatarState();
   render();
+
+  // react to  global shit
+  var showingFAQ = false;
+  $questionMark.click(function() {
+    toggleFaq();
+  });
+  $('canvas, .avatar-ui-wrapper, .door-ui-wrapper, .message-ui-wrapper').click(function() {
+    if (showingFAQ) {
+      toggleFaq();
+    }
+  });
+  function toggleFaq() {
+    if (!showingFAQ) {
+      $faq.show();
+    }
+    else {
+      $faq.hide();
+    }
+
+    showingFAQ = !showingFAQ;
+  }
 
   // render every frame
   function render() {
@@ -19595,6 +19656,19 @@ SceneComponent.prototype.addSheenModel = function(sheenModel, callback) {
   var self = this;
   sheenModel.addTo(this.scene, function() {
     self.renderObjects.push(sheenModel);
+    if (callback) callback();
+  });
+};
+
+SceneComponent.prototype.removeSheenModel = function(sheenModel, callback) {
+  var self = this;
+  sheenModel.removeFrom(this.scene, function() {
+    var decrepitIndex = self.renderObjects.indexOf(sheenModel);
+    console.log('decrip: ' + decrepitIndex);
+    if (decrepitIndex >= 0) {
+      this.renderObjects.splice(decrepitIndex, 1); // remove the irrelevant object
+    }
+
     if (callback) callback();
   });
 };

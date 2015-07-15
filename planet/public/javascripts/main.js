@@ -27,6 +27,8 @@ $(function() {
   var $huds = $('.bottom-hud, .top-hud');
   var $worldCoordinates = $('.world-coordinates');
   var $currentSpace = $('.current-space');
+  var $questionMark = $('.question-mark');
+  var $faq = $('.faq');
 
   // create renderer
   var renderer;
@@ -56,7 +58,7 @@ $(function() {
   scene.add(ambientLight);
 
   // create camera
-  var cam = new Camera(scene, renderer, {});
+  var cam = new Camera(scene, renderer, {forbiddenRequestClasses: ['question-mark', 'faq']});
   var camera = cam.cam;
 
   // set up globals
@@ -73,6 +75,27 @@ $(function() {
   cam.active = true;
   startBecomeAvatarState();
   render();
+
+  // react to  global shit
+  var showingFAQ = false;
+  $questionMark.click(function() {
+    toggleFaq();
+  });
+  $('canvas, .avatar-ui-wrapper, .door-ui-wrapper, .message-ui-wrapper').click(function() {
+    if (showingFAQ) {
+      toggleFaq();
+    }
+  });
+  function toggleFaq() {
+    if (!showingFAQ) {
+      $faq.show();
+    }
+    else {
+      $faq.hide();
+    }
+
+    showingFAQ = !showingFAQ;
+  }
 
   // render every frame
   function render() {

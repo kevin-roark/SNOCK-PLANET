@@ -23,6 +23,8 @@ function AvatarControlComponent() {}
 AvatarControlComponent.prototype = Object.create(SceneComponent.prototype);
 
 AvatarControlComponent.prototype.postInit = function(options) {
+  var self = this;
+
   this.avatarsByName = {};
 
   this.avatar = globals.playerAvatar;
@@ -36,6 +38,9 @@ AvatarControlComponent.prototype.postInit = function(options) {
   this.addCameraTargets();
 
   this.cam.requestPointerlock();
+  setTimeout(function() {
+    self.reactToPointerLock(self.cam.hasPointerlock);
+  }, 2000);
   this.addInteractionGlue();
 
   if (this.socket) {
@@ -221,8 +226,18 @@ AvatarControlComponent.prototype.mousemove = function(x, y, ev) {
 
 /** IO Response */
 
-AvatarControlComponent.prototype.updatedAvatarsState = function() {
-  // override me pzlzzzz
+AvatarControlComponent.prototype.updatedAvatarsState = function(avatarsState) {
+  var awakeCount = avatarsState.awakeCount;
+  this.updateCohabitantCount(awakeCount);
+};
+
+AvatarControlComponent.prototype.updateCohabitantCount = function(count) {
+  var number = parseInt(count);
+  if (number !== undefined) {
+    var numberMinusSelf = Math.max(number - 1, 0);
+    var others = numberMinusSelf === 1 ? 'other' : 'others';
+    $('.avatar-count').text(numberMinusSelf + ' living ' + others);
+  }
 };
 
 AvatarControlComponent.prototype.avatarUpdate = function(avatarData) {
@@ -230,7 +245,7 @@ AvatarControlComponent.prototype.avatarUpdate = function(avatarData) {
     return;
   }
 
-  var avatar = this.avatarWithName(avatarData.name);
+  var avatar = this.avatarsByName[avatarData.name];
   if (!avatar) {
     avatar = new Avatar(avatarData);
     this.addSheenModel(avatar);
@@ -241,11 +256,27 @@ AvatarControlComponent.prototype.avatarUpdate = function(avatarData) {
   }
 };
 
-/** Utility */
+AvatarControlComponent.prototype.handleMyAvatars = function(myAvatars) {
+  // add new avatars
+  var myAvatarsMap = {};
+  for (var i = 0; i < myAvatars.length; i++) {
+    var avatarData = myAvatars[i];
+    myAvatarsMap[avatarData.name] = avatarData;
+    this.avatarUpdate(avatarData);
+  }
 
-AvatarControlComponent.prototype.avatarWithName = function(name) {
-  return this.avatarsByName[name];
+  // cleanse old ones
+  for (var avatarName in this.avatarsByName) {
+    if (this.avatarsByName.hasOwnProperty(avatarName)) {
+      if (!myAvatarsMap[avatarName]) {
+        var oldAvatar = this.avatarsByName[avatarName];
+        this.removeSheenModel(oldAvatar);
+      }
+    }
+  }
 };
+
+/** Utility */
 
 AvatarControlComponent.prototype.controlsActive = function() {
   return !this.inCreationMode;

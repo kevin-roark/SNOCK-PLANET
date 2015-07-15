@@ -67,11 +67,10 @@ GeneralPlanetComponent.prototype.restore = function() {
 };
 
 GeneralPlanetComponent.prototype.updatedAvatarsState = function(avatarsState) {
+  AvatarControlComponent.prototype.updatedAvatarsState.call(this, avatarsState);
+
   var planetAvatars = avatarsState.planet;
-  for (var i = 0; i < planetAvatars.length; i++) {
-    var avatarData = planetAvatars[i];
-    this.avatarUpdate(avatarData);
-  }
+  this.handleMyAvatars(planetAvatars);
 };
 
 /** User Interaction */

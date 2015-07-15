@@ -28,7 +28,7 @@ canvas {
   background-color: rgba(255, 0, 0, 0.75);
   box-shadow: 5px 5px 5px 0px rgba(0, 0, 0, 0.25);
   border-radius: 2px;
-  z-index: 1000;
+  z-index: 100;
 
   display: none;
 }
@@ -42,7 +42,7 @@ canvas {
   box-shadow: 5px 5px 5px 0px rgba(0, 0, 0, 0.25);
   font-weight: bold;
   background-color: rgba(60, 60, 255, 0.498039);
-  z-index: 100000000;
+  z-index: 100;
 
   display: none;
 }
@@ -68,6 +68,58 @@ canvas {
   border-radius: 5px;
 }
 
+/* CREDIT AND FAQ */
+
+.question-mark {
+  position: absolute;
+  left: 5px; top: 5px;
+  width: 40px; height: 40px; line-height: 40px;
+  text-align: center;
+
+  background-color: rgba(255, 255, 255, 0.95);
+  text-shadow: 0px 0px 1px rgba(0, 0, 0, 0.75);
+  box-shadow: 5px 5px 5px 0px rgba(0, 0, 0, 0.25);
+  font-size: 20px;
+  font-family: monospace;
+  cursor: pointer;
+
+  z-index: 1000;
+}
+  .question-mark:hover {
+    text-shadow: 5px 5px 1px rgba(230, 25, 99, 0.79);
+    box-shadow: 5px 5px 5px 0px rgba(127, 114, 209, 0.79);
+  }
+
+.faq {
+  position: absolute;
+  width: 666px; left: 50%; margin-left: -333px;
+  top: 100px;
+  padding: 20px;
+  background-color: rgba(0, 0, 0, 0.95);
+  color: white;
+
+  font-size: 20px;
+  line-height: 35px;
+  font-family: "Times New Roman", serif;
+
+  box-shadow: 10px 10px 10px 0px rgba(0, 0, 0, 0.75);
+
+  z-index: 1000;
+  display: none;
+}
+
+.faq-credit {
+  margin-top: 100px;
+  text-align: center;
+}
+  .faq-credit a {
+    color: #fff705;
+    text-decoration: none;
+  }
+    .faq-credit a:hover {
+      text-decoration: underline;
+    }
+
 /* TITLE */
 
 .snock-title {
@@ -92,13 +144,29 @@ canvas {
 }
 
 .top-hud {
-  top: 6px;
-  right: 6px;
+  top: 8px;
+  right: 8px;
+}
+
+.current-instructions {
+  max-width: 500px;
+
+  background-color: rgba(255, 255, 255, 0.95);
+  color: rgb(60, 60, 60);
+  box-shadow: 5px 5px 5px 0px rgba(0, 0, 0, 0.25);
+
+  padding: 5px;
+  font-size: 12px;
+  font-family: Helvetica, sans-serif;
 }
 
 .bottom-hud {
   bottom: 10px;
   right: 10px;
+
+  background-color: rgba(255, 255, 255, 0.95);
+  box-shadow: 5px 5px 5px 0px rgba(0, 0, 0, 0.25);
+  padding: 6px 7px;
 }
 
 .current-space {
@@ -110,22 +178,17 @@ canvas {
 
 .world-coordinates {
   display: inline-block;
+  margin-left: 11px;
+
+  font-size: 12px;
+  color: rgb(30, 30, 30);
+}
+
+.avatar-count {
+  display: inline-block;
   margin-left: 10px;
 
   font-size: 12px;
-  color: rgb(14, 14, 14);
-}
-
-.current-instructions {
-  max-width: 500px;
-
-  background-color: rgba(0, 0, 0, 0.12);
-  color: rgb(60, 60, 60);
-  box-shadow: 0px 0px 10px 4px rgba(0, 0, 0, 0.25);
-
-  padding: 5px;
-  font-size: 12px;
-  font-family: Helvetica, sans-serif;
 }
 
 /* Avatar scene component */
@@ -394,13 +457,17 @@ progress {
   border-radius: 2px;
   top: 20px;
   left: 20px;
-  padding: 10px;
+  padding: 20px;
+  font-size: 16px;
 
   text-decoration: underline;
-  border: 1px solid black;
+  border: 2px solid black;
   background-color: rgba(255, 255, 255, 0.5);
   cursor: pointer;
 }
+  .escape-button:hover {
+    background-color: rgba(255, 255, 255, 1);
+  }
   .door-escape-button {
     box-shadow: 8px 8px 5px 0px rgba(60,0,0,0.5);
   }

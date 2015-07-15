@@ -54,14 +54,13 @@ InnerDoorComponent.prototype.controlsOptions = function() {
 };
 
 InnerDoorComponent.prototype.updatedAvatarsState = function(avatarsState) {
+  AvatarControlComponent.prototype.updatedAvatarsState.call(this, avatarsState);
+
   var avatarsWithinDoors = avatarsState.doors;
   var avatarsInThisDoor = avatarsWithinDoors[this.door._id];
-  if (avatarsInThisDoor) {
-    for (var i = 0; i < avatarsInThisDoor.length; i++) {
-      var avatarData = avatarsInThisDoor[i];
-      this.avatarUpdate(avatarData);
-    }
-  }
+  if (!avatarsInThisDoor) avatarsInThisDoor = [];
+
+  this.handleMyAvatars(avatarsInThisDoor);
 };
 
 InnerDoorComponent.prototype.addInteractionGlue = function() {

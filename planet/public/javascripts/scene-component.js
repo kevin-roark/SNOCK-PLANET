@@ -80,6 +80,19 @@ SceneComponent.prototype.addSheenModel = function(sheenModel, callback) {
   });
 };
 
+SceneComponent.prototype.removeSheenModel = function(sheenModel, callback) {
+  var self = this;
+  sheenModel.removeFrom(this.scene, function() {
+    var decrepitIndex = self.renderObjects.indexOf(sheenModel);
+    console.log('decrip: ' + decrepitIndex);
+    if (decrepitIndex >= 0) {
+      this.renderObjects.splice(decrepitIndex, 1); // remove the irrelevant object
+    }
+
+    if (callback) callback();
+  });
+};
+
 SceneComponent.prototype.addMesh = function(mesh) {
   this.scene.add(mesh);
   this.additionalMeshes.push(mesh);

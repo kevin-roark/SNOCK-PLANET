@@ -18,21 +18,27 @@ var calculateState = function(callback) {
 
     var planetAvatars = [];
     var avatarsInDoors = {};
+    var awakeCount = 0;
 
     for (var i = 0; i < avatars.length; i++) {
       var avatar = avatars[i];
-      var loc = avatar.currentDoor;
-      if (loc) {
-        if (!avatarsInDoors[loc]) {
-          avatarsInDoors[loc] = [];
+
+      if (!avatar.sleeping) {
+        awakeCount += 1;
+      }
+
+      var doorID = avatar.currentDoor;
+      if (doorID) {
+        if (!avatarsInDoors[doorID]) {
+          avatarsInDoors[doorID] = [];
         }
-        avatarsInDoors[loc].push(avatar);
+        avatarsInDoors[doorID].push(avatar);
       } else {
         planetAvatars.push(avatar);
       }
     }
 
-    callback({planet: planetAvatars, doors: avatarsInDoors});
+    callback({planet: planetAvatars, doors: avatarsInDoors, awakeCount: awakeCount});
   });
 };
 
