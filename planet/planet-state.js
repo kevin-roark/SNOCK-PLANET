@@ -9,6 +9,10 @@ module.exports.getState = function(callback) {
   calculateState(callback);
 };
 
+module.exports.clearState = function() {
+  redisClient.publish('planet', 'clearLocalState');
+};
+
 var calculateState = function(callback) {
   amalgamateAvatars(function(avatars) {
     if (!avatars) {
@@ -43,7 +47,7 @@ var calculateState = function(callback) {
 };
 
 var amalgamateAvatars = function(callback) {
-  redisClient.hgetall('planet:avatars', function(err, avatarMapsMap) {
+  redisClient.hgetall('planet:updated-avatars', function(err, avatarMapsMap) {
     if (!avatarMapsMap) {
       if (err) {
         console.log('err getting redis avatars: ');

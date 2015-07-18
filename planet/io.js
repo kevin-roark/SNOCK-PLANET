@@ -23,9 +23,30 @@ console.log('io listening on *:' + port);
 var redisAdapter = socketIORedis(redis.uri, {key: 'planet'});
 io.adapter(redisAdapter);
 
-// set up redis client
+/// REDIS ZONE
+
+var redisSubscriber = redis.createClient();
+redisSubscriber.on('message', function(channel, message) {
+  if (message === 'clearLocalState') {
+    clearLocalAvatars();
+  }
+});
+redisSubscriber.subscribe('planet');
+
 var redisClient = redis.createClient();
 
+function updateRedisAvatars() {
+  var avatarsJSON = JSON.stringify(avatars);
+  redisClient.hset('planet:updated-avatars', uid, avatarsJSON);
+}
+
+function clearLocalAvatars() {
+  avatars = {}; // likely called after aggregator gets global state
+}
+
+/// API ZONE
+
+// set up Socket.IO events
 io.on('connection', function(socket) {
 
   socket.on('avatar-update', avatarUpdate);
@@ -63,8 +84,7 @@ var avatarUpdate = function(avatarData) {
     avatars[id] = avatarData;
   }
 
-  var avatarsJSON = JSON.stringify(avatars);
-  redisClient.hset('planet:avatars', uid, avatarsJSON);
+  updateRedisAvatars();
 };
 avatarUpdate();
 
