@@ -44,7 +44,7 @@ AvatarControlComponent.prototype.postInit = function(options) {
   this.addInteractionGlue();
 
   if (this.socket) {
-    this.socket.on('avatars-state', this.updatedAvatarsState.bind(this));
+    this.socket.on('avatar-updates', this.handleAvatarUpdates.bind(this));
   }
 };
 
@@ -226,8 +226,8 @@ AvatarControlComponent.prototype.mousemove = function(x, y, ev) {
 
 /** IO Response */
 
-AvatarControlComponent.prototype.updatedAvatarsState = function(avatarsState) {
-  var awakeCount = avatarsState.awakeCount;
+AvatarControlComponent.prototype.handleAvatarUpdates = function(avatarUpdates) {
+  var awakeCount = avatarUpdates.awakeCount;
   this.updateCohabitantCount(awakeCount);
 };
 
@@ -256,22 +256,24 @@ AvatarControlComponent.prototype.avatarUpdate = function(avatarData) {
   }
 };
 
-AvatarControlComponent.prototype.handleMyAvatars = function(myAvatars) {
-  // add new avatars
-  var myAvatarsMap = {};
-  for (var i = 0; i < myAvatars.length; i++) {
-    var avatarData = myAvatars[i];
-    myAvatarsMap[avatarData.name] = avatarData;
+// called with avatars we already have inside or that just joined
+AvatarControlComponent.prototype.handleMyAvatars = function(updatedAvatars) {
+  for (var i = 0; i < updatedAvatars.length; i++) {
+    var avatarData = updatedAvatars[i];
     this.avatarUpdate(avatarData);
   }
+};
 
-  // cleanse old ones
-  for (var avatarName in this.avatarsByName) {
-    if (this.avatarsByName.hasOwnProperty(avatarName)) {
-      if (!myAvatarsMap[avatarName]) {
-        var oldAvatar = this.avatarsByName[avatarName];
-        this.removeSheenModel(oldAvatar);
-      }
+// called with avatars that should not be in here, but maybe used to be
+AvatarControlComponent.prototype.checkForMovedAvatars = function(updatedAvatars) {
+  for (var i = 0; i < updatedAvatars.length; i++) {
+    var avatarData = updatedAvatars[i];
+
+    var myAvatar = this.avatarsByName[avatarData.name];
+    if (myAvatar) {
+      // if we used to control it before this update, delete it
+      this.removeSheenModel(myAvatar);
+      delete this.avatarsByName[avatarData.name];
     }
   }
 };

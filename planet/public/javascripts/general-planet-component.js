@@ -35,8 +35,15 @@ GeneralPlanetComponent.prototype.postInit = function(options) {
   this.doorSet = {};
 
   if (this.socket) {
+    // load every avatar that exists in outer-level planet (sleeping, awake) and add them to scene
+    apiTools.getAvatars(null, function(avatars) {
+      self.handleMyAvatars(avatars);
+    });
+
+    // when a new door is created, we add it to our world
     this.socket.on('door-created', this.addDoor.bind(this));
 
+    // get all the doors that exist, and put them into scene
     apiTools.getDoors({x: 0, y: 0, z: 0}, function(doors) {
       for (var i = 0; i < doors.length; i++) {
         self.addDoor(doors[i]);
@@ -66,11 +73,24 @@ GeneralPlanetComponent.prototype.restore = function() {
   }
 };
 
-GeneralPlanetComponent.prototype.updatedAvatarsState = function(avatarsState) {
-  AvatarControlComponent.prototype.updatedAvatarsState.call(this, avatarsState);
+GeneralPlanetComponent.prototype.handleAvatarUpdates = function(avatarUpdates) {
+  AvatarControlComponent.prototype.handleAvatarUpdates.call(this, avatarUpdates);
 
-  var planetAvatars = avatarsState.planet;
+  var planetAvatars = avatarUpdates.planet;
   this.handleMyAvatars(planetAvatars);
+
+  var avatarsWithinDoorsMap = avatarUpdates.doors;
+  var allDoorAvatars = [];
+  for (var doorID in avatarsWithinDoorsMap) {
+    if (avatarsWithinDoorsMap.hasOwnProperty(doorID)) {
+      var avatarsInSpecificDoor = avatarsWithinDoorsMap[doorID];
+      for (var i = 0; i < avatarsInSpecificDoor.length; i++) {
+        var avatar = avatarsInSpecificDoor[i];
+        allDoorAvatars.push(avatar);
+      }
+    }
+  }
+  this.checkForMovedAvatars(allDoorAvatars);
 };
 
 /** User Interaction */

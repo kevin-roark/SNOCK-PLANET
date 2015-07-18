@@ -33,12 +33,19 @@ InnerDoorComponent.prototype.postInit = function(options) {
   this.addMesh(this.room);
 
   if (this.socket) {
+    // when a new note is created in this room, add it in realtime
     this.socket.on('note-created', function(noteData) {
       if (noteData.door === self.door._id) {
         self.addNote(noteData);
       }
     });
 
+    // get all of the avatars currently in this door (asleep and awake) and add them to scene
+    apiTools.getAvatars(this.door._id, function(avatars) {
+      self.handleMyAvatars(avatars);
+    });
+
+    // get all the notes that are currently in this room and add them to the scene
     apiTools.getNotes(this.door._id, function(notes) {
       for (var i = 0; i < notes.length; i++) {
         self.addNote(notes[i]);
@@ -53,14 +60,17 @@ InnerDoorComponent.prototype.controlsOptions = function() {
   return options;
 };
 
-InnerDoorComponent.prototype.updatedAvatarsState = function(avatarsState) {
-  AvatarControlComponent.prototype.updatedAvatarsState.call(this, avatarsState);
+InnerDoorComponent.prototype.handleAvatarUpdates = function(avatarUpdates) {
+  AvatarControlComponent.prototype.handleAvatarUpdates.call(this, avatarUpdates);
 
-  var avatarsWithinDoors = avatarsState.doors;
+  var avatarsWithinDoors = avatarUpdates.doors;
   var avatarsInThisDoor = avatarsWithinDoors[this.door._id];
   if (!avatarsInThisDoor) avatarsInThisDoor = [];
 
   this.handleMyAvatars(avatarsInThisDoor);
+
+  var avatarsInPlanet = avatarUpdates.planet;
+  this.checkForMovedAvatars(avatarsInPlanet);
 };
 
 InnerDoorComponent.prototype.addInteractionGlue = function() {

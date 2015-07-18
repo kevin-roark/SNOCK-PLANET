@@ -28,14 +28,14 @@ module.exports.createAvatar = function(avatarData, callback) {
   });
 };
 
-module.exports.getAvatarsInDoor = function(doorID, callback) {
-  if (!fetchSocket() || !doorID) {
-    callback({error: 'i aint gonna do it'});
+module.exports.getAvatars = function(doorID, callback) {
+  if (!fetchSocket()) {
+    callback({error: 'i aint gonna do it without a socket'});
     return;
   }
 
-  socket.emit('get-avatars-in-door', doorID, function(notes) {
-    callback(notes);
+  socket.emit('get-avatars-in-door', doorID, function(avatars) {
+    callback(avatars);
   });
 };
 
