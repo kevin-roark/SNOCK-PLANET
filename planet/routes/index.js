@@ -4,7 +4,8 @@ var router = express.Router();
 
 var faceImager = require('../face-imager');
 
-var ioURL = process.env.PLANET_IO_URL || 'http://localhost:6001';
+var ioPort = process.env.PLANET_IO_PORT || '6001';
+var ioURL = process.env.PLANET_IO_URL || 'http://localhost:' + ioPort;
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
