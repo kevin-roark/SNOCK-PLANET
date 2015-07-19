@@ -6,6 +6,7 @@ module.exports = function loadModel(name, callback) {
 
   if (cache[name]) {
     fetch(name, callback);
+    return;
   }
 
   var loader = new THREE.JSONLoader();
