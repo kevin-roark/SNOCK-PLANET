@@ -16233,14 +16233,14 @@ module.exports.createAvatar = function(avatarData, callback) {
   });
 };
 
-module.exports.getAvatarsInDoor = function(doorID, callback) {
-  if (!fetchSocket() || !doorID) {
-    callback({error: 'i aint gonna do it'});
+module.exports.getAvatars = function(doorID, callback) {
+  if (!fetchSocket()) {
+    callback({error: 'i aint gonna do it without a socket'});
     return;
   }
 
-  socket.emit('get-avatars-in-door', doorID, function(notes) {
-    callback(notes);
+  socket.emit('get-avatars-in-door', doorID, function(avatars) {
+    callback(avatars);
   });
 };
 
@@ -16366,10 +16366,6 @@ AvatarControlComponent.prototype.postInit = function(options) {
     self.reactToPointerLock(self.cam.hasPointerlock);
   }, 2000);
   this.addInteractionGlue();
-
-  if (this.socket) {
-    this.socket.on('avatars-state', this.updatedAvatarsState.bind(this));
-  }
 };
 
 AvatarControlComponent.prototype.controlsOptions = function() {
@@ -16548,21 +16544,7 @@ AvatarControlComponent.prototype.mousemove = function(x, y, ev) {
   this.controls.mouseUpdate(movementX, movementY);
 };
 
-/** IO Response */
-
-AvatarControlComponent.prototype.updatedAvatarsState = function(avatarsState) {
-  var awakeCount = avatarsState.awakeCount;
-  this.updateCohabitantCount(awakeCount);
-};
-
-AvatarControlComponent.prototype.updateCohabitantCount = function(count) {
-  var number = parseInt(count);
-  if (number !== undefined) {
-    var numberMinusSelf = Math.max(number - 1, 0);
-    var others = numberMinusSelf === 1 ? 'other' : 'others';
-    $('.avatar-count').text(numberMinusSelf + ' living ' + others);
-  }
-};
+/* Avatar Management */
 
 AvatarControlComponent.prototype.avatarUpdate = function(avatarData) {
   if (avatarData._id === this.avatar._id) {
@@ -16571,32 +16553,36 @@ AvatarControlComponent.prototype.avatarUpdate = function(avatarData) {
 
   var avatar = this.avatarsByName[avatarData.name];
   if (!avatar) {
+    console.log('adding avatar with name: ' + avatarData.name + ' ... from ' + this.identifier);
     avatar = new Avatar(avatarData);
     this.addSheenModel(avatar);
-    this.avatarsByName[avatar.name] = avatar;
+    this.avatarsByName[avatarData.name] = avatar;
   }
   else {
+    console.log('updating avatar with name: ' + avatarData.name + ' ... from ' + this.identifier);
     avatar.updateFromModel(avatarData);
   }
 };
 
-AvatarControlComponent.prototype.handleMyAvatars = function(myAvatars) {
-  // add new avatars
-  var myAvatarsMap = {};
-  for (var i = 0; i < myAvatars.length; i++) {
-    var avatarData = myAvatars[i];
-    myAvatarsMap[avatarData.name] = avatarData;
+// called with avatars we already have inside or that just joined
+AvatarControlComponent.prototype.handleMyAvatars = function(updatedAvatars) {
+  for (var i = 0; i < updatedAvatars.length; i++) {
+    var avatarData = updatedAvatars[i];
     this.avatarUpdate(avatarData);
   }
+};
 
-  // cleanse old ones
-  for (var avatarName in this.avatarsByName) {
-    if (this.avatarsByName.hasOwnProperty(avatarName)) {
-      if (!myAvatarsMap[avatarName]) {
-        var oldAvatar = this.avatarsByName[avatarName];
-        this.removeSheenModel(oldAvatar);
-      }
-    }
+AvatarControlComponent.prototype.containsAvatar = function(avatarData) {
+  return this.avatarsByName[avatarData.name];
+};
+
+AvatarControlComponent.prototype.removeAvatar = function(avatarData) {
+  var myAvatar = this.avatarsByName[avatarData.name];
+  if (myAvatar) {
+    // if we used to control it before this update, delete it
+    this.removeSheenModel(myAvatar);
+    delete this.avatarsByName[avatarData.name];
+    console.log('removing avatar with name: ' + avatarData.name);
   }
 };
 
@@ -16861,6 +16847,7 @@ function BecomeAvatarComponent() {}
 BecomeAvatarComponent.prototype = Object.create(SceneComponent.prototype);
 
 BecomeAvatarComponent.prototype.postInit = function(options) {
+  this.identifier = 'becoming a man';
   var self = this;
 
   this.avatar = new Avatar({
@@ -17478,6 +17465,7 @@ GeneralPlanetComponent.prototype = Object.create(AvatarControlComponent.prototyp
 
 GeneralPlanetComponent.prototype.postInit = function(options) {
   AvatarControlComponent.prototype.postInit.call(this, options);
+  this.identifier = 'outer planet';
 
   var self = this;
 
@@ -17490,8 +17478,15 @@ GeneralPlanetComponent.prototype.postInit = function(options) {
   this.doorSet = {};
 
   if (this.socket) {
+    // load every avatar that exists in outer-level planet (sleeping, awake) and add them to scene
+    apiTools.getAvatars(null, function(avatars) {
+      self.handleMyAvatars(avatars);
+    });
+
+    // when a new door is created, we add it to our world
     this.socket.on('door-created', this.addDoor.bind(this));
 
+    // get all the doors that exist, and put them into scene
     apiTools.getDoors({x: 0, y: 0, z: 0}, function(doors) {
       for (var i = 0; i < doors.length; i++) {
         self.addDoor(doors[i]);
@@ -17517,15 +17512,12 @@ GeneralPlanetComponent.prototype.restore = function() {
   this.avatar.currentDoor = null;
 
   if (this.savedPosition) {
+    console.log(this.savedPosition);
     this.avatar.moveTo(this.savedPosition);
   }
-};
-
-GeneralPlanetComponent.prototype.updatedAvatarsState = function(avatarsState) {
-  AvatarControlComponent.prototype.updatedAvatarsState.call(this, avatarsState);
-
-  var planetAvatars = avatarsState.planet;
-  this.handleMyAvatars(planetAvatars);
+  else {
+    this.avatar.moveTo(0, 0, 0);
+  }
 };
 
 /** User Interaction */
@@ -17922,6 +17914,7 @@ InnerDoorComponent.prototype = Object.create(AvatarControlComponent.prototype);
 
 InnerDoorComponent.prototype.postInit = function(options) {
   AvatarControlComponent.prototype.postInit.call(this, options);
+  this.identifier = 'inner door';
 
   var self = this;
 
@@ -17937,12 +17930,19 @@ InnerDoorComponent.prototype.postInit = function(options) {
   this.addMesh(this.room);
 
   if (this.socket) {
+    // when a new note is created in this room, add it in realtime
     this.socket.on('note-created', function(noteData) {
       if (noteData.door === self.door._id) {
         self.addNote(noteData);
       }
     });
 
+    // get all of the avatars currently in this door (asleep and awake) and add them to scene
+    apiTools.getAvatars(this.door._id, function(avatars) {
+      self.handleMyAvatars(avatars);
+    });
+
+    // get all the notes that are currently in this room and add them to the scene
     apiTools.getNotes(this.door._id, function(notes) {
       for (var i = 0; i < notes.length; i++) {
         self.addNote(notes[i]);
@@ -17955,16 +17955,6 @@ InnerDoorComponent.prototype.controlsOptions = function() {
   var options =  AvatarControlComponent.prototype.controlsOptions.call(this);
   options.fenceDistance = 1000;
   return options;
-};
-
-InnerDoorComponent.prototype.updatedAvatarsState = function(avatarsState) {
-  AvatarControlComponent.prototype.updatedAvatarsState.call(this, avatarsState);
-
-  var avatarsWithinDoors = avatarsState.doors;
-  var avatarsInThisDoor = avatarsWithinDoors[this.door._id];
-  if (!avatarsInThisDoor) avatarsInThisDoor = [];
-
-  this.handleMyAvatars(avatarsInThisDoor);
 };
 
 InnerDoorComponent.prototype.addInteractionGlue = function() {
@@ -18910,19 +18900,59 @@ var INSIDE_DOOR_MODE = 2;
 
 $(function() {
 
+  // trying to keep most mutable state in here
   var state = {
     frameCount: 0,
     mode: BECOME_AVATAR_MODE
   };
-  var socket = io(window.serverConfig.ioURL);
 
+  // set up my ole socket.IO listeners
+  var socket = io(window.serverConfig.ioURL);
+  socket.on('avatar-updates', function(avatarUpdates) {
+    updateCohabitantCount(avatarUpdates.awakeCount);
+
+    var planetComponent = state.generalPlanetComponent;
+    var doorComponent = state.currentInnerDoorComponent;
+    var updatedAvatars = avatarUpdates.avatars;
+
+    for (var i = 0; i < updatedAvatars.length; i++) {
+      var avatarData = updatedAvatars[i];
+
+      if (!avatarData.currentDoor) {
+        // its in the planet
+        if (planetComponent) {
+          // update the sucker
+          planetComponent.avatarUpdate(avatarData);
+        }
+
+        if (doorComponent && doorComponent.containsAvatar(avatarData)) {
+          doorComponent.removeAvatar(avatarData);
+        }
+      }
+      else {
+        // its in a door
+        if (doorComponent && doorComponent.door._id === avatarData.currentDoor) {
+          // its in my curent door
+          doorComponent.avatarUpdate(avatarData);
+        }
+
+        if (planetComponent && planetComponent.containsAvatar(avatarData)) {
+          // it used to be in planet .. cleanse it
+          planetComponent.removeAvatar(avatarData);
+        }
+      }
+    }
+  });
+
+  // anything in the DOM declared here
   var $huds = $('.bottom-hud, .top-hud');
   var $worldCoordinates = $('.world-coordinates');
   var $currentSpace = $('.current-space');
   var $questionMark = $('.question-mark');
   var $faq = $('.faq');
+  var $avatarCount = $('.avatar-count');
 
-  // create renderer
+  // create THREE.JS renderer
   var renderer;
   try {
     renderer = new THREE.WebGLRenderer({antialias: true});
@@ -18940,7 +18970,7 @@ $(function() {
   renderer.setSize(window.innerWidth, window.innerHeight);
   document.body.appendChild(renderer.domElement);
 
-  // create scene
+  // create THREE.JS scene
   var scene = new THREE.Scene();
 
   // TODO: fog
@@ -18959,16 +18989,12 @@ $(function() {
   globals.scene = scene;
   globals.camera = cam;
 
-  if (config.testing) {
-    // do test stuff
-  }
-
   // start rendering
   cam.active = true;
   startBecomeAvatarState();
   render();
 
-  // react to  global shit
+  // react to  global DOM shit
   var showingFAQ = false;
   $questionMark.click(function() {
     toggleFaq();
@@ -18996,7 +19022,7 @@ $(function() {
     state.frameCount += 1;
 
     // every few frames lets update our state to the server
-    if (state.frameCount % 120 === 0 && globals.playerAvatar) {
+    if (state.frameCount % 60 === 0 && state.mode !== BECOME_AVATAR_MODE) {
       updateMyAvatar();
     }
 
@@ -19062,8 +19088,7 @@ $(function() {
     setGeneralPlanetHud();
 
     state.generalPlanetComponent.enterDoorCallback = function(door) {
-      state.generalPlanetComponent.removeObjects();
-      state.generalPlanetComponent.clean();
+      state.generalPlanetComponent.markFinished();
 
       startInsideDoorState(door);
     };
@@ -19096,6 +19121,15 @@ $(function() {
     };
   }
 
+  function updateCohabitantCount(count) {
+    var number = parseInt(count);
+    if (number !== undefined) {
+      var numberMinusSelf = Math.max(number - 1, 0);
+      var others = numberMinusSelf === 1 ? 'other' : 'others';
+      $avatarCount.text(numberMinusSelf + ' living ' + others);
+    }
+  }
+
   function setCurrentInstructions(text) {
     $('.current-instructions').text(text);
   }
@@ -19125,6 +19159,7 @@ module.exports = function loadModel(name, callback) {
 
   if (cache[name]) {
     fetch(name, callback);
+    return;
   }
 
   var loader = new THREE.JSONLoader();
@@ -19586,6 +19621,8 @@ module.exports = SceneComponent;
 function SceneComponent() {}
 
 SceneComponent.prototype.init = function(scene, socket, cam, options) {
+  if (!options) options = {};
+
   this.scene = scene;
   this.socket = socket;
   this.cam = cam;
@@ -19599,6 +19636,7 @@ SceneComponent.prototype.init = function(scene, socket, cam, options) {
   $(window).resize(this.layout);
 
   this.frameCount = 0;
+  this.identifier = options.identifier || 'scene component';
 
   this.postInit(options);
 };
@@ -19623,6 +19661,8 @@ SceneComponent.prototype.render = function() {
 };
 
 SceneComponent.prototype.restore = function() {
+  this.finished = false;
+
   for (var i = 0; i < this.renderObjects.length; i++) {
     this.renderObjects[i].addTo(this.scene);
   }
@@ -19637,7 +19677,7 @@ SceneComponent.prototype.removeObjects = function() {
     this.renderObjects[i].removeFrom(this.scene);
   }
 
-  for (var i = 0; i < this.additionalMeshes.length; i++) {
+  for (i = 0; i < this.additionalMeshes.length; i++) {
     this.scene.remove(this.additionalMeshes[i]);
   }
 };
@@ -19653,7 +19693,15 @@ SceneComponent.prototype.markFinished = function() {
 };
 
 SceneComponent.prototype.addSheenModel = function(sheenModel, callback) {
+  if (this.finished) {
+    console.log('added a sheen model but not active ... from ' + this.identifier);
+    this.renderObjects.push(sheenModel);
+    if (callback) callback();
+    return;
+  }
+
   var self = this;
+  console.log('added a sheen model and i am active ... from ' + this.identifier);
   sheenModel.addTo(this.scene, function() {
     self.renderObjects.push(sheenModel);
     if (callback) callback();
@@ -19664,9 +19712,8 @@ SceneComponent.prototype.removeSheenModel = function(sheenModel, callback) {
   var self = this;
   sheenModel.removeFrom(this.scene, function() {
     var decrepitIndex = self.renderObjects.indexOf(sheenModel);
-    console.log('decrip: ' + decrepitIndex);
     if (decrepitIndex >= 0) {
-      this.renderObjects.splice(decrepitIndex, 1); // remove the irrelevant object
+      self.renderObjects.splice(decrepitIndex, 1); // remove the irrelevant object
     }
 
     if (callback) callback();
@@ -19696,7 +19743,7 @@ SceneComponent.prototype.showError = function(message, timeout) {
   setTimeout(function() {
     $error.hide();
   }, timeout);
-}
+};
 
 SceneComponent.prototype.preRender = function() {};
 SceneComponent.prototype.postRender = function() {};
@@ -19759,11 +19806,15 @@ SheenModel.prototype.addTo = function(scene, callback) {
   }
 };
 
-SheenModel.prototype.removeFrom = function(scene) {
+SheenModel.prototype.removeFrom = function(scene, callback) {
   if (!this.hasLoadedMesh) return;
 
   for (var i = 0; i < this.meshes.length; i++) {
     scene.remove(this.meshes[i]);
+  }
+
+  if (callback) {
+    callback();
   }
 };
 
