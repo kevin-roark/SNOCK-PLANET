@@ -140,7 +140,7 @@ $(function() {
     state.frameCount += 1;
 
     // every few frames lets update our state to the server
-    if (state.frameCount % 120 === 0 && globals.playerAvatar) {
+    if (state.frameCount % 60 === 0 && state.mode !== BECOME_AVATAR_MODE) {
       updateMyAvatar();
     }
 

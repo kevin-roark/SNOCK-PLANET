@@ -15,4 +15,4 @@ setInterval(function() {
     // clear between calculations so that the state only feeds me updates (rather than *all* avatars)
     planetState.clearState();
   });
-}, 7777);
+}, 4000);
