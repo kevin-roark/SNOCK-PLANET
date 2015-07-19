@@ -16553,13 +16553,11 @@ AvatarControlComponent.prototype.avatarUpdate = function(avatarData) {
 
   var avatar = this.avatarsByName[avatarData.name];
   if (!avatar) {
-    console.log('adding avatar with name: ' + avatarData.name + ' ... from ' + this.identifier);
     avatar = new Avatar(avatarData);
     this.addSheenModel(avatar);
     this.avatarsByName[avatarData.name] = avatar;
   }
   else {
-    console.log('updating avatar with name: ' + avatarData.name + ' ... from ' + this.identifier);
     avatar.updateFromModel(avatarData);
   }
 };
@@ -17512,7 +17510,6 @@ GeneralPlanetComponent.prototype.restore = function() {
   this.avatar.currentDoor = null;
 
   if (this.savedPosition) {
-    console.log(this.savedPosition);
     this.avatar.moveTo(this.savedPosition);
   }
   else {
@@ -19694,14 +19691,12 @@ SceneComponent.prototype.markFinished = function() {
 
 SceneComponent.prototype.addSheenModel = function(sheenModel, callback) {
   if (this.finished) {
-    console.log('added a sheen model but not active ... from ' + this.identifier);
     this.renderObjects.push(sheenModel);
     if (callback) callback();
     return;
   }
 
   var self = this;
-  console.log('added a sheen model and i am active ... from ' + this.identifier);
   sheenModel.addTo(this.scene, function() {
     self.renderObjects.push(sheenModel);
     if (callback) callback();
