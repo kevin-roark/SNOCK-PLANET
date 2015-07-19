@@ -51,11 +51,15 @@ SheenModel.prototype.addTo = function(scene, callback) {
   }
 };
 
-SheenModel.prototype.removeFrom = function(scene) {
+SheenModel.prototype.removeFrom = function(scene, callback) {
   if (!this.hasLoadedMesh) return;
 
   for (var i = 0; i < this.meshes.length; i++) {
     scene.remove(this.meshes[i]);
+  }
+
+  if (callback) {
+    callback();
   }
 };
 

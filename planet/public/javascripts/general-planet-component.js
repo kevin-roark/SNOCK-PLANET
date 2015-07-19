@@ -73,26 +73,6 @@ GeneralPlanetComponent.prototype.restore = function() {
   }
 };
 
-GeneralPlanetComponent.prototype.handleAvatarUpdates = function(avatarUpdates) {
-  AvatarControlComponent.prototype.handleAvatarUpdates.call(this, avatarUpdates);
-
-  var planetAvatars = avatarUpdates.planet;
-  this.handleMyAvatars(planetAvatars);
-
-  var avatarsWithinDoorsMap = avatarUpdates.doors;
-  var allDoorAvatars = [];
-  for (var doorID in avatarsWithinDoorsMap) {
-    if (avatarsWithinDoorsMap.hasOwnProperty(doorID)) {
-      var avatarsInSpecificDoor = avatarsWithinDoorsMap[doorID];
-      for (var i = 0; i < avatarsInSpecificDoor.length; i++) {
-        var avatar = avatarsInSpecificDoor[i];
-        allDoorAvatars.push(avatar);
-      }
-    }
-  }
-  this.checkForMovedAvatars(allDoorAvatars);
-};
-
 /** User Interaction */
 
 GeneralPlanetComponent.prototype.addInteractionGlue = function() {

@@ -43,6 +43,8 @@ SceneComponent.prototype.render = function() {
 };
 
 SceneComponent.prototype.restore = function() {
+  this.finished = false;
+
   for (var i = 0; i < this.renderObjects.length; i++) {
     this.renderObjects[i].addTo(this.scene);
   }
@@ -73,6 +75,12 @@ SceneComponent.prototype.markFinished = function() {
 };
 
 SceneComponent.prototype.addSheenModel = function(sheenModel, callback) {
+  if (this.finished) {
+    this.renderObjects.push(sheenModel);
+    if (callback) callback();
+    return;
+  }
+
   var self = this;
   sheenModel.addTo(this.scene, function() {
     self.renderObjects.push(sheenModel);
@@ -86,7 +94,7 @@ SceneComponent.prototype.removeSheenModel = function(sheenModel, callback) {
     var decrepitIndex = self.renderObjects.indexOf(sheenModel);
     console.log('decrip: ' + decrepitIndex);
     if (decrepitIndex >= 0) {
-      this.renderObjects.splice(decrepitIndex, 1); // remove the irrelevant object
+      self.renderObjects.splice(decrepitIndex, 1); // remove the irrelevant object
     }
 
     if (callback) callback();

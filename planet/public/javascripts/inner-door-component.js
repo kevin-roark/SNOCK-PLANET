@@ -60,19 +60,6 @@ InnerDoorComponent.prototype.controlsOptions = function() {
   return options;
 };
 
-InnerDoorComponent.prototype.handleAvatarUpdates = function(avatarUpdates) {
-  AvatarControlComponent.prototype.handleAvatarUpdates.call(this, avatarUpdates);
-
-  var avatarsWithinDoors = avatarUpdates.doors;
-  var avatarsInThisDoor = avatarsWithinDoors[this.door._id];
-  if (!avatarsInThisDoor) avatarsInThisDoor = [];
-
-  this.handleMyAvatars(avatarsInThisDoor);
-
-  var avatarsInPlanet = avatarUpdates.planet;
-  this.checkForMovedAvatars(avatarsInPlanet);
-};
-
 InnerDoorComponent.prototype.addInteractionGlue = function() {
   AvatarControlComponent.prototype.addInteractionGlue.call(this);
 

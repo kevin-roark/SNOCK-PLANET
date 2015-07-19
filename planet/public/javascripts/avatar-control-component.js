@@ -42,10 +42,6 @@ AvatarControlComponent.prototype.postInit = function(options) {
     self.reactToPointerLock(self.cam.hasPointerlock);
   }, 2000);
   this.addInteractionGlue();
-
-  if (this.socket) {
-    this.socket.on('avatar-updates', this.handleAvatarUpdates.bind(this));
-  }
 };
 
 AvatarControlComponent.prototype.controlsOptions = function() {
@@ -224,21 +220,7 @@ AvatarControlComponent.prototype.mousemove = function(x, y, ev) {
   this.controls.mouseUpdate(movementX, movementY);
 };
 
-/** IO Response */
-
-AvatarControlComponent.prototype.handleAvatarUpdates = function(avatarUpdates) {
-  var awakeCount = avatarUpdates.awakeCount;
-  this.updateCohabitantCount(awakeCount);
-};
-
-AvatarControlComponent.prototype.updateCohabitantCount = function(count) {
-  var number = parseInt(count);
-  if (number !== undefined) {
-    var numberMinusSelf = Math.max(number - 1, 0);
-    var others = numberMinusSelf === 1 ? 'other' : 'others';
-    $('.avatar-count').text(numberMinusSelf + ' living ' + others);
-  }
-};
+/* Avatar Management */
 
 AvatarControlComponent.prototype.avatarUpdate = function(avatarData) {
   if (avatarData._id === this.avatar._id) {
@@ -249,7 +231,7 @@ AvatarControlComponent.prototype.avatarUpdate = function(avatarData) {
   if (!avatar) {
     avatar = new Avatar(avatarData);
     this.addSheenModel(avatar);
-    this.avatarsByName[avatar.name] = avatar;
+    this.avatarsByName[avatarData.name] = avatar;
   }
   else {
     avatar.updateFromModel(avatarData);
@@ -264,17 +246,17 @@ AvatarControlComponent.prototype.handleMyAvatars = function(updatedAvatars) {
   }
 };
 
-// called with avatars that should not be in here, but maybe used to be
-AvatarControlComponent.prototype.checkForMovedAvatars = function(updatedAvatars) {
-  for (var i = 0; i < updatedAvatars.length; i++) {
-    var avatarData = updatedAvatars[i];
+AvatarControlComponent.prototype.containsAvatar = function(avatarData) {
+  return this.avatarsByName[avatarData.name];
+};
 
-    var myAvatar = this.avatarsByName[avatarData.name];
-    if (myAvatar) {
-      // if we used to control it before this update, delete it
-      this.removeSheenModel(myAvatar);
-      delete this.avatarsByName[avatarData.name];
-    }
+AvatarControlComponent.prototype.removeAvatar = function(avatarData) {
+  var myAvatar = this.avatarsByName[avatarData.name];
+  if (myAvatar) {
+    // if we used to control it before this update, delete it
+    this.removeSheenModel(myAvatar);
+    delete this.avatarsByName[avatarData.name];
+    console.log('removing avatar with name: ' + avatarData.name);
   }
 };
 
