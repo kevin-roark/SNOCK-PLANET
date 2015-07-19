@@ -182,7 +182,7 @@ AvatarControlComponent.prototype.reactToPointerLock = function(hasPointerlock) {
     $pointerLockTip.show();
   }
   else if (!this.inCreationMode && !hasPointerlock) {
-    $pointerLockTip.text('CLICK TO UNLOCK YOUR EYES (MOUSE)');
+    $pointerLockTip.text('CLICK ANYWHERE TO UNLOCK YOUR EYES (MOUSE)');
     $pointerLockTip.show();
   }
 };
