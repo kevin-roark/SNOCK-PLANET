@@ -16,6 +16,8 @@ module.exports = AvatarControlComponent;
 var THIRD_PERSON_CAM_NAME = 'avatar-third';
 var FIRST_PERSON_CAM_NAME = 'avatar-first';
 
+var $questionMark = $('.question-mark');
+
 /** Inherited methods */
 
 function AvatarControlComponent() {}
@@ -143,6 +145,8 @@ AvatarControlComponent.prototype.toggleCameraPerspective = function() {
 AvatarControlComponent.prototype.enterFormCreation = function() {
   if (this.inCreationMode) return false;
 
+  $questionMark.fadeOut();
+
   this.inCreationMode = true;
   keymaster.setPreventDefaults(false);
   this.cam.exitPointerlock();
@@ -153,6 +157,8 @@ AvatarControlComponent.prototype.enterFormCreation = function() {
 
 AvatarControlComponent.prototype.exitFormCreation = function() {
   if (!this.inCreationMode) return false;
+
+  $questionMark.fadeIn();
 
   this.inCreationMode = false;
   keymaster.setPreventDefaults(true);

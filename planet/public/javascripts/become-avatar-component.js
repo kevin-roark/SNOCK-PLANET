@@ -59,19 +59,17 @@ BecomeAvatarComponent.prototype.postInit = function(options) {
   $('#avatar-name-input').on('input', function(ev) {
     if (self.hasEnteredName) {
       var newName = $(this).val();
-      if (!formValidator.isValidName(newName)) {
-        ev.preventDefault();
-        self.showError('invalid name. letters, numbers, underscores. reasonable length.', 800);
-        $(this).val(self.currentlyEnteredName);
-      }
-      else {
-        self.updateAvatarName(newName);
-      }
+      self.updateAvatarName(newName);
     }
   });
 
   $('.avatar-creation-submit-button').click(function() {
     self.avatar.name = $('#avatar-name-input').val();
+
+    if (!formValidator.isValidName(self.avatar.name)) {
+      self.showError('invalid name. letters, numbers, underscores. reasonable length.', 1500);
+      return;
+    }
 
     self.showLoading(true);
     apiTools.createFaceURL(self.avatar.uploadableFaceImageData(), function(res) {
@@ -175,7 +173,7 @@ BecomeAvatarComponent.prototype.enterAvatarCreationState = function() {
   var name = $('#avatar-name-input').val();
   $('#avatar-name-input').val('');
   $('#avatar-name-input').blur();
-  $('.avatar-form-descriptor').text('YOUR CHANCE TO MAKE YOU / SELECT AVATAR COLOR / DRAG IMAGE TO CHANGE FACE / PERMANENT ONCE YOU ENTER');
+  $('.avatar-form-descriptor').text('NEW CHANCE TO MAKE YOU / SELECT AVATAR COLOR / DRAG IMAGE TO CHANGE FACE / PERMANENT ONCE YOU ENTER');
 
   $('.avatar-creation-submit-button').fadeIn();
   $('.avatar-color-picker').fadeIn();

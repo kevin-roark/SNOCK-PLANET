@@ -96,15 +96,7 @@ GeneralPlanetComponent.prototype.addInteractionGlue = function() {
 
   $('#door-name-input').on('input', function(ev) {
     var newSubject = $(this).val();
-    if (!formValidator.isValidName(newSubject)) {
-      ev.preventDefault();
-      console.log(self);
-      self.showError('invalid name. letters, numbers, underscores. reasonable length.', 800);
-      $(this).val(self.currentlyEnteredSubject);
-    }
-    else {
-      self.updateDoorSubject(newSubject);
-    }
+    self.updateDoorSubject(newSubject);
   });
 
   $('#door-name-form').submit(function(e) {
@@ -182,6 +174,11 @@ GeneralPlanetComponent.prototype.attemptDoorCreation = function() {
   this.creationDoor.creator = this.avatar._id;
 
   var doorData = this.creationDoor.serialize();
+
+  if (!formValidator.isValidName(doorData.subject)) {
+    self.showError('invalid name. letters, numbers, underscores. reasonable length.', 1500);
+    return;
+  }
 
   apiTools.createDoor(doorData, function(result) {
     if (result.error) {

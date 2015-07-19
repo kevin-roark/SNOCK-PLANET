@@ -16340,6 +16340,8 @@ module.exports = AvatarControlComponent;
 var THIRD_PERSON_CAM_NAME = 'avatar-third';
 var FIRST_PERSON_CAM_NAME = 'avatar-first';
 
+var $questionMark = $('.question-mark');
+
 /** Inherited methods */
 
 function AvatarControlComponent() {}
@@ -16467,6 +16469,8 @@ AvatarControlComponent.prototype.toggleCameraPerspective = function() {
 AvatarControlComponent.prototype.enterFormCreation = function() {
   if (this.inCreationMode) return false;
 
+  $questionMark.fadeOut();
+
   this.inCreationMode = true;
   keymaster.setPreventDefaults(false);
   this.cam.exitPointerlock();
@@ -16477,6 +16481,8 @@ AvatarControlComponent.prototype.enterFormCreation = function() {
 
 AvatarControlComponent.prototype.exitFormCreation = function() {
   if (!this.inCreationMode) return false;
+
+  $questionMark.fadeIn();
 
   this.inCreationMode = false;
   keymaster.setPreventDefaults(true);
@@ -16888,19 +16894,17 @@ BecomeAvatarComponent.prototype.postInit = function(options) {
   $('#avatar-name-input').on('input', function(ev) {
     if (self.hasEnteredName) {
       var newName = $(this).val();
-      if (!formValidator.isValidName(newName)) {
-        ev.preventDefault();
-        self.showError('invalid name. letters, numbers, underscores. reasonable length.', 800);
-        $(this).val(self.currentlyEnteredName);
-      }
-      else {
-        self.updateAvatarName(newName);
-      }
+      self.updateAvatarName(newName);
     }
   });
 
   $('.avatar-creation-submit-button').click(function() {
     self.avatar.name = $('#avatar-name-input').val();
+
+    if (!formValidator.isValidName(self.avatar.name)) {
+      self.showError('invalid name. letters, numbers, underscores. reasonable length.', 1500);
+      return;
+    }
 
     self.showLoading(true);
     apiTools.createFaceURL(self.avatar.uploadableFaceImageData(), function(res) {
@@ -17004,7 +17008,7 @@ BecomeAvatarComponent.prototype.enterAvatarCreationState = function() {
   var name = $('#avatar-name-input').val();
   $('#avatar-name-input').val('');
   $('#avatar-name-input').blur();
-  $('.avatar-form-descriptor').text('YOUR CHANCE TO MAKE YOU / SELECT AVATAR COLOR / DRAG IMAGE TO CHANGE FACE / PERMANENT ONCE YOU ENTER');
+  $('.avatar-form-descriptor').text('NEW CHANCE TO MAKE YOU / SELECT AVATAR COLOR / DRAG IMAGE TO CHANGE FACE / PERMANENT ONCE YOU ENTER');
 
   $('.avatar-creation-submit-button').fadeIn();
   $('.avatar-color-picker').fadeIn();
@@ -17536,15 +17540,7 @@ GeneralPlanetComponent.prototype.addInteractionGlue = function() {
 
   $('#door-name-input').on('input', function(ev) {
     var newSubject = $(this).val();
-    if (!formValidator.isValidName(newSubject)) {
-      ev.preventDefault();
-      console.log(self);
-      self.showError('invalid name. letters, numbers, underscores. reasonable length.', 800);
-      $(this).val(self.currentlyEnteredSubject);
-    }
-    else {
-      self.updateDoorSubject(newSubject);
-    }
+    self.updateDoorSubject(newSubject);
   });
 
   $('#door-name-form').submit(function(e) {
@@ -17622,6 +17618,11 @@ GeneralPlanetComponent.prototype.attemptDoorCreation = function() {
   this.creationDoor.creator = this.avatar._id;
 
   var doorData = this.creationDoor.serialize();
+
+  if (!formValidator.isValidName(doorData.subject)) {
+    self.showError('invalid name. letters, numbers, underscores. reasonable length.', 1500);
+    return;
+  }
 
   apiTools.createDoor(doorData, function(result) {
     if (result.error) {
