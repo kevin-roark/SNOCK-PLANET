@@ -9,6 +9,10 @@ module.exports.getState = function(callback) {
   calculateState(callback);
 };
 
+module.exports.clearState = function() {
+  redisClient.publish('planet', 'clearLocalState');
+};
+
 var calculateState = function(callback) {
   amalgamateAvatars(function(avatars) {
     if (!avatars) {
@@ -16,8 +20,6 @@ var calculateState = function(callback) {
       return;
     }
 
-    var planetAvatars = [];
-    var avatarsInDoors = {};
     var awakeCount = 0;
 
     for (var i = 0; i < avatars.length; i++) {
@@ -26,24 +28,14 @@ var calculateState = function(callback) {
       if (!avatar.sleeping) {
         awakeCount += 1;
       }
-
-      var doorID = avatar.currentDoor;
-      if (doorID) {
-        if (!avatarsInDoors[doorID]) {
-          avatarsInDoors[doorID] = [];
-        }
-        avatarsInDoors[doorID].push(avatar);
-      } else {
-        planetAvatars.push(avatar);
-      }
     }
 
-    callback({planet: planetAvatars, doors: avatarsInDoors, awakeCount: awakeCount});
+    callback({avatars: avatars, awakeCount: awakeCount});
   });
 };
 
 var amalgamateAvatars = function(callback) {
-  redisClient.hgetall('planet:avatars', function(err, avatarMapsMap) {
+  redisClient.hgetall('planet:updated-avatars', function(err, avatarMapsMap) {
     if (!avatarMapsMap) {
       if (err) {
         console.log('err getting redis avatars: ');

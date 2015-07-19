@@ -10,6 +10,9 @@ console.log("\nEmitter is ready to emit for u ...");
 
 setInterval(function() {
   planetState.getState(function(state) {
-    io.emit('avatars-state', state);
+    io.emit('avatar-updates', state);
+
+    // clear between calculations so that the state only feeds me updates (rather than *all* avatars)
+    planetState.clearState();
   });
-}, 7777);
+}, 4000);

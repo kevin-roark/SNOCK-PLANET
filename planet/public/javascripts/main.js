@@ -18,19 +18,59 @@ var INSIDE_DOOR_MODE = 2;
 
 $(function() {
 
+  // trying to keep most mutable state in here
   var state = {
     frameCount: 0,
     mode: BECOME_AVATAR_MODE
   };
-  var socket = io(window.serverConfig.ioURL);
 
+  // set up my ole socket.IO listeners
+  var socket = io(window.serverConfig.ioURL);
+  socket.on('avatar-updates', function(avatarUpdates) {
+    updateCohabitantCount(avatarUpdates.awakeCount);
+
+    var planetComponent = state.generalPlanetComponent;
+    var doorComponent = state.currentInnerDoorComponent;
+    var updatedAvatars = avatarUpdates.avatars;
+
+    for (var i = 0; i < updatedAvatars.length; i++) {
+      var avatarData = updatedAvatars[i];
+
+      if (!avatarData.currentDoor) {
+        // its in the planet
+        if (planetComponent) {
+          // update the sucker
+          planetComponent.avatarUpdate(avatarData);
+        }
+
+        if (doorComponent && doorComponent.containsAvatar(avatarData)) {
+          doorComponent.removeAvatar(avatarData);
+        }
+      }
+      else {
+        // its in a door
+        if (doorComponent && doorComponent.door._id === avatarData.currentDoor) {
+          // its in my curent door
+          doorComponent.avatarUpdate(avatarData);
+        }
+
+        if (planetComponent && planetComponent.containsAvatar(avatarData)) {
+          // it used to be in planet .. cleanse it
+          planetComponent.removeAvatar(avatarData);
+        }
+      }
+    }
+  });
+
+  // anything in the DOM declared here
   var $huds = $('.bottom-hud, .top-hud');
   var $worldCoordinates = $('.world-coordinates');
   var $currentSpace = $('.current-space');
   var $questionMark = $('.question-mark');
   var $faq = $('.faq');
+  var $avatarCount = $('.avatar-count');
 
-  // create renderer
+  // create THREE.JS renderer
   var renderer;
   try {
     renderer = new THREE.WebGLRenderer({antialias: true});
@@ -48,7 +88,7 @@ $(function() {
   renderer.setSize(window.innerWidth, window.innerHeight);
   document.body.appendChild(renderer.domElement);
 
-  // create scene
+  // create THREE.JS scene
   var scene = new THREE.Scene();
 
   // TODO: fog
@@ -67,16 +107,12 @@ $(function() {
   globals.scene = scene;
   globals.camera = cam;
 
-  if (config.testing) {
-    // do test stuff
-  }
-
   // start rendering
   cam.active = true;
   startBecomeAvatarState();
   render();
 
-  // react to  global shit
+  // react to  global DOM shit
   var showingFAQ = false;
   $questionMark.click(function() {
     toggleFaq();
@@ -104,7 +140,7 @@ $(function() {
     state.frameCount += 1;
 
     // every few frames lets update our state to the server
-    if (state.frameCount % 120 === 0 && globals.playerAvatar) {
+    if (state.frameCount % 60 === 0 && state.mode !== BECOME_AVATAR_MODE) {
       updateMyAvatar();
     }
 
@@ -170,8 +206,7 @@ $(function() {
     setGeneralPlanetHud();
 
     state.generalPlanetComponent.enterDoorCallback = function(door) {
-      state.generalPlanetComponent.removeObjects();
-      state.generalPlanetComponent.clean();
+      state.generalPlanetComponent.markFinished();
 
       startInsideDoorState(door);
     };
@@ -202,6 +237,15 @@ $(function() {
 
       restoreGeneralPlanetState();
     };
+  }
+
+  function updateCohabitantCount(count) {
+    var number = parseInt(count);
+    if (number !== undefined) {
+      var numberMinusSelf = Math.max(number - 1, 0);
+      var others = numberMinusSelf === 1 ? 'other' : 'others';
+      $avatarCount.text(numberMinusSelf + ' living ' + others);
+    }
   }
 
   function setCurrentInstructions(text) {

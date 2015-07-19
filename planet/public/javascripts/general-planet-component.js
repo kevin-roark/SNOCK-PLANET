@@ -23,6 +23,7 @@ GeneralPlanetComponent.prototype = Object.create(AvatarControlComponent.prototyp
 
 GeneralPlanetComponent.prototype.postInit = function(options) {
   AvatarControlComponent.prototype.postInit.call(this, options);
+  this.identifier = 'outer planet';
 
   var self = this;
 
@@ -35,8 +36,15 @@ GeneralPlanetComponent.prototype.postInit = function(options) {
   this.doorSet = {};
 
   if (this.socket) {
+    // load every avatar that exists in outer-level planet (sleeping, awake) and add them to scene
+    apiTools.getAvatars(null, function(avatars) {
+      self.handleMyAvatars(avatars);
+    });
+
+    // when a new door is created, we add it to our world
     this.socket.on('door-created', this.addDoor.bind(this));
 
+    // get all the doors that exist, and put them into scene
     apiTools.getDoors({x: 0, y: 0, z: 0}, function(doors) {
       for (var i = 0; i < doors.length; i++) {
         self.addDoor(doors[i]);
@@ -64,13 +72,9 @@ GeneralPlanetComponent.prototype.restore = function() {
   if (this.savedPosition) {
     this.avatar.moveTo(this.savedPosition);
   }
-};
-
-GeneralPlanetComponent.prototype.updatedAvatarsState = function(avatarsState) {
-  AvatarControlComponent.prototype.updatedAvatarsState.call(this, avatarsState);
-
-  var planetAvatars = avatarsState.planet;
-  this.handleMyAvatars(planetAvatars);
+  else {
+    this.avatar.moveTo(0, 0, 0);
+  }
 };
 
 /** User Interaction */
