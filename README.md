@@ -16,3 +16,4 @@ fear nothing
 * Run multiple processes of app and io as desired
 * Requires mongo and redis to be up and running first! (mongod, redis-server)
 * You can use the ./run.sh script for a development environment
+* and the mongroup.conf gives an idea of how to set up production.
