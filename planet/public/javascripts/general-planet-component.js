@@ -23,6 +23,7 @@ GeneralPlanetComponent.prototype = Object.create(AvatarControlComponent.prototyp
 
 GeneralPlanetComponent.prototype.postInit = function(options) {
   AvatarControlComponent.prototype.postInit.call(this, options);
+  this.identifier = 'outer planet';
 
   var self = this;
 
@@ -70,6 +71,9 @@ GeneralPlanetComponent.prototype.restore = function() {
 
   if (this.savedPosition) {
     this.avatar.moveTo(this.savedPosition);
+  }
+  else {
+    this.avatar.moveTo(0, 0, 0);
   }
 };
 

@@ -16,6 +16,7 @@ function BecomeAvatarComponent() {}
 BecomeAvatarComponent.prototype = Object.create(SceneComponent.prototype);
 
 BecomeAvatarComponent.prototype.postInit = function(options) {
+  this.identifier = 'becoming a man';
   var self = this;
 
   this.avatar = new Avatar({

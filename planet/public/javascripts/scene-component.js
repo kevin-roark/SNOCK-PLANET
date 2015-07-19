@@ -6,6 +6,8 @@ module.exports = SceneComponent;
 function SceneComponent() {}
 
 SceneComponent.prototype.init = function(scene, socket, cam, options) {
+  if (!options) options = {};
+
   this.scene = scene;
   this.socket = socket;
   this.cam = cam;
@@ -19,6 +21,7 @@ SceneComponent.prototype.init = function(scene, socket, cam, options) {
   $(window).resize(this.layout);
 
   this.frameCount = 0;
+  this.identifier = options.identifier || 'scene component';
 
   this.postInit(options);
 };
@@ -59,7 +62,7 @@ SceneComponent.prototype.removeObjects = function() {
     this.renderObjects[i].removeFrom(this.scene);
   }
 
-  for (var i = 0; i < this.additionalMeshes.length; i++) {
+  for (i = 0; i < this.additionalMeshes.length; i++) {
     this.scene.remove(this.additionalMeshes[i]);
   }
 };
@@ -92,7 +95,6 @@ SceneComponent.prototype.removeSheenModel = function(sheenModel, callback) {
   var self = this;
   sheenModel.removeFrom(this.scene, function() {
     var decrepitIndex = self.renderObjects.indexOf(sheenModel);
-    console.log('decrip: ' + decrepitIndex);
     if (decrepitIndex >= 0) {
       self.renderObjects.splice(decrepitIndex, 1); // remove the irrelevant object
     }
@@ -124,7 +126,7 @@ SceneComponent.prototype.showError = function(message, timeout) {
   setTimeout(function() {
     $error.hide();
   }, timeout);
-}
+};
 
 SceneComponent.prototype.preRender = function() {};
 SceneComponent.prototype.postRender = function() {};

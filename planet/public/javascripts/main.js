@@ -206,8 +206,7 @@ $(function() {
     setGeneralPlanetHud();
 
     state.generalPlanetComponent.enterDoorCallback = function(door) {
-      state.generalPlanetComponent.removeObjects();
-      state.generalPlanetComponent.clean();
+      state.generalPlanetComponent.markFinished();
 
       startInsideDoorState(door);
     };

@@ -18,6 +18,7 @@ InnerDoorComponent.prototype = Object.create(AvatarControlComponent.prototype);
 
 InnerDoorComponent.prototype.postInit = function(options) {
   AvatarControlComponent.prototype.postInit.call(this, options);
+  this.identifier = 'inner door';
 
   var self = this;
 
