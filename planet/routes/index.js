@@ -9,7 +9,10 @@ var ioURL = process.env.PLANET_IO_URL || 'http://localhost:' + ioPort;
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  res.render('index', { title: 'SNOCK PLANET', ioURL: ioURL });
+  res.render('index', {
+    title: 'NEW (SNOCK) PLANET — A place to call and be your own. Realtime chat by Kevin Roark',
+    ioURL: ioURL
+  });
 });
 
 /* POST FACE IMAGE DATA */
