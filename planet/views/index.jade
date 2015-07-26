@@ -18,13 +18,15 @@ block content
     | rooms. Within those secondary rooms, you may interact and leave messages about a specfic subject.
     | Planet is functional and welcomes all discussions. Technical
     | instructions can always be found in the upper-right hand corner. Connect with
-    | people from everywhere in the world all from your very own room. A Planet
-    | is reborn anew every week: everything you've done is wiped clean. You can say
+    | people from everywhere in the world all from your very own room. A new Planet
+    | is reborn every week: everything you've done is wiped clean. You can say
     | the right thing next week. You may not leave planet, only fall asleep. When
     | you return, you'll wake up right where you left. Planet is infinite. Be careful.
     | You can be anyone you want, starting today.
-    .faq-credit (Snock) Planet is made by 
-      a(href="http://www.porkf.at", target="_blank") Kevin Roark Jr.
+    .faq-credit#kevin (Snock) Planet is made by 
+      a(href="http://www.porkf.at/", target="_blank") Kevin Roark Jr.
+    .faq-credit#miguel Sonic Branding by 
+      a(href="http://miserablechillers.bandcamp.com/", target="_blank") Miserable Chillers
     
   .pointer-lock-tip
     
@@ -37,6 +39,10 @@ block content
   
   include create-message
   
+  audio(id="background-music", preload, autoplay)
+    source(src="http://s3.amazonaws.com/snock-planet/planet_bg.mp3", type="audio/mpeg")
+    source(src="http://s3.amazonaws.com/snock-planet/planet_bg.ogg", type="audio/ogg")
+
   script(type='text/javascript').
       var serverConfig = {};
       serverConfig.ioURL="#{ioURL}";

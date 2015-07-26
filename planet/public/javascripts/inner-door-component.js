@@ -156,13 +156,15 @@ InnerDoorComponent.prototype.attemptNoteCreation = function() {
 };
 
 InnerDoorComponent.prototype.addNote = function(noteData) {
-  if (noteData._id) {
-    if (this.noteSet[noteData._id]) {
-      return; // already in here....
-    }
-
-    this.noteSet[noteData._id] = noteData;
+  if (!noteData._id) {
+    return;
   }
+
+  if (this.noteSet[noteData._id]) {
+    return; // already in here....
+  }
+
+  this.noteSet[noteData._id] = noteData;
 
   var note = new Note(noteData);
   this.addSheenModel(note);

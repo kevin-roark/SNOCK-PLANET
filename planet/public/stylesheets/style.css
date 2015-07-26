@@ -110,16 +110,29 @@ canvas {
 }
 
 .faq-credit {
-  margin-top: 100px;
   text-align: center;
 }
   .faq-credit a {
-    color: #fff705;
     text-decoration: none;
   }
     .faq-credit a:hover {
       text-decoration: underline;
     }
+
+  .faq-credit#kevin {
+    margin-top: 100px;
+  }
+  .faq-credit#kevin a {
+    color: #fff705;
+  }
+
+  .faq-credit#miguel {
+    margin-top: 10px;
+    font-size: 19px;
+  }
+  .faq-credit#miguel a {
+    color: #ff00bf;
+  }
 
 /* TITLE */
 

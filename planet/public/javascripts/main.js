@@ -69,6 +69,11 @@ $(function() {
   var $questionMark = $('.question-mark');
   var $faq = $('.faq');
   var $avatarCount = $('.avatar-count');
+  var backgroundMusic = document.querySelector('#background-music');
+  backgroundMusic.onended = function() {
+    backgroundMusic.currentTime = 0;
+    backgroundMusic.play();
+  };
 
   // create THREE.JS renderer
   var renderer;
@@ -204,6 +209,8 @@ $(function() {
     state.generalPlanetComponent.init(scene, socket, cam);
 
     setGeneralPlanetHud();
+
+    backgroundMusic.volume = 0.25;
 
     state.generalPlanetComponent.enterDoorCallback = function(door) {
       state.generalPlanetComponent.markFinished();
