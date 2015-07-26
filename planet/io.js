@@ -1,13 +1,10 @@
 
 // requirements
-var models = require('./models');
-var Avatar = models.Avatar;
-var Door = models.Door;
-var Note = models.Note;
+var Avatar = require('./models').Avatar;
 var socketIO = require('socket.io');
 var socketIORedis = require('socket.io-redis');
-var sanitize = require('sanitize-html');
 var redis = require('./redis');
+var db = require('./db');
 
 var port = process.env.PLANET_IO_PORT || 6001;
 var uid = port;
@@ -44,23 +41,32 @@ function clearLocalAvatars() {
   avatars = {}; // likely called after aggregator gets global state
 }
 
-/// API ZONE
+/// Socket.IO ZONE
 
-// set up Socket.IO events
 io.on('connection', function(socket) {
 
   socket.on('avatar-update', avatarUpdate);
 
-  socket.on('get-avatar', getAvatar);
-  socket.on('create-avatar', createAvatar);
-  socket.on('get-avatars-in-door', getAvatarsInDoor);
+  socket.on('get-avatar', db.getAvatar);
+  socket.on('create-avatar', db.createAvatar);
+  socket.on('get-avatars-in-door', db.getAvatarsInDoor);
 
-  socket.on('get-door', getDoor);
-  socket.on('create-door', createDoor);
-  socket.on('get-doors', getDoors);
+  socket.on('get-door', db.getDoor);
+  socket.on('create-door', function createDoor(doorData, callback) {
+    db.createDoor(doorData, function(door) {
+      if (callback) callback(door);
+      if (door) io.emit('door-created', door);
+    });
+  });
+  socket.on('get-doors', db.getDoors);
 
-  socket.on('create-note', createNote);
-  socket.on('get-notes', getNotes);
+  socket.on('create-note', function createNote(noteData, callback) {
+    db.createNote(noteData, function(note) {
+      if (callback) callback(note);
+      if (note) io.emit('note-created', note);
+    });
+  });
+  socket.on('get-notes', db.getNotes);
 
 });
 
@@ -87,95 +93,3 @@ var avatarUpdate = function(avatarData) {
   updateRedisAvatars();
 };
 avatarUpdate();
-
-var getAvatar = function(name, callback) {
-  getModel(Avatar, {'name': name}, callback);
-};
-
-var createAvatar = function(avatarData, callback) {
-  getAvatar(avatarData.name, function(existingAvatar) {
-    if (existingAvatar) {
-      if (callback) callback({error: 'avatar with that name exists. pick another.'});
-      return;
-    }
-
-    createModel(Avatar, avatarData, callback);
-  });
-};
-
-var getAvatarsInDoor = function(doorID, callback) {
-  getModels(Avatar, {'currentDoor': doorID}, callback);
-};
-
-var getDoor = function(subject, callback) {
-  getModel(Door, {'subject': subject}, callback);
-};
-
-var createDoor = function(doorData, callback) {
-  createModel(Door, doorData, function(door) {
-    callback(door);
-
-    if (door) {
-      io.emit('door-created', door);
-    }
-  });
-};
-
-var getDoors = function(queryData, callback) {
-  getModels(Door, {}, callback);
-};
-
-var createNote = function(noteData, callback) {
-  noteData.text = sanitize(noteData.text);
-
-  createModel(Note, noteData, function(note) {
-    callback(note);
-
-    if (note) {
-      io.emit('note-created', note);
-    }
-  });
-};
-
-var getNotes = function(doorID, callback) {
-  getModels(Note, {'door': doorID}, callback);
-};
-
-// Generic mongoose function wrappers
-
-var getModel = function(Model, queryData, callback) {
-  Model.findOne(queryData, function(err, model) {
-    if (err) {
-      console.log('error finding ' + Model.modelName + ':');
-      console.log(err);
-      callback(null);
-    } else {
-      callback(model);
-    }
-  });
-};
-
-var getModels = function(Model, queryData, callback) {
-  Model.find(queryData, function(err, models) {
-    if (err) {
-      console.log('error getting ' + Model.modelName + 's:');
-      console.log(err);
-      callback(null);
-    } else {
-      callback(models);
-    }
-  });
-};
-
-var createModel = function(Model, modelData, callback) {
-  var model = new Model(modelData);
-  model.save(function(err) {
-    if (err) {
-      console.log('error creating ' + Model.modelName + ':');
-      console.log(err);
-      callback(null);
-    } else {
-      callback(model);
-    }
-  });
-};
