@@ -35,12 +35,45 @@ module.exports.uploadFaceImage = function(imageBuffer, callback) {
 
     uploader.on('end', function() {
       var s3URL = generateURL(filename);
-      console.log(s3URL);
       deleteFile(localFilepath);
       callback(null, s3URL);
     });
   });
 };
+
+module.exports.deleteURLs = function(urls) {
+  if (!urls || urls.length === 0) {
+    return;
+  }
+
+  var objectsToDelete = [];
+  urls.forEach(function(url) {
+    var key = keyFromURL(url);
+    objectsToDelete.push({Key: key});
+  });
+
+  var params = {
+    Bucket: keys.s3_bucket_name,
+
+    Delete: {
+      Objects: objectsToDelete
+    }
+  };
+
+  s3Client.deleteObjects(params, function(err) {
+    if (err) {
+      console.log('error deleting objects:');
+      console.log(err);
+    }
+  });
+};
+
+function keyFromURL(url) {
+  // example url: https://s3.amazonaws.com/snock-planet/qnmES.jpg
+  var components = url.split('/');
+  var lastComponent = components[components.length - 1];
+  return lastComponent;
+}
 
 function generateUploader(filename) {
   var localFilepath = temporaryImagePath + filename;
@@ -66,7 +99,7 @@ function generateFilename() {
   var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
   var filename = '';
-  for(var i = 0; i < 5; i++) {
+  for(var i = 0; i < 12; i++) {
     filename += chars.charAt(Math.floor(Math.random() * chars.length));
   }
 
