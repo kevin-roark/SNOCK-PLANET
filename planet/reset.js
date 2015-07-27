@@ -9,6 +9,12 @@ deleteNotes();
 deleteDoors();
 deleteAvatars();
 
+console.log('terminating in 10 seconds');
+setTimeout(function() {
+  console.log('bye!');
+  process.exit(1);
+}, 10000);
+
 function deleteAvatars() {
   Avatar.find({}, function(err, avatars) {
     if (err) {
