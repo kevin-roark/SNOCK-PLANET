@@ -69,6 +69,25 @@ canvas {
   border-radius: 5px;
 }
 
+#mobile-error-overlay {
+  z-index: 300;
+
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+
+  background-color: #05ff26;
+  font-size: 39px;
+
+  display: none;
+}
+  #mobile-error-overlay p {
+    padding-top: 140px;
+    padding-left: 20px; padding-right: 20px;
+  }
+  #mobile-error-overlay a {
+    color: black;
+  }
+
 /* CREDIT AND FAQ */
 
 .question-mark {

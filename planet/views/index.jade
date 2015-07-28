@@ -32,12 +32,23 @@ block content
     
   .loading-wrapper
     .loading LOADING
+    
+  #mobile-error-overlay
+    p.
+      NEW SNOCK PLANET IS FROM <a href="http://www.porkf.at">KEVIN ROARK JR</a>.
+      IT IS CURRENTLY NOT AVAILABLE ON YOUR PHONE DUE TO TECHNICAL DIFFICULTIES.
+      PLEASE COME BACK ON YOUR BIG COMPUTER. THANK YOU.
 
   include avatar-ui
   
   include create-door
   
   include create-message
+  
+  script(type='text/javascript').
+      if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+        document.querySelector('#mobile-error-overlay').style.display = 'block';
+      }
   
   audio(id="background-music", preload, autoplay)
     source(src="http://s3.amazonaws.com/snock-planet/planet_bg.mp3", type="audio/mpeg")
