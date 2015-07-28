@@ -18,7 +18,7 @@ $('body').keyup(function(ev) {
 $('body').keypress(function(ev) {
   callListener(keypressMap, ev);
 
-  if (config.testing) {
+  if (config.isDebug) {
     console.log('keypress: ' + ev.which);
   }
 });

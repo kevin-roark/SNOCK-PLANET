@@ -17259,16 +17259,14 @@ Camera.prototype.addPointerlockListeners = function(forbiddenRequestClasses) {
 };
 
 },{"jquery":1}],57:[function(require,module,exports){
-(function (__dirname){
+(function (process,__dirname){
 
-var debug = true;
+var debug = (typeof window !== 'undefined') ? window.serverConfig.isDebug : process.env.NODE_ENV === 'development';
+module.exports.isDebug = debug;
 
 // Paths and such
-module.exports.mongo_url = debug ? 'mongodb://localhost/test' : '';
+module.exports.mongo_url = debug ? 'mongodb://localhost/test' : 'mongodb://localhost/snockplanet';
 module.exports.static_path = __dirname + '/..';
-
-// Testing
-module.exports.testing = true;
 
 // Door Textures
 module.exports.door_textures = {
@@ -17303,8 +17301,8 @@ module.exports.randomTexture = function(textureMap) {
   return randomTexture;
 };
 
-}).call(this,"/public/javascripts")
-},{}],58:[function(require,module,exports){
+}).call(this,require('_process'),"/public/javascripts")
+},{"_process":76}],58:[function(require,module,exports){
 
 var SheenModel = require('./sheen-model');
 var config = require('./config');
@@ -18094,7 +18092,7 @@ $('body').keyup(function(ev) {
 $('body').keypress(function(ev) {
   callListener(keypressMap, ev);
 
-  if (config.testing) {
+  if (config.isDebug) {
     console.log('keypress: ' + ev.which);
   }
 });
@@ -19968,4 +19966,64 @@ module.exports.blocker = function(size) {
   return new THREE.Mesh(geometry, material);
 };
 
-},{"./config.js":57}]},{},[68]);
+},{"./config.js":57}],76:[function(require,module,exports){
+// shim for using process in browser
+
+var process = module.exports = {};
+var queue = [];
+var draining = false;
+
+function drainQueue() {
+    if (draining) {
+        return;
+    }
+    draining = true;
+    var currentQueue;
+    var len = queue.length;
+    while(len) {
+        currentQueue = queue;
+        queue = [];
+        var i = -1;
+        while (++i < len) {
+            currentQueue[i]();
+        }
+        len = queue.length;
+    }
+    draining = false;
+}
+process.nextTick = function (fun) {
+    queue.push(fun);
+    if (!draining) {
+        setTimeout(drainQueue, 0);
+    }
+};
+
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+process.version = ''; // empty string to avoid regexp issues
+process.versions = {};
+
+function noop() {}
+
+process.on = noop;
+process.addListener = noop;
+process.once = noop;
+process.off = noop;
+process.removeListener = noop;
+process.removeAllListeners = noop;
+process.emit = noop;
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+};
+
+// TODO(shtylman)
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+process.umask = function() { return 0; };
+
+},{}]},{},[68]);

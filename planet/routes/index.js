@@ -3,6 +3,7 @@ var express = require('express');
 var router = express.Router();
 
 var faceImager = require('../face-imager');
+var config = require('../public/javascripts/config');
 
 var ioPort = process.env.PLANET_IO_PORT || '6001';
 var ioURL = process.env.PLANET_IO_URL || 'http://localhost:' + ioPort;
@@ -11,7 +12,8 @@ var ioURL = process.env.PLANET_IO_URL || 'http://localhost:' + ioPort;
 router.get('/', function(req, res, next) {
   res.render('index', {
     title: 'NEW (SNOCK) PLANET — A place to call and be your own. Realtime chat by Kevin Roark Jr.',
-    ioURL: ioURL
+    ioURL: ioURL,
+    isDebug: config.isDebug
   });
 });
 

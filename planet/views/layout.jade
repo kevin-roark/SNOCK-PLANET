@@ -2,15 +2,27 @@ doctype html
 html
   head
     title= title
-    link(rel='stylesheet', href='/stylesheets/style.css')
+    
+    if isDebug
+      link(rel='stylesheet', href='/stylesheets/style.css')
+    else
+      link(rel='stylesheet', href='/stylesheets/style.min.css')
+    
     link(rel="icon", href="/images/favicon.png")
   body
-    script(type='text/javascript', src='/javascripts/lib/three.js')
-    script(type='text/javascript', src='/javascripts/lib/THREE.TargetCamera.js')
-    script(type='text/javascript', src='/javascripts/lib/pointerlockcontrols.js')
+    if isDebug
+      script(type='text/javascript', src='/javascripts/lib/three.js')
+      script(type='text/javascript', src='/javascripts/lib/THREE.TargetCamera.js')
+    else
+      script(type='text/javascript', src='/javascripts/lib/three.min.js')
+      script(type='text/javascript', src='/javascripts/lib/THREE.TargetCamera.min.js')
+    
     script(type='text/javascript', src='/javascripts/lib/colorpicker.min.js')
-    script(type='text/javascript', src='/javascripts/lib/typefaces/droid_sans_regular.typeface.js')
+    script(type='text/javascript', src='/javascripts/lib/typefaces/droid_sans_regular.typeface.min.js')
       
     block content
 
-    script(type='text/javascript', src='/javascripts/build/build.js')
+    if isDebug
+      script(type='text/javascript', src='/javascripts/build/build.js')
+    else
+      script(type='text/javascript', src='/javascripts/build/build.min.js')

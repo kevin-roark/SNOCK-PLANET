@@ -1,12 +1,10 @@
 
-var debug = true;
+var debug = (typeof window !== 'undefined') ? window.serverConfig.isDebug : process.env.NODE_ENV === 'development';
+module.exports.isDebug = debug;
 
 // Paths and such
-module.exports.mongo_url = debug ? 'mongodb://localhost/test' : '';
+module.exports.mongo_url = debug ? 'mongodb://localhost/test' : 'mongodb://localhost/snockplanet';
 module.exports.static_path = __dirname + '/..';
-
-// Testing
-module.exports.testing = true;
 
 // Door Textures
 module.exports.door_textures = {
