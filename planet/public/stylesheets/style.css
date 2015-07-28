@@ -17,6 +17,25 @@ canvas {
   background-color: white;
 }
 
+.server-error-message {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  overflow: scroll;
+
+  background-color: #ff3a05;
+  font-size: 39px;
+}
+  .server-error-message p {
+    padding: 40px;
+  }
+    .server-error-message p a {
+      color: #fff505;
+      text-decoration: none;
+    }
+    .server-error-message p a:hover {
+      text-decoration: underline;
+    }
+
 .error {
   position: fixed;
   top: 20px;

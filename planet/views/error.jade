@@ -1,6 +1,10 @@
 extends layout
 
 block content
-  h1= message
-  h2= error.status
-  pre #{error.stack}
+  .server-error-message
+    p= message
+    p
+      | You can find new snock planet here:<br>
+      a(href="http://www.newplanet.website/") NEW SNOCK PLANET LINK
+    h2= error.status
+    pre #{error.stack}

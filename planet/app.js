@@ -30,29 +30,19 @@ app.use('/', routes);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
-    var err = new Error('Not Found');
+    var err = new Error('Content not found / Missing Content / Looking for Content');
     err.status = 404;
     next(err);
 });
 
-// development error handler (prints stack trace)
-if (config.isDebug) {
-    app.use(function(err, req, res, next) {
-        res.status(err.status || 500);
-        res.render('error', {
-            message: err.message,
-            error: err
-        });
-    });
-}
-else { // production error handler (no stacktraces leaked)
-  app.use(function(err, req, res, next) {
-      res.status(err.status || 500);
-      res.render('error', {
-          message: err.message,
-          error: {}
-      });
+// error handler
+app.use(function(err, req, res, next) {
+  res.status(err.status || 500);
+  res.render('error', {
+    message: err.message,
+    title: "NEW SNOCK PLANET COULDN'T FIND YOUR CONTENT — GO HOME PLEASE",
+    error: config.isDebug ? err : {}
   });
-}
+});
 
 module.exports = app;
