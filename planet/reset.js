@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 
 var models = require('./models');
 var Avatar = models.Avatar;
