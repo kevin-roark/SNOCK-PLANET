@@ -16473,8 +16473,14 @@ AvatarControlComponent.prototype.enterFormCreation = function() {
 
   this.inCreationMode = true;
   keymaster.setPreventDefaults(false);
-  this.cam.exitPointerlock();
-  this.reactToPointerLock(this.cam.hasPointerlock);
+
+  if (this.cam.canEverHavePointerLock()) {
+    var self = this;
+    setTimeout(function() {
+      self.cam.exitPointerlock();
+      self.reactToPointerLock(self.cam.hasPointerlock);
+    }, 100);
+  }
 
   return true;
 };
@@ -16486,13 +16492,22 @@ AvatarControlComponent.prototype.exitFormCreation = function() {
 
   this.inCreationMode = false;
   keymaster.setPreventDefaults(true);
-  this.cam.requestPointerlock();
-  this.reactToPointerLock(this.cam.hasPointerlock);
+  if (this.cam.canEverHavePointerLock()) {
+    var self = this;
+    setTimeout(function() {
+      self.cam.requestPointerlock();
+      self.reactToPointerLock(self.cam.hasPointerlock);
+    }, 100);
+  }
 
   return true;
 };
 
 AvatarControlComponent.prototype.reactToPointerLock = function(hasPointerlock) {
+  if (!this.cam.canEverHavePointerLock()) {
+    return;
+  }
+
   var $pointerLockTip = $('.pointer-lock-tip');
 
   if (this.inCreationMode && !hasPointerlock) {
@@ -16545,8 +16560,24 @@ AvatarControlComponent.prototype.mousemove = function(x, y, ev) {
   if (!this.controlsActive()) return;
 
   var event = ev.originalEvent || ev;
-  var movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
-  var movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
+  var movementX = event.movementX || event.mozMovementX || event.webkitMovementX;
+  var movementY = event.movementY || event.mozMovementY || event.webkitMovementY;
+
+  // fallback for browsers with no movement
+  if (movementX === undefined) {
+    if (this.lastClientX !== undefined) {
+      movementX = event.clientX - this.lastClientX;
+      movementY = event.clientY - this.lastClientY;
+    }
+    else {
+      movementX = 0;
+      movementY = 0;
+    }
+
+    this.lastClientX = event.clientX;
+    this.lastClientY = event.clientY;
+  }
+
   this.controls.mouseUpdate(movementX, movementY);
 };
 
@@ -16586,7 +16617,6 @@ AvatarControlComponent.prototype.removeAvatar = function(avatarData) {
     // if we used to control it before this update, delete it
     this.removeSheenModel(myAvatar);
     delete this.avatarsByName[avatarData.name];
-    console.log('removing avatar with name: ' + avatarData.name);
   }
 };
 
@@ -17127,6 +17157,8 @@ function Camera(scene, renderer, config) {
   this.proximableMeshes = [];
   this.proximityLimit = config.proximityLimit || 22500;
 
+  this.requestFullscreenIfPossible = config.requestFullscreenIfPossible;
+
   this.hasPointerlock = false;
   this.addPointerlockListeners(config.forbiddenRequestClasses);
 
@@ -17195,16 +17227,26 @@ Camera.prototype.pointerlockerror = function (ev) {
   // eh i could react to this ...
 };
 
+function literallyRequestPointerLock() {
+  pointerlockElement.requestPointerLock = pointerlockElement.requestPointerLock ||
+                                          pointerlockElement.mozRequestPointerLock ||
+                                          pointerlockElement.webkitRequestPointerLock;
+
+  if (pointerlockElement.requestPointerLock) {
+    pointerlockElement.requestPointerLock();
+  }
+}
+
 Camera.prototype.requestPointerlock = function() {
   canRequestPointerlock = true;
 
-  if (/Firefox/i.test( navigator.userAgent)) {
+  if (this.requestFullscreenIfPossible && /Firefox/i.test( navigator.userAgent)) {
     var fullscreenchange = function() {
       if ( document.fullscreenElement === pointerlockElement || document.mozFullscreenElement === pointerlockElement || document.mozFullScreenElement === pointerlockElement ) {
         document.removeEventListener( 'fullscreenchange', fullscreenchange );
         document.removeEventListener( 'mozfullscreenchange', fullscreenchange );
 
-        pointerlockElement.requestPointerLock();
+        literallyRequestPointerLock();
       }
     };
 
@@ -17214,13 +17256,7 @@ Camera.prototype.requestPointerlock = function() {
     pointerlockElement.requestFullscreen = pointerlockElement.requestFullscreen || pointerlockElement.mozRequestFullScreen || pointerlockElement.webkitRequestFullscreen;
     pointerlockElement.requestFullscreen();
   } else {
-    pointerlockElement.requestPointerLock = pointerlockElement.requestPointerLock ||
-                                            pointerlockElement.mozRequestPointerLock ||
-                                            pointerlockElement.webkitRequestPointerLock;
-
-    if (pointerlockElement.requestPointerLock) {
-      pointerlockElement.requestPointerLock();
-    }
+    literallyRequestPointerLock();
   }
 };
 
@@ -17234,6 +17270,10 @@ Camera.prototype.exitPointerlock = function() {
   }
 
   canRequestPointerlock = false;
+};
+
+Camera.prototype.canEverHavePointerLock = function() {
+  return havePointerLock;
 };
 
 Camera.prototype.addPointerlockListeners = function(forbiddenRequestClasses) {
@@ -17259,7 +17299,7 @@ Camera.prototype.addPointerlockListeners = function(forbiddenRequestClasses) {
       if (!canRequestPointerlock) return;
 
       if (forbiddenRequestClasses) {
-        var elementClass = ev.srcElement.className;
+        var elementClass = ev.target.className;
         if (forbiddenRequestClasses.indexOf(elementClass) !== -1) {
           return;
         }
@@ -17978,7 +18018,6 @@ InnerDoorComponent.prototype.addInteractionGlue = function() {
 
   $('#message-content-form').submit(function(e) {
     e.preventDefault();
-    self.attemptNoteCreation();
   });
 
   $('.message-submit-button').click(this.attemptNoteCreation.bind(this));
@@ -18962,6 +19001,7 @@ $(function() {
   var $faq = $('.faq');
   var $avatarCount = $('.avatar-count');
   var $instructionsBanner = $('.instructions-banner');
+  var $tryChromeBanner = $('.try-chrome-banner');
   var backgroundMusic = document.querySelector('#background-music');
   backgroundMusic.onended = function() {
     backgroundMusic.currentTime = 0;
@@ -19111,6 +19151,16 @@ $(function() {
       clearInterval(bannerInterval);
     }, 8000);
 
+    if (!window.chrome) {
+      var chromeFlashInterval = setInterval(function() {
+        $tryChromeBanner.toggle();
+      }, 500);
+      setTimeout(function() {
+        clearInterval(chromeFlashInterval);
+        $tryChromeBanner.hide();
+      }, 10000);
+    }
+
     backgroundMusic.volume = 0.25;
 
     state.generalPlanetComponent.enterDoorCallback = function(door) {
@@ -19132,6 +19182,10 @@ $(function() {
   }
 
   function startInsideDoorState(door) {
+    if (state.mode === INSIDE_DOOR_MODE) {
+      return; // already inside a door brother...
+    }
+
     state.mode = INSIDE_DOOR_MODE;
 
     setCurrentSpaceText(door.subject.toUpperCase());
@@ -19296,6 +19350,7 @@ Note.prototype.loadMesh = function(callback) {
   });
 
   this.texture = new THREE.Texture(this.canvas);
+  this.texture.minFilter = THREE.NearestFilter;
   this.texture.needsUpdate = true;
 
   // this.material === material wit tha words on it
@@ -19305,8 +19360,9 @@ Note.prototype.loadMesh = function(callback) {
   });
 
   var accentTexture = new THREE.ImageUtils.loadTexture(this.accentTexture);
-  accentTexture.wrapS = THREE.RepeatWrapping;
-  accentTexture.wrapT = THREE.RepeatWrapping;
+  accentTexture.wrapS = THREE.ClampToEdgeWrapping;
+  accentTexture.wrapT = THREE.ClampToEdgeWrapping;
+  accentTexture.minFilter = THREE.NearestFilter;
 
   this.accentMaterial = new THREE.MeshBasicMaterial({
     map: accentTexture,
