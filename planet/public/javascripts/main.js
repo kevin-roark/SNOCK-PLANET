@@ -69,6 +69,7 @@ $(function() {
   var $questionMark = $('.question-mark');
   var $faq = $('.faq');
   var $avatarCount = $('.avatar-count');
+  var $instructionsBanner = $('.instructions-banner');
   var backgroundMusic = document.querySelector('#background-music');
   backgroundMusic.onended = function() {
     backgroundMusic.currentTime = 0;
@@ -209,6 +210,14 @@ $(function() {
     state.generalPlanetComponent.init(scene, socket, cam);
 
     setGeneralPlanetHud();
+
+    var bannerInterval = setInterval(function() {
+      $instructionsBanner.toggle();
+    }, 500);
+    setTimeout(function() {
+      $instructionsBanner.hide();
+      clearInterval(bannerInterval);
+    }, 8000);
 
     backgroundMusic.volume = 0.25;
 

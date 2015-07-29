@@ -214,6 +214,12 @@ canvas {
   font-family: Helvetica, sans-serif;
 }
 
+.instructions-banner {
+  position: absolute; right: 10px; top: 40px;
+  font-size: 20px; color: rgb(15, 252, 195); font-weight: bold;
+  display: none;
+}
+
 .bottom-hud {
   bottom: 10px;
   right: 10px;
