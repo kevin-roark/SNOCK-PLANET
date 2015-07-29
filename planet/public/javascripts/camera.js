@@ -16,14 +16,19 @@ var pointerlockElement = document.body;
 var canRequestPointerlock = false;
 
 var _camera, _renderer;
+var _minWidth = 1024;
+var _minHeight = 600;
 
 function resize() {
+  var w = Math.max(window.innerWidth, _minWidth);
+  var h = Math.max(window.innerHeight, _minHeight);
+
   if (_renderer) {
-    _renderer.setSize(window.innerWidth, window.innerHeight);
+    _renderer.setSize(w, h);
   }
 
   if (_camera) {
-    _camera.aspect = window.innerWidth / window.innerHeight;
+    _camera.aspect = w / h;
     _camera.updateProjectionMatrix();
   }
 }
@@ -36,6 +41,13 @@ function Camera(scene, renderer, config) {
   this.cam = new THREE.TargetCamera(65, window.innerWidth / window.innerHeight, 0.1, 3000);
   _camera = this.cam;
   _renderer = renderer;
+
+  if (config && config.minWidth) {
+    _minWidth = config.minWidth;
+  }
+  if (config && config.minHeight) {
+    _minHeight = config.minHeight;
+  }
 
   scene.add(this.cam);
 
