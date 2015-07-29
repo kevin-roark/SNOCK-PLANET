@@ -60,6 +60,8 @@ function Camera(scene, renderer, config) {
   this.proximableMeshes = [];
   this.proximityLimit = config.proximityLimit || 22500;
 
+  this.requestFullscreenIfPossible = config.requestFullscreenIfPossible;
+
   this.hasPointerlock = false;
   this.addPointerlockListeners(config.forbiddenRequestClasses);
 
@@ -128,16 +130,26 @@ Camera.prototype.pointerlockerror = function (ev) {
   // eh i could react to this ...
 };
 
+function literallyRequestPointerLock() {
+  pointerlockElement.requestPointerLock = pointerlockElement.requestPointerLock ||
+                                          pointerlockElement.mozRequestPointerLock ||
+                                          pointerlockElement.webkitRequestPointerLock;
+
+  if (pointerlockElement.requestPointerLock) {
+    pointerlockElement.requestPointerLock();
+  }
+}
+
 Camera.prototype.requestPointerlock = function() {
   canRequestPointerlock = true;
 
-  if (/Firefox/i.test( navigator.userAgent)) {
+  if (this.requestFullscreenIfPossible && /Firefox/i.test( navigator.userAgent)) {
     var fullscreenchange = function() {
       if ( document.fullscreenElement === pointerlockElement || document.mozFullscreenElement === pointerlockElement || document.mozFullScreenElement === pointerlockElement ) {
         document.removeEventListener( 'fullscreenchange', fullscreenchange );
         document.removeEventListener( 'mozfullscreenchange', fullscreenchange );
 
-        pointerlockElement.requestPointerLock();
+        literallyRequestPointerLock();
       }
     };
 
@@ -147,13 +159,7 @@ Camera.prototype.requestPointerlock = function() {
     pointerlockElement.requestFullscreen = pointerlockElement.requestFullscreen || pointerlockElement.mozRequestFullScreen || pointerlockElement.webkitRequestFullscreen;
     pointerlockElement.requestFullscreen();
   } else {
-    pointerlockElement.requestPointerLock = pointerlockElement.requestPointerLock ||
-                                            pointerlockElement.mozRequestPointerLock ||
-                                            pointerlockElement.webkitRequestPointerLock;
-
-    if (pointerlockElement.requestPointerLock) {
-      pointerlockElement.requestPointerLock();
-    }
+    literallyRequestPointerLock();
   }
 };
 
@@ -167,6 +173,10 @@ Camera.prototype.exitPointerlock = function() {
   }
 
   canRequestPointerlock = false;
+};
+
+Camera.prototype.canEverHavePointerLock = function() {
+  return havePointerLock;
 };
 
 Camera.prototype.addPointerlockListeners = function(forbiddenRequestClasses) {
@@ -192,7 +202,7 @@ Camera.prototype.addPointerlockListeners = function(forbiddenRequestClasses) {
       if (!canRequestPointerlock) return;
 
       if (forbiddenRequestClasses) {
-        var elementClass = ev.srcElement.className;
+        var elementClass = ev.target.className;
         if (forbiddenRequestClasses.indexOf(elementClass) !== -1) {
           return;
         }

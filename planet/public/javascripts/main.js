@@ -70,6 +70,7 @@ $(function() {
   var $faq = $('.faq');
   var $avatarCount = $('.avatar-count');
   var $instructionsBanner = $('.instructions-banner');
+  var $tryChromeBanner = $('.try-chrome-banner');
   var backgroundMusic = document.querySelector('#background-music');
   backgroundMusic.onended = function() {
     backgroundMusic.currentTime = 0;
@@ -218,6 +219,16 @@ $(function() {
       $instructionsBanner.hide();
       clearInterval(bannerInterval);
     }, 8000);
+
+    if (!window.chrome) {
+      var chromeFlashInterval = setInterval(function() {
+        $tryChromeBanner.toggle();
+      }, 500);
+      setTimeout(function() {
+        clearInterval(chromeFlashInterval);
+        $tryChromeBanner.hide();
+      }, 10000);
+    }
 
     backgroundMusic.volume = 0.25;
 

@@ -216,7 +216,13 @@ canvas {
 
 .instructions-banner {
   position: absolute; right: 10px; top: 40px;
-  font-size: 20px; color: rgb(15, 252, 195); font-weight: bold;
+  font-size: 20px; color: rgb(15, 252, 195); font-weight: bold; text-decoration: underline;
+  display: none;
+}
+
+.try-chrome-banner {
+  position: absolute; right: 10px; bottom: 40px;
+  font-size: 20px; color: rgb(252, 15, 79); font-weight: bold; text-decoration: underline;
   display: none;
 }
 

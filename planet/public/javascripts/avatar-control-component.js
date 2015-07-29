@@ -149,8 +149,14 @@ AvatarControlComponent.prototype.enterFormCreation = function() {
 
   this.inCreationMode = true;
   keymaster.setPreventDefaults(false);
-  this.cam.exitPointerlock();
-  this.reactToPointerLock(this.cam.hasPointerlock);
+
+  if (this.cam.canEverHavePointerLock()) {
+    var self = this;
+    setTimeout(function() {
+      self.cam.exitPointerlock();
+      self.reactToPointerLock(self.cam.hasPointerlock);
+    }, 100);
+  }
 
   return true;
 };
@@ -162,13 +168,22 @@ AvatarControlComponent.prototype.exitFormCreation = function() {
 
   this.inCreationMode = false;
   keymaster.setPreventDefaults(true);
-  this.cam.requestPointerlock();
-  this.reactToPointerLock(this.cam.hasPointerlock);
+  if (this.cam.canEverHavePointerLock()) {
+    var self = this;
+    setTimeout(function() {
+      self.cam.requestPointerlock();
+      self.reactToPointerLock(self.cam.hasPointerlock);
+    }, 100);
+  }
 
   return true;
 };
 
 AvatarControlComponent.prototype.reactToPointerLock = function(hasPointerlock) {
+  if (!this.cam.canEverHavePointerLock()) {
+    return;
+  }
+
   var $pointerLockTip = $('.pointer-lock-tip');
 
   if (this.inCreationMode && !hasPointerlock) {
@@ -221,8 +236,24 @@ AvatarControlComponent.prototype.mousemove = function(x, y, ev) {
   if (!this.controlsActive()) return;
 
   var event = ev.originalEvent || ev;
-  var movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
-  var movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
+  var movementX = event.movementX || event.mozMovementX || event.webkitMovementX;
+  var movementY = event.movementY || event.mozMovementY || event.webkitMovementY;
+
+  // fallback for browsers with no movement
+  if (movementX === undefined) {
+    if (this.lastClientX !== undefined) {
+      movementX = event.clientX - this.lastClientX;
+      movementY = event.clientY - this.lastClientY;
+    }
+    else {
+      movementX = 0;
+      movementY = 0;
+    }
+
+    this.lastClientX = event.clientX;
+    this.lastClientY = event.clientY;
+  }
+
   this.controls.mouseUpdate(movementX, movementY);
 };
 
