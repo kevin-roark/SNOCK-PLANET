@@ -74,7 +74,6 @@ InnerDoorComponent.prototype.addInteractionGlue = function() {
 
   $('#message-content-form').submit(function(e) {
     e.preventDefault();
-    self.attemptNoteCreation();
   });
 
   $('.message-submit-button').click(this.attemptNoteCreation.bind(this));

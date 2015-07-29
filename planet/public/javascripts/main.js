@@ -251,6 +251,10 @@ $(function() {
   }
 
   function startInsideDoorState(door) {
+    if (state.mode === INSIDE_DOOR_MODE) {
+      return; // already inside a door brother...
+    }
+
     state.mode = INSIDE_DOOR_MODE;
 
     setCurrentSpaceText(door.subject.toUpperCase());

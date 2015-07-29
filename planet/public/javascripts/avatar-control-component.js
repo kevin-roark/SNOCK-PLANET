@@ -293,7 +293,6 @@ AvatarControlComponent.prototype.removeAvatar = function(avatarData) {
     // if we used to control it before this update, delete it
     this.removeSheenModel(myAvatar);
     delete this.avatarsByName[avatarData.name];
-    console.log('removing avatar with name: ' + avatarData.name);
   }
 };
 
