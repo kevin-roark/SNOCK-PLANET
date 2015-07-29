@@ -6,7 +6,9 @@ var planetState = require('./planet-state');
 var redisClient = redis.createClient();
 var io = socketIOEmitter(redisClient, {key: 'planet'});
 
-console.log("\nEmitter is ready to emit for u ...");
+var interval = process.env.PLANET_EMITTER_INTERVAL || 3000;
+
+console.log("\nEmitter is ready to emit for u with interval of " + interval + "...");
 
 setInterval(function() {
   planetState.getState(function(state) {
@@ -15,4 +17,4 @@ setInterval(function() {
     // clear between calculations so that the state only feeds me updates (rather than *all* avatars)
     planetState.clearState();
   });
-}, 4000);
+}, interval);
