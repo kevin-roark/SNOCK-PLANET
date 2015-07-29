@@ -45,6 +45,7 @@ Note.prototype.loadMesh = function(callback) {
   });
 
   this.texture = new THREE.Texture(this.canvas);
+  this.texture.minFilter = THREE.NearestFilter;
   this.texture.needsUpdate = true;
 
   // this.material === material wit tha words on it
@@ -54,8 +55,9 @@ Note.prototype.loadMesh = function(callback) {
   });
 
   var accentTexture = new THREE.ImageUtils.loadTexture(this.accentTexture);
-  accentTexture.wrapS = THREE.RepeatWrapping;
-  accentTexture.wrapT = THREE.RepeatWrapping;
+  accentTexture.wrapS = THREE.ClampToEdgeWrapping;
+  accentTexture.wrapT = THREE.ClampToEdgeWrapping;
+  accentTexture.minFilter = THREE.NearestFilter;
 
   this.accentMaterial = new THREE.MeshBasicMaterial({
     map: accentTexture,
