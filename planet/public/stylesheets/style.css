@@ -167,11 +167,19 @@ canvas {
   }
 
   .faq-credit#miguel {
-    margin-top: 10px;
-    font-size: 19px;
+    margin-top: 8px;
+    font-size: 18px;
   }
   .faq-credit#miguel a {
     color: #ff00bf;
+  }
+
+  .faq-credit#hifi {
+    margin-top: 5px;
+    font-size: 14px;
+  }
+  .faq-credit#hifi a {
+    color: #0075ff;
   }
 
 /* TITLE */
