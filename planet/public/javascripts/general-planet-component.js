@@ -175,8 +175,8 @@ GeneralPlanetComponent.prototype.attemptDoorCreation = function() {
 
   var doorData = this.creationDoor.serialize();
 
-  if (!formValidator.isValidName(doorData.subject)) {
-    self.showError('invalid name. letters, numbers, underscores. reasonable length.', 1500);
+  if (!formValidator.isValidDoorSubject(doorData.subject)) {
+    self.showError('invalid name. letters, numbers, spaces, underscores. reasonable length.', 4444);
     return;
   }
 
