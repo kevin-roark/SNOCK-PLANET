@@ -17464,7 +17464,8 @@ Door.prototype.serialize = function() {
 
 },{"./config":57,"./sheen-model":74}],59:[function(require,module,exports){
 
-var validChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_';
+var avatarValidChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_';
+var doorValidChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_ ';
 
 module.exports.isValidName = function(name, options) {
   if (!options) options = {};
@@ -17472,13 +17473,26 @@ module.exports.isValidName = function(name, options) {
   var minLength = options.minLength || 1;
   var maxLength = options.maxLength || 15;
 
-  if (!name || name.length < minLength || name.length > maxLength) {
+  return isValidString(name, avatarValidChars, minLength, maxLength);
+};
+
+module.exports.isValidDoorSubject = function(subject, options) {
+  if (!options) options = {};
+
+  var minLength = options.minLength || 1;
+  var maxLength = options.maxLength || 39;
+
+  return isValidString(subject, doorValidChars, minLength, maxLength);
+};
+
+var isValidString = function(string, validChars, minLength, maxLength) {
+  if (!string || string.length < minLength || string.length > maxLength) {
     return false;
   }
 
-  for (var i = 0; i < name.length; i++) {
-    var iChar = name.charAt(i);
-    if (!isValidChar(iChar)) {
+  for (var i = 0; i < string.length; i++) {
+    var iChar = string.charAt(i);
+    if (!isValidChar(validChars, iChar)) {
       return false;
     }
   }
@@ -17486,7 +17500,7 @@ module.exports.isValidName = function(name, options) {
   return true;
 };
 
-var isValidChar = module.exports.isValidChar = function(char) {
+var isValidChar = function(validChars, char) {
   var idx = validChars.indexOf(char);
   return idx >= 0;
 };
@@ -17564,7 +17578,9 @@ GeneralPlanetComponent.prototype.restore = function() {
   this.avatar.currentDoor = null;
 
   if (this.savedPosition) {
+    this.controls.active = false;
     this.avatar.moveTo(this.savedPosition);
+    this.controls.active = true;
   }
   else {
     this.avatar.moveTo(0, 0, 0);
@@ -17669,8 +17685,8 @@ GeneralPlanetComponent.prototype.attemptDoorCreation = function() {
 
   var doorData = this.creationDoor.serialize();
 
-  if (!formValidator.isValidName(doorData.subject)) {
-    self.showError('invalid name. letters, numbers, underscores. reasonable length.', 1500);
+  if (!formValidator.isValidDoorSubject(doorData.subject)) {
+    self.showError('invalid name. letters, numbers, spaces, underscores. reasonable length.', 4444);
     return;
   }
 
@@ -18023,6 +18039,15 @@ InnerDoorComponent.prototype.addInteractionGlue = function() {
   $('.message-submit-button').click(this.attemptNoteCreation.bind(this));
 
   $('.message-escape-button').click(this.exitFormCreation.bind(this));
+};
+
+InnerDoorComponent.prototype.clean = function() {
+  AvatarControlComponent.prototype.clean.call(this);
+
+  $('.note-texture-option').off('click');
+  $('#message-content-form').off('submit');
+  $('.message-submit-button').off('click');
+  $('.message-escape-button').off('click');
 };
 
 InnerDoorComponent.prototype.enterFormCreation = function() {
@@ -19510,6 +19535,7 @@ module.exports = function ObjectControls( opts ) {
     }
 
     this.mousePos = options.mousePos || new THREE.Vector2();
+    this.active = true;
 
     var PI_2 = Math.PI / 2,
         forward = false,
@@ -19630,6 +19656,10 @@ module.exports = function ObjectControls( opts ) {
 
 
     this.update = function( dt ) {
+      if (!this.active) {
+        return;
+      }
+
       updateRolling(dt);
       updatePosition(dt);
       updateObject(dt);
