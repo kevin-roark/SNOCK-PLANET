@@ -81,6 +81,15 @@ InnerDoorComponent.prototype.addInteractionGlue = function() {
   $('.message-escape-button').click(this.exitFormCreation.bind(this));
 };
 
+InnerDoorComponent.prototype.clean = function() {
+  AvatarControlComponent.prototype.clean.call(this);
+
+  $('.note-texture-option').off('click');
+  $('#message-content-form').off('submit');
+  $('.message-submit-button').off('click');
+  $('.message-escape-button').off('click');
+};
+
 InnerDoorComponent.prototype.enterFormCreation = function() {
   if (!AvatarControlComponent.prototype.enterFormCreation.call(this)) {
     return false;
