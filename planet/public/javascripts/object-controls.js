@@ -36,6 +36,7 @@ module.exports = function ObjectControls( opts ) {
     }
 
     this.mousePos = options.mousePos || new THREE.Vector2();
+    this.active = true;
 
     var PI_2 = Math.PI / 2,
         forward = false,
@@ -156,6 +157,10 @@ module.exports = function ObjectControls( opts ) {
 
 
     this.update = function( dt ) {
+      if (!this.active) {
+        return;
+      }
+
       updateRolling(dt);
       updatePosition(dt);
       updateObject(dt);

@@ -70,7 +70,9 @@ GeneralPlanetComponent.prototype.restore = function() {
   this.avatar.currentDoor = null;
 
   if (this.savedPosition) {
+    this.controls.active = false;
     this.avatar.moveTo(this.savedPosition);
+    this.controls.active = true;
   }
   else {
     this.avatar.moveTo(0, 0, 0);
