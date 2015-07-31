@@ -95,6 +95,7 @@ var avatarUpdate = function(avatarData) {
   if (id) {
     // update the database for longterm consistency
     var query = {_id: id};
+    delete avatarData._id; // mongo doesn't allow the _id to be in the update data
     Avatar.update(query, avatarData, {}, function(err) {
       if (err) {
         console.log('err updating avatar: ');
