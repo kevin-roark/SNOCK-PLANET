@@ -179,18 +179,9 @@ $(function() {
     }
   }
 
-  // cleanup
+  // cleanup (no longer necessary)
   window.onbeforeunload = function() {
-    var avatar = globals.playerAvatar;
 
-    if (avatar) {
-      if (state.mode === INSIDE_DOOR_MODE && state.generalPlanetComponent.savedPosition) {
-        avatar.moveTo(state.generalPlanetComponent.savedPosition);
-      }
-
-      avatar.goSleep();
-      updateMyAvatar();
-    }
   };
 
   // state transitions

@@ -1,6 +1,7 @@
 
 // requirements
 var Avatar = require('./models').Avatar;
+var Door = require('./models').Door;
 var socketIO = require('socket.io');
 var socketIORedis = require('socket.io-redis');
 var redis = require('./redis');
@@ -45,7 +46,13 @@ function clearLocalAvatars() {
 
 io.on('connection', function(socket) {
 
-  socket.on('avatar-update', avatarUpdate);
+  socket.on('avatar-update', function handleAvatarUpdate(avatarData) {
+    if (avatarData._id) {
+      socket._avatarID = avatarData._id;
+    }
+
+    avatarUpdate(avatarData);
+  });
 
   socket.on('get-avatar', db.getAvatar);
   socket.on('create-avatar', db.createAvatar);
@@ -68,9 +75,19 @@ io.on('connection', function(socket) {
   });
   socket.on('get-notes', db.getNotes);
 
+  socket.on('disconnect', function socketDisconnected() {
+    console.log('socket disconnected@@@@@@@@@@@@@');
+    if (!socket._avatarID) {
+      return;
+    }
+
+    var _id = socket._avatarID;
+    handleDisconnect(_id);
+  });
+
 });
 
-/// API Method Implementations
+/// Complex Event Responses
 
 var avatarUpdate = function(avatarData) {
   if (!avatarData) avatarData = {};
@@ -93,3 +110,38 @@ var avatarUpdate = function(avatarData) {
   updateRedisAvatars();
 };
 avatarUpdate();
+
+var handleDisconnect = function(avatarID) {
+  console.log('handling that disconneeect');
+
+  var avatarData = avatars[avatarID];
+  if (!avatarData) {
+    console.log('disconnected avatar not accounted for... ' + avatarID);
+    return;
+  }
+
+  if (avatarData.currentDoor) {
+    Door.findOne({_id: avatarData.currentDoor}, function(err, doorData) {
+      if (err) {
+        console.log('error finding disconnected avatar current door:');
+        console.log(err);
+      }
+      else {
+        console.log('found that special door');
+        avatarData.position = doorData.position;
+      }
+
+      putToSleep(avatarData);
+    });
+  }
+  else {
+    putToSleep(avatarData);
+  }
+
+  function putToSleep(avatarData) {
+    avatarData.currentDoor = null;
+    avatarData.sleeping = true;
+
+    avatarUpdate(avatarData);
+  }
+};
