@@ -103,11 +103,13 @@ var avatarUpdate = function(avatarData) {
       }
     });
 
-    // update redis for current consistency
+    // put the _id back in for our local representation
+    avatarData._id = id;
     avatars[id] = avatarData;
-  }
 
-  updateRedisAvatars();
+    // update redis for current consistency
+    updateRedisAvatars();
+  }
 };
 avatarUpdate();
 
