@@ -76,7 +76,6 @@ io.on('connection', function(socket) {
   socket.on('get-notes', db.getNotes);
 
   socket.on('disconnect', function socketDisconnected() {
-    console.log('socket disconnected@@@@@@@@@@@@@');
     if (!socket._avatarID) {
       return;
     }
@@ -112,8 +111,6 @@ var avatarUpdate = function(avatarData) {
 avatarUpdate();
 
 var handleDisconnect = function(avatarID) {
-  console.log('handling that disconneeect');
-
   var avatarData = avatars[avatarID];
   if (!avatarData) {
     console.log('disconnected avatar not accounted for... ' + avatarID);
@@ -127,7 +124,6 @@ var handleDisconnect = function(avatarID) {
         console.log(err);
       }
       else {
-        console.log('found that special door');
         avatarData.position = doorData.position;
       }
 
