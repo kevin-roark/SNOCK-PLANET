@@ -4,6 +4,7 @@ var models = require('./models');
 var Avatar = models.Avatar;
 var Door = models.Door;
 var Note = models.Note;
+var faceImager = require('./face-imager');
 var mkpath = require('mkpath');
 var fs = require('fs');
 
