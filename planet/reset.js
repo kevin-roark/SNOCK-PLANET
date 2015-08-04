@@ -90,7 +90,7 @@ function makeLog(doors, notes, avatars, callback) {
     var month = date.getMonth() + 1;
     var day = date.getDate();
     var year = date.getFullYear();
-    return month + '-' + day + '-' + year + '.log';
+    return month + '-' + day + '-' + year + '.txt';
   }
 }
 
