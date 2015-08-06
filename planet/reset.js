@@ -48,8 +48,14 @@ function makeLog(doors, notes, avatars, callback) {
   Object.keys(doorToNotesMap).forEach(function(doorID) {
     var door = doorMap[doorID];
     var notesInDoor = doorToNotesMap[doorID];
+    var doorCreator = avatarMap[door.creator];
 
-    var doorLog = 'Door Titled "' + door.subject + '":\n';
+    var doorLog = 'Door Titled "' + door.subject + '"';
+    if (doorCreator) {
+      doorLog += ' (created by "' + doorCreator.name + '")';
+    }
+    doorLog += ':\n';
+
     notesInDoor.forEach(function(note, index) {
       var creator = avatarMap[note.creator];
       var noteLog = (index+1) + '. "' + note.text + '" at ' + dateString(note.when) + ' by "' + creator.name + '"\n';
