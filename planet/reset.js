@@ -65,7 +65,7 @@ function makeLog(doors, notes, avatars, callback) {
     log += doorLog + '\n';
   });
 
-  var logFolder = './planet_logs';
+  var logFolder = __dirname + '/planet_logs';
   var filepath = logFolder + '/' + filename();
   console.log('writing log to ' + filepath);
   mkpath.sync(logFolder);
