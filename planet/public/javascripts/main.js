@@ -115,9 +115,7 @@ $(function() {
   globals.camera = cam;
 
   // start rendering
-  cam.active = true;
-  startBecomeAvatarState();
-  render();
+  start();
 
   // react to  global DOM shit
   var showingFAQ = false;
@@ -138,6 +136,22 @@ $(function() {
     }
 
     showingFAQ = !showingFAQ;
+  }
+
+  function start() {
+    cam.active = true;
+    startBecomeAvatarState();
+    render();
+
+    loadAds();
+  }
+
+  function loadAds() {
+    console.log('loading ads!!!');
+    
+    $.getJSON('/media/ads.json', function(json) {
+      console.log(json);
+    });
   }
 
   // render every frame
