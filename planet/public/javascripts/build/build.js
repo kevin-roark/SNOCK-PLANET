@@ -19220,8 +19220,6 @@ $(function() {
     cam.active = true;
     startBecomeAvatarState();
     render();
-
-    loadAds();
   }
 
   function loadAds() {
@@ -19301,6 +19299,8 @@ $(function() {
     state.generalPlanetComponent.init(scene, socket, cam);
 
     setGeneralPlanetHud();
+
+    loadAds();
 
     var bannerInterval = setInterval(function() {
       $instructionsBanner.toggle();

@@ -2,7 +2,7 @@
   "ads": [
     {
       "name": "candusen.net",
-      "color": "#004fff",
+      "color": "#bbbbbb",
       "background": "#eeeeee",
       "faceImageUrl": "http://s3.amazonaws.com/snock-planet/candusen.jpg",
       "text": "Explore candusen.net"
