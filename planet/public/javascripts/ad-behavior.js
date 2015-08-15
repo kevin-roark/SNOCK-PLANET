@@ -1,5 +1,6 @@
 
 var Avatar = require('./avatar.js');
+var makeTextCanvas = require('./text-canvas');
 
 module.exports.Advatar = Advatar;
 
@@ -21,14 +22,64 @@ function Advatar(adData) {
 
   var self = this;
   this.postLoadBehaviors.push(function() {
-    self.faceMesh.position.y = 4.0;
+    self.faceMesh.position.y = 6.0;
 
-    self.textMesh.position.set(0, 7.0, 0);
+    self.textMesh.position.set(0, 11.0, 0);
+
+    self.createAdMesh();
   });
 }
 
+Advatar.prototype.updateFromModel = function(adData) {
+  Super.updateFromModel.call(this, adData);
+
+  this.text = adData.text || '';
+  this.adBackground = adData.background;
+};
+
+Advatar.prototype.createAdMesh = function() {
+  this.adCanvas = makeTextCanvas({
+    text: this.text,
+    backgroundColor: this.adBackground
+  });
+
+  var texture = new THREE.Texture(this.adCanvas);
+  texture.minFilter = THREE.NearestFilter;
+  texture.needsUpdate = true;
+
+  // material === material wit tha words on it
+  var material = new THREE.MeshBasicMaterial({
+    map: texture,
+    side: THREE.DoubleSide
+  });
+
+  var accentMaterial = new THREE.MeshBasicMaterial({
+    color: 0xffffff,
+    side: THREE.DoubleSide
+  });
+
+  var materials = [
+    accentMaterial, accentMaterial.clone(), accentMaterial.clone(), accentMaterial.clone(),
+    material, material.clone()
+  ];
+
+  var meshFaceMaterial = new THREE.MeshFaceMaterial(materials);
+
+  var scalar = 0.025;
+  var width = this.adCanvas.width * this.scale * scalar;
+  var height = this.adCanvas.height * this.scale * scalar;
+  var geometry = new THREE.BoxGeometry(width, height, 0.5);
+
+  var mesh = new THREE.Mesh(geometry, meshFaceMaterial);
+  mesh.doubleSided = true;
+
+  this.adMesh = mesh;
+  this.adMesh.position.set(6 + width / 2, 10, 0);
+  this.mesh.add(this.adMesh);
+};
+
 Advatar.prototype.createFaceGeometry = function() {
-  return new THREE.BoxGeometry(2.5, 2.5, 2.5);
+  return new THREE.BoxGeometry(8, 8, 8);
 };
 
 Advatar.prototype.render = function() {

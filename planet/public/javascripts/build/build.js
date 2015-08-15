@@ -16205,6 +16205,7 @@ function toArray(list, index) {
 },{}],52:[function(require,module,exports){
 
 var Avatar = require('./avatar.js');
+var makeTextCanvas = require('./text-canvas');
 
 module.exports.Advatar = Advatar;
 
@@ -16226,14 +16227,64 @@ function Advatar(adData) {
 
   var self = this;
   this.postLoadBehaviors.push(function() {
-    self.faceMesh.position.y = 4.0;
+    self.faceMesh.position.y = 6.0;
 
-    self.textMesh.position.set(0, 7.0, 0);
+    self.textMesh.position.set(0, 11.0, 0);
+
+    self.createAdMesh();
   });
 }
 
+Advatar.prototype.updateFromModel = function(adData) {
+  Super.updateFromModel.call(this, adData);
+
+  this.text = adData.text || '';
+  this.adBackground = adData.background;
+};
+
+Advatar.prototype.createAdMesh = function() {
+  this.adCanvas = makeTextCanvas({
+    text: this.text,
+    backgroundColor: this.adBackground
+  });
+
+  var texture = new THREE.Texture(this.adCanvas);
+  texture.minFilter = THREE.NearestFilter;
+  texture.needsUpdate = true;
+
+  // material === material wit tha words on it
+  var material = new THREE.MeshBasicMaterial({
+    map: texture,
+    side: THREE.DoubleSide
+  });
+
+  var accentMaterial = new THREE.MeshBasicMaterial({
+    color: 0xffffff,
+    side: THREE.DoubleSide
+  });
+
+  var materials = [
+    accentMaterial, accentMaterial.clone(), accentMaterial.clone(), accentMaterial.clone(),
+    material, material.clone()
+  ];
+
+  var meshFaceMaterial = new THREE.MeshFaceMaterial(materials);
+
+  var scalar = 0.025;
+  var width = this.adCanvas.width * this.scale * scalar;
+  var height = this.adCanvas.height * this.scale * scalar;
+  var geometry = new THREE.BoxGeometry(width, height, 0.5);
+
+  var mesh = new THREE.Mesh(geometry, meshFaceMaterial);
+  mesh.doubleSided = true;
+
+  this.adMesh = mesh;
+  this.adMesh.position.set(6 + width / 2, 10, 0);
+  this.mesh.add(this.adMesh);
+};
+
 Advatar.prototype.createFaceGeometry = function() {
-  return new THREE.BoxGeometry(2.5, 2.5, 2.5);
+  return new THREE.BoxGeometry(8, 8, 8);
 };
 
 Advatar.prototype.render = function() {
@@ -16266,7 +16317,7 @@ function nextPositionTarget() {
   return new THREE.Vector3(x, y, z);
 }
 
-},{"./avatar.js":55}],53:[function(require,module,exports){
+},{"./avatar.js":55,"./text-canvas":77}],53:[function(require,module,exports){
 
 var globals = require('./global-state');
 var $ = require('jquery');
@@ -17422,7 +17473,7 @@ module.exports.randomTexture = function(textureMap) {
 };
 
 }).call(this,require('_process'),"/public/javascripts")
-},{"_process":77}],59:[function(require,module,exports){
+},{"_process":78}],59:[function(require,module,exports){
 
 var SheenModel = require('./sheen-model');
 var config = require('./config');
@@ -19414,7 +19465,7 @@ module.exports.clearMove = function(key) {
 
 var SheenModel = require('./sheen-model');
 var config = require('./config');
-var multiline = require('./lib/multiline');
+var makeTextCanvas = require('./text-canvas');
 
 module.exports = Note;
 
@@ -19497,89 +19548,7 @@ Note.prototype.loadMesh = function(callback) {
   if (callback) callback();
 };
 
-function makeTextCanvas(options) {
-  var text = options.text || '';
-
-  var fontSize = options.fontSize || 24;
-  var fontName = options.fontName || 'Georgia';
-  var font = fontSize + 'pt "' + fontName + '"';
-
-  var backgroundColor = options.backgroundColor || 'rgb(245, 245, 245)';
-  var textColor = options.textColor || 'black';
-
-  var minWidth = options.minWidth || 100;
-  var maxWidth = options.maxWidth || 300;
-  var horPadding = options.horPadding || 20;
-  var verPadding = options.verPadding || 20;
-
-  var imageHeight = options.imageHeight || 150;
-
-  var canvas = document.createElement("canvas");
-  var context = canvas.getContext("2d");
-
-  if (options.mediaURL) {
-    loadImage(options.mediaURL, function(img) {
-      var mediaWidth = img.width / img.height * imageHeight;
-      var mediaX = Math.max(horPadding, canvas.width / 2 - mediaWidth / 2);
-      var mediaY = canvas.height - imageHeight - verPadding;
-
-      context.drawImage(img, mediaX, mediaY, mediaWidth, imageHeight);
-    });
-  }
-
-  // measure the width of the text in one line
-  context.font = font;
-  var textWidth = context.measureText(text).width;
-
-  // set canvas width within prescribed range
-  canvas.width = Math.max(minWidth, Math.min(maxWidth, textWidth) + horPadding * 2);
-
-  // split the text into multiple lines
-  context.font = font;
-  var wrappedText = multiline.wrap(context, text, horPadding, verPadding, canvas.width, fontSize + 10);
-
-  // base height on number of lines
-  canvas.height = Math.max(wrappedText[wrappedText.length - 1].y + fontSize + verPadding + 5, fontSize + verPadding);
-  if (options.mediaURL) {
-    canvas.height += imageHeight;
-  }
-
-  // background color
-  context.fillStyle = backgroundColor;
-  context.fillRect(0, 0, canvas.width, canvas.height);
-
-  // text details
-  context.font = font;
-  context.fillStyle = textColor;
-  context.textBaseline = 'top';
-
-  // draw the text right in there
-  for (var i = 0; i < wrappedText.length; i++){
-    var item = wrappedText[i];
-    context.fillText(item.text, item.x, item.y);
-  }
-
-  return canvas;
-}
-
-function loadImage(path, callback) {
-  if (!callback) return;
-
-  if (!path) {
-    callback();
-    return;
-  }
-
-  var img = new Image();
-
-  img.onload = function() {
-      callback(img);
-  };
-
-  img.src = path;
-}
-
-},{"./config":58,"./lib/multiline":67,"./sheen-model":75}],73:[function(require,module,exports){
+},{"./config":58,"./sheen-model":75,"./text-canvas":77}],73:[function(require,module,exports){
 
 /**
  * Originally written by squarefeet (github.com/squarefeet).
@@ -20157,6 +20126,92 @@ module.exports.blocker = function(size) {
 };
 
 },{"./config.js":58}],77:[function(require,module,exports){
+
+var multiline = require('./lib/multiline');
+
+module.exports = function makeTextCanvas(options) {
+  var text = options.text || '';
+
+  var fontSize = options.fontSize || 24;
+  var fontName = options.fontName || 'Georgia';
+  var font = fontSize + 'pt "' + fontName + '"';
+
+  var backgroundColor = options.backgroundColor || 'rgb(245, 245, 245)';
+  var textColor = options.textColor || 'black';
+
+  var minWidth = options.minWidth || 100;
+  var maxWidth = options.maxWidth || 300;
+  var horPadding = options.horPadding || 20;
+  var verPadding = options.verPadding || 20;
+
+  var imageHeight = options.imageHeight || 150;
+
+  var canvas = document.createElement("canvas");
+  var context = canvas.getContext("2d");
+
+  if (options.mediaURL) {
+    loadImage(options.mediaURL, function(img) {
+      var mediaWidth = img.width / img.height * imageHeight;
+      var mediaX = Math.max(horPadding, canvas.width / 2 - mediaWidth / 2);
+      var mediaY = canvas.height - imageHeight - verPadding;
+
+      context.drawImage(img, mediaX, mediaY, mediaWidth, imageHeight);
+    });
+  }
+
+  // measure the width of the text in one line
+  context.font = font;
+  var textWidth = context.measureText(text).width;
+
+  // set canvas width within prescribed range
+  canvas.width = Math.max(minWidth, Math.min(maxWidth, textWidth)) + horPadding * 2;
+
+  // split the text into multiple lines
+  context.font = font;
+  var wrappedText = multiline.wrap(context, text, horPadding, verPadding, canvas.width - horPadding * 1.5, fontSize + 10);
+
+  // base height on number of lines
+  canvas.height = Math.max(wrappedText[wrappedText.length - 1].y + fontSize + verPadding + 5, fontSize + verPadding);
+  if (options.mediaURL) {
+    canvas.height += imageHeight;
+  }
+
+  // background color
+  context.fillStyle = backgroundColor;
+  context.fillRect(0, 0, canvas.width, canvas.height);
+
+  // text details
+  context.font = font;
+  context.fillStyle = textColor;
+  context.textBaseline = 'top';
+
+  // draw the text right in there
+  for (var i = 0; i < wrappedText.length; i++){
+    var item = wrappedText[i];
+    context.fillText(item.text, item.x, item.y);
+  }
+
+  return canvas;
+};
+
+function loadImage(path, callback) {
+  if (!callback) return;
+
+  if (!path) {
+    callback();
+    return;
+  }
+
+  var img = new Image();
+
+  img.onload = function() {
+      callback(img);
+  };
+
+  img.src = path;
+}
+
+},{"./lib/multiline":67}],78:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
