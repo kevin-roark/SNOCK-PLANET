@@ -22,7 +22,7 @@ function Avatar(options) {
 Avatar.prototype.loadMesh = function(callback) {
   var self = this;
 
-  this.faceGeometry = new THREE.BoxGeometry(1.25, 1.25, 1.25);
+  this.faceGeometry = this.createFaceGeometry();
   this.faceMesh = new THREE.Mesh(this.faceGeometry, this.faceMaterial);
 
   this.createTextMesh();
@@ -46,6 +46,10 @@ Avatar.prototype.loadMesh = function(callback) {
 
     if (callback) callback();
   });
+};
+
+Avatar.prototype.createFaceGeometry = function() {
+  return new THREE.BoxGeometry(1.25, 1.25, 1.25);
 };
 
 Avatar.prototype.createTextMesh = function() {

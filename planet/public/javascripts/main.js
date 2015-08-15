@@ -5,11 +5,11 @@ var kt = require('./lib/kutility');
 require('./lib/rainbow')($);
 
 var Camera = require('./camera');
-var config = require('./config');
 var globals = require('./global-state');
 var BecomeAvatarComponent = require('./become-avatar-component');
 var GeneralPlanetComponent = require('./general-planet-component');
 var InnerDoorComponent = require('./inner-door-component');
+var adBehavior = require('./ad-behavior');
 
 // modes
 var BECOME_AVATAR_MODE = 0;
@@ -108,6 +108,9 @@ $(function() {
   var cam = new Camera(scene, renderer, {forbiddenRequestClasses: ['question-mark', 'faq']});
   var camera = cam.cam;
 
+  // ad container
+  var advatars = [];
+
   // set up globals
   globals.io = socket;
   globals.renderer = renderer;
@@ -147,10 +150,14 @@ $(function() {
   }
 
   function loadAds() {
-    console.log('loading ads!!!');
-    
     $.getJSON('/media/ads.json', function(json) {
-      console.log(json);
+      var ads = json.ads;
+      ads.forEach(function(adData, idx) {
+        adData._id = idx;
+        var advatar = new adBehavior.Advatar(adData);
+        advatar.addTo(scene);
+        advatars.push(advatar);
+      });
     });
   }
 
@@ -173,6 +180,9 @@ $(function() {
         break;
       case GENERAL_PLANET_MODE:
         state.generalPlanetComponent.render();
+        for (var adIndex = 0; adIndex < advatars.length; adIndex++) {
+          advatars[adIndex].render();
+        }
         break;
       case INSIDE_DOOR_MODE:
         state.currentInnerDoorComponent.render();

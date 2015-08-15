@@ -16204,6 +16204,70 @@ function toArray(list, index) {
 
 },{}],52:[function(require,module,exports){
 
+var Avatar = require('./avatar.js');
+
+module.exports.Advatar = Advatar;
+
+var Super = Avatar.prototype;
+Advatar.prototype = Object.create(Super);
+
+function Advatar(adData) {
+  adData.sleeping = false;
+  adData.position = new THREE.Vector3(
+    -50 + Math.random() * 100,
+    0,
+    -50 + Math.random() * 100
+  );
+
+  this.positionTarget = nextPositionTarget();
+  this.velocity = 0.2;
+
+  Avatar.call(this, adData);
+
+  var self = this;
+  this.postLoadBehaviors.push(function() {
+    self.faceMesh.position.y = 4.0;
+
+    self.textMesh.position.set(0, 7.0, 0);
+  });
+}
+
+Advatar.prototype.createFaceGeometry = function() {
+  return new THREE.BoxGeometry(2.5, 2.5, 2.5);
+};
+
+Advatar.prototype.render = function() {
+  Super.render.call(this);
+
+  if (!this.hasLoadedMesh) {
+    return;
+  }
+
+  var pos = this.mesh.position;
+  var target = this.positionTarget;
+  var vel = this.velocity;
+  var threshold = vel * 1.75;
+
+  var xd = pos.x > target.x ? -vel : vel;
+  var yd = 0;
+  var zd = pos.z > target.z ? -vel : vel;
+
+  this.move(xd, yd, zd);
+
+  if (Math.abs(pos.x - target.x) <= threshold && Math.abs(pos.z - target.z) <= threshold) {
+    this.positionTarget = nextPositionTarget();
+  }
+};
+
+function nextPositionTarget() {
+  var x = -300 + Math.random() * 600;
+  var y = 0;
+  var z = -300 + Math.random() * 600;
+  return new THREE.Vector3(x, y, z);
+}
+
+},{"./avatar.js":55}],53:[function(require,module,exports){
+
 var globals = require('./global-state');
 var $ = require('jquery');
 
@@ -16321,7 +16385,7 @@ function fetchSocket() {
   return socket;
 }
 
-},{"./global-state":61,"jquery":1}],53:[function(require,module,exports){
+},{"./global-state":62,"jquery":1}],54:[function(require,module,exports){
 
 var $ = require('jquery');
 
@@ -16626,7 +16690,7 @@ AvatarControlComponent.prototype.controlsActive = function() {
   return !this.inCreationMode;
 };
 
-},{"./avatar":54,"./config":57,"./global-state":61,"./keymaster":64,"./mousemaster":70,"./object-controls":72,"./scene-component":73,"jquery":1}],54:[function(require,module,exports){
+},{"./avatar":55,"./config":58,"./global-state":62,"./keymaster":65,"./mousemaster":71,"./object-controls":73,"./scene-component":74,"jquery":1}],55:[function(require,module,exports){
 
 var SheenModel = require('./sheen-model.js');
 var loader = require('./model-loader');
@@ -16651,7 +16715,7 @@ function Avatar(options) {
 Avatar.prototype.loadMesh = function(callback) {
   var self = this;
 
-  this.faceGeometry = new THREE.BoxGeometry(1.25, 1.25, 1.25);
+  this.faceGeometry = this.createFaceGeometry();
   this.faceMesh = new THREE.Mesh(this.faceGeometry, this.faceMaterial);
 
   this.createTextMesh();
@@ -16675,6 +16739,10 @@ Avatar.prototype.loadMesh = function(callback) {
 
     if (callback) callback();
   });
+};
+
+Avatar.prototype.createFaceGeometry = function() {
+  return new THREE.BoxGeometry(1.25, 1.25, 1.25);
 };
 
 Avatar.prototype.createTextMesh = function() {
@@ -16862,7 +16930,7 @@ Avatar.prototype.positionAsCoordinates = function() {
   return pos.x.toFixed(0) + 'x, ' + pos.z.toFixed(0) + 'y';
 };
 
-},{"./model-loader":69,"./sheen-model.js":74}],55:[function(require,module,exports){
+},{"./model-loader":70,"./sheen-model.js":75}],56:[function(require,module,exports){
 
 var $ = require('jquery');
 var SceneComponent = require('./scene-component');
@@ -17094,7 +17162,7 @@ BecomeAvatarComponent.prototype.commonFinish = function(avatarData) {
   this.showLoading(false);
 };
 
-},{"./api-tools":52,"./avatar":54,"./form-validator":59,"./global-state":61,"./image-dropper":62,"./scene-component":73,"jquery":1}],56:[function(require,module,exports){
+},{"./api-tools":53,"./avatar":55,"./form-validator":60,"./global-state":62,"./image-dropper":63,"./scene-component":74,"jquery":1}],57:[function(require,module,exports){
 /**
  * BELOW CODE INSPIRED FROM
  * http://threejs.org/examples/misc_controls_pointerlock.html
@@ -17310,7 +17378,7 @@ Camera.prototype.addPointerlockListeners = function(forbiddenRequestClasses) {
   }
 };
 
-},{"jquery":1}],57:[function(require,module,exports){
+},{"jquery":1}],58:[function(require,module,exports){
 (function (process,__dirname){
 
 var debug = (typeof window !== 'undefined') ? window.serverConfig.isDebug : process.env.NODE_ENV === 'development';
@@ -17354,7 +17422,7 @@ module.exports.randomTexture = function(textureMap) {
 };
 
 }).call(this,require('_process'),"/public/javascripts")
-},{"_process":76}],58:[function(require,module,exports){
+},{"_process":77}],59:[function(require,module,exports){
 
 var SheenModel = require('./sheen-model');
 var config = require('./config');
@@ -17462,7 +17530,7 @@ Door.prototype.serialize = function() {
   return data;
 };
 
-},{"./config":57,"./sheen-model":74}],59:[function(require,module,exports){
+},{"./config":58,"./sheen-model":75}],60:[function(require,module,exports){
 
 var avatarValidChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_';
 var doorValidChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_ ';
@@ -17505,7 +17573,7 @@ var isValidChar = function(validChars, char) {
   return idx >= 0;
 };
 
-},{}],60:[function(require,module,exports){
+},{}],61:[function(require,module,exports){
 
 var $ = require('jquery');
 
@@ -17777,13 +17845,13 @@ GeneralPlanetComponent.prototype.addDoor = function(doorData) {
   });
 };
 
-},{"./api-tools":52,"./avatar-control-component":53,"./config":57,"./door":58,"./form-validator":59,"./keymaster":64,"jquery":1}],61:[function(require,module,exports){
+},{"./api-tools":53,"./avatar-control-component":54,"./config":58,"./door":59,"./form-validator":60,"./keymaster":65,"jquery":1}],62:[function(require,module,exports){
 
 // Store anything you think should be accessible everywhere here
 
 module.exports = {};
 
-},{}],62:[function(require,module,exports){
+},{}],63:[function(require,module,exports){
 
 var $ = require('jquery');
 
@@ -17957,7 +18025,7 @@ function readfiles(files) {
   module.exports.fileCallback(trimmedFiles);
 }
 
-},{"jquery":1}],63:[function(require,module,exports){
+},{"jquery":1}],64:[function(require,module,exports){
 
 var $ = require('jquery');
 
@@ -18147,7 +18215,7 @@ InnerDoorComponent.prototype.exit = function() {
   this.markFinished();
 };
 
-},{"./api-tools":52,"./avatar-control-component":53,"./config":57,"./keymaster":64,"./note":71,"./skybox":75,"jquery":1}],64:[function(require,module,exports){
+},{"./api-tools":53,"./avatar-control-component":54,"./config":58,"./keymaster":65,"./note":72,"./skybox":76,"jquery":1}],65:[function(require,module,exports){
 
 var $ = require('jquery');
 var config = require('./config');
@@ -18245,7 +18313,7 @@ module.exports.setPreventDefaults = function(preventDefaults) {
   shouldPreventDefaults = preventDefaults;
 };
 
-},{"./config":57,"jquery":1}],65:[function(require,module,exports){
+},{"./config":58,"jquery":1}],66:[function(require,module,exports){
 /* export something */
 module.exports = new Kutility;
 
@@ -18810,7 +18878,7 @@ Kutility.prototype.blur = function(el, x) {
   this.setFilter(el, cf + f);
 }
 
-},{}],66:[function(require,module,exports){
+},{}],67:[function(require,module,exports){
 // Return an array to iterate over. For my uses this is
 // more efficient, because I only need to calculate the line text
 // and positions once, instead of each iteration during animations.
@@ -18848,7 +18916,7 @@ module.exports.draw = function drawMultiline(context, text, linespacing, x, y, w
   return txt[txt.length - 1].y + linespacing;
 }
 
-},{}],67:[function(require,module,exports){
+},{}],68:[function(require,module,exports){
 
 module.exports = function($) {
     $.fn.rainbow = function(options) {
@@ -18953,7 +19021,7 @@ module.exports = function($) {
 
 };
 
-},{}],68:[function(require,module,exports){
+},{}],69:[function(require,module,exports){
 
 var $ = require('jquery');
 var io = require('socket.io-client');
@@ -18961,11 +19029,11 @@ var kt = require('./lib/kutility');
 require('./lib/rainbow')($);
 
 var Camera = require('./camera');
-var config = require('./config');
 var globals = require('./global-state');
 var BecomeAvatarComponent = require('./become-avatar-component');
 var GeneralPlanetComponent = require('./general-planet-component');
 var InnerDoorComponent = require('./inner-door-component');
+var adBehavior = require('./ad-behavior');
 
 // modes
 var BECOME_AVATAR_MODE = 0;
@@ -19064,6 +19132,9 @@ $(function() {
   var cam = new Camera(scene, renderer, {forbiddenRequestClasses: ['question-mark', 'faq']});
   var camera = cam.cam;
 
+  // ad container
+  var advatars = [];
+
   // set up globals
   globals.io = socket;
   globals.renderer = renderer;
@@ -19103,10 +19174,14 @@ $(function() {
   }
 
   function loadAds() {
-    console.log('loading ads!!!');
-    
     $.getJSON('/media/ads.json', function(json) {
-      console.log(json);
+      var ads = json.ads;
+      ads.forEach(function(adData, idx) {
+        adData._id = idx;
+        var advatar = new adBehavior.Advatar(adData);
+        advatar.addTo(scene);
+        advatars.push(advatar);
+      });
     });
   }
 
@@ -19129,6 +19204,9 @@ $(function() {
         break;
       case GENERAL_PLANET_MODE:
         state.generalPlanetComponent.render();
+        for (var adIndex = 0; adIndex < advatars.length; adIndex++) {
+          advatars[adIndex].render();
+        }
         break;
       case INSIDE_DOOR_MODE:
         state.currentInnerDoorComponent.render();
@@ -19260,7 +19338,7 @@ $(function() {
 
 });
 
-},{"./become-avatar-component":55,"./camera":56,"./config":57,"./general-planet-component":60,"./global-state":61,"./inner-door-component":63,"./lib/kutility":65,"./lib/rainbow":67,"jquery":1,"socket.io-client":2}],69:[function(require,module,exports){
+},{"./ad-behavior":52,"./become-avatar-component":56,"./camera":57,"./general-planet-component":61,"./global-state":62,"./inner-door-component":64,"./lib/kutility":66,"./lib/rainbow":68,"jquery":1,"socket.io-client":2}],70:[function(require,module,exports){
 
 var cache = {};
 
@@ -19303,7 +19381,7 @@ function fetch(name, callback) {
   callback(geometry, materials);
 }
 
-},{}],70:[function(require,module,exports){
+},{}],71:[function(require,module,exports){
 
 var $ = require('jquery');
 
@@ -19332,7 +19410,7 @@ module.exports.clearMove = function(key) {
   delete moveListeners[key];
 }
 
-},{"jquery":1}],71:[function(require,module,exports){
+},{"jquery":1}],72:[function(require,module,exports){
 
 var SheenModel = require('./sheen-model');
 var config = require('./config');
@@ -19501,7 +19579,7 @@ function loadImage(path, callback) {
   img.src = path;
 }
 
-},{"./config":57,"./lib/multiline":66,"./sheen-model":74}],72:[function(require,module,exports){
+},{"./config":58,"./lib/multiline":67,"./sheen-model":75}],73:[function(require,module,exports){
 
 /**
  * Originally written by squarefeet (github.com/squarefeet).
@@ -19729,7 +19807,7 @@ module.exports = function ObjectControls( opts ) {
     };
 };
 
-},{}],73:[function(require,module,exports){
+},{}],74:[function(require,module,exports){
 
 var $ = require('jquery');
 
@@ -19867,7 +19945,7 @@ SceneComponent.prototype.clean = function() {};
 
 SceneComponent.prototype.layout = function() {};
 
-},{"jquery":1}],74:[function(require,module,exports){
+},{"jquery":1}],75:[function(require,module,exports){
 
 module.exports = SheenModel;
 
@@ -20012,7 +20090,7 @@ SheenModel.prototype.updateFromModel = function(modelData) {
   this._id = modelData._id || null;
 };
 
-},{}],75:[function(require,module,exports){
+},{}],76:[function(require,module,exports){
 
 var config = require('./config.js');
 
@@ -20078,7 +20156,7 @@ module.exports.blocker = function(size) {
   return new THREE.Mesh(geometry, material);
 };
 
-},{"./config.js":57}],76:[function(require,module,exports){
+},{"./config.js":58}],77:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -20138,4 +20216,4 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}]},{},[68]);
+},{}]},{},[69]);
