@@ -6,6 +6,13 @@
       "background": "#eeeeee",
       "faceImageUrl": "http://s3.amazonaws.com/snock-planet/candusen.jpg",
       "text": "Explore candusen.net"
+    },
+    {
+      "name": "joe's site",
+      "color": "#10522a",
+      "background": "#00ff03",
+      "faceImageUrl": "http://s3.amazonaws.com/snock-planet/joebucciero.jpg",
+      "text": "joebucciero.website (coming soon!)"
     }
   ]
 }
